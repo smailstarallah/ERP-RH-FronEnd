@@ -92,8 +92,8 @@ const data = {
       emoji: "📊",
     },
     {
-      name: "Family Recipe Collection & Meal Planning",
-      url: "#",
+      name: "Suivi du Temps & Gestion des Tâches",
+      url: "/time-tracking",
       emoji: "🍳",
     },
     {

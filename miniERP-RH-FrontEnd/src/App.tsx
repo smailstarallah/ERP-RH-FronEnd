@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar"
 import { GestionConges } from './modules/gestion-conges/GestionConges';
 import { ParametrePage } from './modules/parametre/ParametrePage';
+import { TimeTrackingPage } from './modules/time-tracking/TimeTrackingPage';
 
 
 function App() {
@@ -79,6 +80,7 @@ function App() {
                 <Route path="/" element={<div>Dashboard</div>} />
                 <Route path="/gestion-conges" element={<GestionConges />} />
                 <Route path="/parametres" element={<ParametrePage />} />
+                <Route path="/time-tracking" element={<TimeTrackingPage />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
