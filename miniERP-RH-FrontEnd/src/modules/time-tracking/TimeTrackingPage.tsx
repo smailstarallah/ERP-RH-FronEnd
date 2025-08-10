@@ -40,16 +40,11 @@ interface CurrentSession {
     breakDuration: number;
 }
 
-interface PointageData {
+interface PointageRequest {
+    typePointage: 'ENTREE' | 'SORTIE' | 'PAUSE' | 'FIN_PAUSE';
+    empId: number;
     timestamp: string;
-    latitude: number | null;
-    longitude: number | null;
-    address: string;
-    type: 'ENTREE' | 'SORTIE' | 'PAUSE_DEBUT' | 'PAUSE_FIN';
 }
-
-type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
-type ApiEndpoint = 'checkin' | 'checkout' | 'break-start' | 'break-end' | 'history' | 'stats';
 
 export const TimeTrackingPage: React.FC = () => {
     // États principaux - typés
@@ -67,38 +62,21 @@ export const TimeTrackingPage: React.FC = () => {
     });
     const [message, setMessage] = useState<Message>({ type: '', text: '' });
     const [loading, setLoading] = useState<boolean>(false);
-
+    const [token] = useState<string>(() => {
+        const storedToken = localStorage.getItem('token');
+        return storedToken ? storedToken : '';
+    }); // Token d'authentification récupéré depuis localStorage
+    const userData = localStorage.getItem('userData');
+    const empId = userData ? JSON.parse(userData).id : null; // ou depuis le contexte utilisateur/localStorage
     // Historique et statistiques - typés
-    const [todayEntries, setTodayEntries] = useState<TimeEntry[]>([
-        {
-            id: 1,
-            type: 'checkin',
-            time: '08:30',
-            location: 'Bureau principal - Casablanca',
-            status: 'success'
-        },
-        {
-            id: 2,
-            type: 'break_start',
-            time: '12:00',
-            location: 'Bureau principal',
-            status: 'info'
-        },
-        {
-            id: 3,
-            type: 'break_end',
-            time: '13:00',
-            location: 'Bureau principal',
-            status: 'info'
-        }
-    ]);
+    const [todayEntries, setTodayEntries] = useState<TimeEntry[]>([]);
 
     const [weekStats, setWeekStats] = useState<WeekStats>({
-        totalHours: 42.5,
-        averageArrival: '08:25',
-        overtimeHours: 2.5,
+        totalHours: 0,
+        averageArrival: '--:--',
+        overtimeHours: 0,
         absences: 0,
-        lateArrivals: 1
+        lateArrivals: 0
     });
 
     // Timer actuel - typé
@@ -134,7 +112,7 @@ export const TimeTrackingPage: React.FC = () => {
                     setLocation({
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
-                        address: 'Bureau principal - Casablanca, MA'
+                        address: `Position: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
                     });
                 },
                 (error: GeolocationPositionError) => {
@@ -148,6 +126,158 @@ export const TimeTrackingPage: React.FC = () => {
             );
         }
     }, []);
+
+    // Charger les pointages du jour au démarrage
+    useEffect(() => {
+        const loadTodayPointages = async () => {
+            if (empId) {
+                const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+                const pointageData = await getPointages('jour', today);
+
+                if (pointageData) {
+                    // La réponse contient un objet pointage avec toutes les heures
+                    const entries: TimeEntry[] = [];
+
+                    // Ajouter l'entrée
+                    if (pointageData.heureEntree) {
+                        entries.push({
+                            id: pointageData.id * 10 + 1,
+                            type: 'checkin',
+                            time: pointageData.heureEntree.substring(0, 5), // Format HH:MM
+                            location: location.address,
+                            status: 'success'
+                        });
+                    }
+
+                    // Ajouter le début de pause
+                    if (pointageData.pauseDebutee) {
+                        entries.push({
+                            id: pointageData.id * 10 + 2,
+                            type: 'break_start',
+                            time: pointageData.pauseDebutee.substring(0, 5), // Format HH:MM
+                            location: location.address,
+                            status: 'info'
+                        });
+                    }
+
+                    // Ajouter la fin de pause
+                    if (pointageData.pauseTerminee) {
+                        entries.push({
+                            id: pointageData.id * 10 + 3,
+                            type: 'break_end',
+                            time: pointageData.pauseTerminee.substring(0, 5), // Format HH:MM
+                            location: location.address,
+                            status: 'info'
+                        });
+                    }
+
+                    // Ajouter la sortie
+                    if (pointageData.heureSortie) {
+                        entries.push({
+                            id: pointageData.id * 10 + 4,
+                            type: 'checkout',
+                            time: pointageData.heureSortie.substring(0, 5), // Format HH:MM
+                            location: location.address,
+                            status: 'success'
+                        });
+                    }
+
+                    setTodayEntries(entries);
+
+                    // Calculer le temps travaillé aujourd'hui depuis les données API
+                    if (pointageData.heuresTravaillees) {
+                        // Convertir PT10.6025869S en secondes
+                        const durationMatch = pointageData.heuresTravaillees.match(/PT(\d+(?:\.\d+)?)S/);
+                        if (durationMatch) {
+                            const seconds = parseFloat(durationMatch[1]);
+                            setTotalWorkedToday(seconds);
+                        }
+                    }
+
+                    // Déterminer l'état actuel de travail
+                    const hasEntree = pointageData.heureEntree;
+                    const hasSortie = pointageData.heureSortie;
+                    const hasPauseDebutee = pointageData.pauseDebutee;
+                    const hasPauseTerminee = pointageData.pauseTerminee;
+
+                    // L'employé est au travail s'il a pointé l'entrée mais pas encore la sortie
+                    if (hasEntree && !hasSortie) {
+                        setIsWorking(true);
+                        // L'employé est en pause s'il a commencé une pause mais ne l'a pas terminée
+                        if (hasPauseDebutee && !hasPauseTerminee) {
+                            setIsOnBreak(true);
+                        } else {
+                            setIsOnBreak(false);
+                        }
+                    } else {
+                        setIsWorking(false);
+                        setIsOnBreak(false);
+                    }
+                }
+            }
+        };
+
+        loadTodayPointages();
+    }, [empId, location.address]);
+
+    // Charger les statistiques de la semaine
+    useEffect(() => {
+        const loadWeekStats = async () => {
+            if (empId) {
+                const today = new Date();
+                const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+                const mondayStr = monday.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+                const weekPointages = await getPointages('semaine', mondayStr);
+
+                if (weekPointages && Array.isArray(weekPointages)) {
+                    // Calculer les statistiques de la semaine
+                    let totalSeconds = 0;
+                    let arrivals: string[] = [];
+
+                    weekPointages.forEach((pointage: any) => {
+                        // Calculer le temps total travaillé
+                        if (pointage.heuresTravaillees) {
+                            const durationMatch = pointage.heuresTravaillees.match(/PT(\d+(?:\.\d+)?)S/);
+                            if (durationMatch) {
+                                totalSeconds += parseFloat(durationMatch[1]);
+                            }
+                        }
+
+                        // Collecter les heures d'arrivée pour calculer la moyenne
+                        if (pointage.heureEntree) {
+                            arrivals.push(pointage.heureEntree);
+                        }
+                    });
+
+                    const totalHours = Math.round((totalSeconds / 3600) * 10) / 10;
+
+                    // Calculer l'heure d'arrivée moyenne
+                    let averageArrival = '--:--';
+                    if (arrivals.length > 0) {
+                        const totalMinutes = arrivals.reduce((sum, time) => {
+                            const [hours, minutes] = time.split(':').map(Number);
+                            return sum + (hours * 60 + minutes);
+                        }, 0);
+                        const avgMinutes = Math.round(totalMinutes / arrivals.length);
+                        const avgHours = Math.floor(avgMinutes / 60);
+                        const avgMins = avgMinutes % 60;
+                        averageArrival = `${avgHours.toString().padStart(2, '0')}:${avgMins.toString().padStart(2, '0')}`;
+                    }
+
+                    setWeekStats({
+                        totalHours,
+                        averageArrival,
+                        overtimeHours: Math.max(0, totalHours - 40), // Assuming 40h work week
+                        absences: Math.max(0, 5 - weekPointages.length), // 5 jours de travail par semaine
+                        lateArrivals: arrivals.filter(time => time > '09:00:00').length // Retards après 9h
+                    });
+                }
+            }
+        };
+
+        loadWeekStats();
+    }, [empId]);
 
     // Fonctions utilitaires - typées
     const formatTime = useCallback((seconds: number): string => {
@@ -171,46 +301,33 @@ export const TimeTrackingPage: React.FC = () => {
         });
     }, [currentTime]);
 
-    // API Functions - typées
-    const getToken = (): string | null => {
-        return localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
-    };
-
-    const apiCall = async <T = any>(
-        endpoint: ApiEndpoint,
-        method: ApiMethod = 'POST',
-        data: PointageData | null = null
-    ): Promise<T | false> => {
-        const token: string | null = getToken();
-        if (!token) {
-            setMessage({ type: 'error', text: 'Token JWT manquant. Veuillez vous reconnecter.' });
-            return false;
-        }
-
+    // API Functions - nouvelle implémentation
+    const createPointage = async (typePointage: 'ENTREE' | 'SORTIE' | 'PAUSE' | 'FIN_PAUSE'): Promise<boolean> => {
         try {
-            setLoading(true);
-            const options: RequestInit = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                }
+            const pointageRequest: PointageRequest = {
+                typePointage,
+                empId,
+                timestamp: new Date().toISOString()
             };
 
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-
-            const response: Response = await fetch(`http://localhost:8080/api/pointage/${endpoint}`, options);
+            setLoading(true);
+            const response = await fetch('http://localhost:8080/api/pointages/create', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pointageRequest)
+            });
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    throw new Error('Token expiré. Veuillez vous reconnecter.');
+                    throw new Error('Non autorisé. Veuillez vous reconnecter.');
                 }
                 throw new Error(`Erreur ${response.status}: ${response.statusText}`);
             }
 
-            return await response.json() as T;
+            return true;
         } catch (error: unknown) {
             console.error('Erreur API:', error);
             const errorMessage: string = error instanceof Error ? error.message : 'Erreur lors de la requête API';
@@ -221,17 +338,41 @@ export const TimeTrackingPage: React.FC = () => {
         }
     };
 
+    // Fonction pour récupérer les pointages (jour ou semaine)
+    const getPointages = async (periode: 'jour' | 'semaine', date: string): Promise<any> => {
+        try {
+            setLoading(true);
+            const response = await fetch(`http://localhost:8080/api/pointages/get/${empId}/${periode}?date=${date}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Non autorisé. Veuillez vous reconnecter.');
+                }
+                throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Pointages récupérés:', data);
+            return data;
+        } catch (error: unknown) {
+            console.error('Erreur API:', error);
+            const errorMessage: string = error instanceof Error ? error.message : 'Erreur lors de la récupération des pointages';
+            setMessage({ type: 'error', text: errorMessage });
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Actions de pointage - typées
     const handleCheckIn = async (): Promise<void> => {
-        const data: PointageData = {
-            timestamp: new Date().toISOString(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-            address: location.address,
-            type: 'ENTREE'
-        };
-
-        const result = await apiCall('checkin', 'POST', data);
+        const result = await createPointage('ENTREE');
         if (result) {
             setIsWorking(true);
             setStartTime(Date.now());
@@ -249,15 +390,7 @@ export const TimeTrackingPage: React.FC = () => {
     };
 
     const handleCheckOut = async (): Promise<void> => {
-        const data: PointageData = {
-            timestamp: new Date().toISOString(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-            address: location.address,
-            type: 'SORTIE'
-        };
-
-        const result = await apiCall('checkout', 'POST', data);
+        const result = await createPointage('SORTIE');
         if (result) {
             setIsWorking(false);
             setIsOnBreak(false);
@@ -278,15 +411,7 @@ export const TimeTrackingPage: React.FC = () => {
     };
 
     const handleBreakStart = async (): Promise<void> => {
-        const data: PointageData = {
-            timestamp: new Date().toISOString(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-            address: location.address,
-            type: 'PAUSE_DEBUT'
-        };
-
-        const result = await apiCall('break-start', 'POST', data);
+        const result = await createPointage('PAUSE');
         if (result) {
             setIsOnBreak(true);
             setBreakStartTime(Date.now());
@@ -304,15 +429,7 @@ export const TimeTrackingPage: React.FC = () => {
     };
 
     const handleBreakEnd = async (): Promise<void> => {
-        const data: PointageData = {
-            timestamp: new Date().toISOString(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-            address: location.address,
-            type: 'PAUSE_FIN'
-        };
-
-        const result = await apiCall('break-end', 'POST', data);
+        const result = await createPointage('FIN_PAUSE');
         if (result) {
             setIsOnBreak(false);
             setBreakTime(prev => prev + currentSession.breakDuration);
@@ -341,7 +458,7 @@ export const TimeTrackingPage: React.FC = () => {
     }, [message]);
 
     // Fonction pour les badges - typée
-    const getStatusBadge = (type: TimeEntry['type']): JSX.Element => {
+    const getStatusBadge = (type: TimeEntry['type']) => {
         switch (type) {
             case 'checkin':
                 return <Badge className="bg-green-100 text-green-800">Arrivée</Badge>;
@@ -514,7 +631,7 @@ export const TimeTrackingPage: React.FC = () => {
                                             <div key={entry.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-2 h-2 rounded-full ${entry.status === 'success' ? 'bg-green-500' :
-                                                            entry.status === 'info' ? 'bg-blue-500' : 'bg-red-500'
+                                                        entry.status === 'info' ? 'bg-blue-500' : 'bg-red-500'
                                                         }`} />
                                                     <div>
                                                         <div className="font-medium">{entry.time}</div>
