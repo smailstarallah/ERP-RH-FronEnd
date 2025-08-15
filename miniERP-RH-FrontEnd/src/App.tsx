@@ -20,6 +20,7 @@ import {
 import { GestionConges } from './modules/gestion-conges/GestionConges';
 import { ParametrePage } from './modules/parametre/ParametrePage';
 import { TimeTrackingPage } from './modules/time-tracking/TimeTrackingPage';
+import FichePaiePage from './modules/fiche-de-paie/FichePaiePage';
 
 
 function App() {
@@ -71,9 +72,7 @@ function App() {
                   </BreadcrumbList>
                 </Breadcrumb>
               </div>
-              <div className="ml-auto px-3">
-                <NavActions />
-              </div>
+
             </header>
             <div className="flex flex-1 flex-col gap-4 px-4 py-10">
               <Routes>
@@ -81,6 +80,7 @@ function App() {
                 <Route path="/gestion-conges" element={<GestionConges />} />
                 <Route path="/parametres" element={<ParametrePage />} />
                 <Route path="/time-tracking" element={<TimeTrackingPage />} />
+                <Route path="/fiche-paie" element={<FichePaiePage />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

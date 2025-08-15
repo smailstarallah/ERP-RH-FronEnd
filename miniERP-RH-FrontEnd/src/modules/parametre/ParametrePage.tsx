@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Profil } from "./Components/Profil";
-import { GestionUtilisateurs } from "./Components/GestionUtilisateurs";
+import GestionUtilisateurs from "./Components/GestionUtilisateurs";
 import { ParametreConges } from "./Components/ParametreConges";
 
 

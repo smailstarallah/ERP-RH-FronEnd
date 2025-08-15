@@ -87,19 +87,19 @@ const data = {
   ],
   favorites: [
     {
-      name: "Gestion des Congés & Absences",
+      name: "Congés & Absences",
       url: "/gestion-conges",
-      emoji: "📊",
+      emoji: "🏖️",
     },
     {
-      name: "Suivi du Temps & Gestion des Tâches",
+      name: "Temps & Tâches",
       url: "/time-tracking",
-      emoji: "🍳",
+      emoji: "⏱️",
     },
     {
-      name: "Fitness Tracker & Workout Routines",
-      url: "#",
-      emoji: "💪",
+      name: "Fiches de Paie",
+      url: "/fiche-paie",
+      emoji: "💼",
     },
     {
       name: "Book Notes & Reading List",

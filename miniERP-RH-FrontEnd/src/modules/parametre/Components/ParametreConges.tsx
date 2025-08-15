@@ -91,7 +91,6 @@ export const ParametreConges = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                // Adaptez selon la structure de votre réponse API
                 console.log('Types de congés récupérés:', data);
                 if (Array.isArray(data)) {
                     setLeaveTypes(data.map(item => ({
@@ -156,9 +155,28 @@ export const ParametreConges = () => {
         }
     }
 
-    function removeLeaveType(id: number) {
-        // Ici vous pouvez aussi ajouter un appel API pour supprimer
-        setLeaveTypes((s) => s.filter((t) => t.id !== id));
+    async function removeLeaveType(id: number) {
+        const token = getToken();
+        if (!token) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/gestion-conge/delete-type-conge/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            if (response.ok) {
+                // Only update local state after successful deletion
+                setLeaveTypes((s) => s.filter((t) => t.id !== id));
+                console.log('Type de congé supprimé avec succès');
+            } else {
+                console.error('Erreur lors de la suppression:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression du type de congé:', error);
+        }
     }
 
     return (
