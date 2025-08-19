@@ -331,13 +331,14 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         </Dialog>
     );
 
-    const ElementPaieFormtest = () => {
+    const ElementPaieFormtest = (
+        { employeId }: { employeId: number }
+    ) => {
         const [isOpen, setIsOpen] = useState(false);
 
         const handleSubmitSuccess = (data: any) => {
             console.log('Élément de paie créé avec succès:', data);
             setIsOpen(false);
-            // Optionnel: afficher une notification de succès
         };
 
         const handleCancel = () => {
@@ -364,6 +365,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                             isModal={true}
                             onSubmitSuccess={handleSubmitSuccess}
                             onCancel={handleCancel}
+                            employeId={employeId}
                         />
                     </div>
                 </DialogContent>
@@ -593,7 +595,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                                         <EmployeeDetailModal employee={employee} />
                                     </div>
                                     <div className="flex justify-end sm:justify-start sm:ml-4">
-                                        <ElementPaieFormtest />
+                                        <ElementPaieFormtest employeId={employee.id} />
                                     </div>
 
                                 </div>

@@ -25,7 +25,11 @@ export const WeekStatsCard: React.FC<WeekStatsProps> = ({ weekStats }) => {
             <CardContent className="space-y-4">
                 <div className="flex justify-between">
                     <span className="text-slate-600">Total heures</span>
-                    <span className="font-semibold">{weekStats.totalHours}h</span>
+                    <span className="font-semibold">{(() => {
+                        const hours = Math.floor(weekStats.totalHours);
+                        const minutes = Math.round((weekStats.totalHours - hours) * 60);
+                        return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`;
+                    })()}</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-slate-600">Arrivée moyenne</span>

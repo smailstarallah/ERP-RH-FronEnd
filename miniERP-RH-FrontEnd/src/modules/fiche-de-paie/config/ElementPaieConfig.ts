@@ -2,15 +2,15 @@ import {
     Building2,
     DollarSign,
     TrendingUp,
-    Calculator,
-    AlertTriangle,
     Users,
     FileText,
     HelpCircle,
     Percent,
     CalendarDays,
     Clock,
-    Code
+    Gift,
+    Scissors,
+    CalendarX
 } from 'lucide-react';
 import { TypeElement, ModeCalcul, type TypeElementType, type ModeCalculType } from '../types/ElementPaieTypes';
 
@@ -27,72 +27,80 @@ export const typeConfig: Record<TypeElementType, {
         color: 'bg-emerald-600',
         icon: Building2,
         category: 'Rémunération',
-        description: 'Le salaire mensuel fixe inscrit dans le contrat de travail',
-        example: 'Ex: 8 000 DH/mois'
+        description: 'Montant fixe mensuel prévu dans le contrat de travail',
+        example: 'Ex : 8 000 DH / mois'
     },
     [TypeElement.PRIME_FIXE]: {
-        label: 'Prime mensuelle',
+        label: 'Prime fixe',
         color: 'bg-blue-600',
         icon: DollarSign,
-        category: 'Complément',
-        description: 'Une prime qui ne change pas d\'un mois à l\'autre',
-        example: 'Ex: Prime d\'ancienneté, Prime de fonction'
+        category: 'Compléments',
+        description: 'Prime régulière versée chaque mois, sans variation',
+        example: 'Ex : Prime d’ancienneté, prime de fonction'
     },
     [TypeElement.PRIME_VARIABLE]: {
         label: 'Prime variable',
         color: 'bg-purple-600',
         icon: TrendingUp,
         category: 'Performance',
-        description: 'Une prime qui change selon les résultats ou la performance',
-        example: 'Ex: Prime de rendement, Prime commerciale'
+        description: 'Prime dont le montant dépend des résultats ou objectifs atteints',
+        example: 'Ex : Prime de rendement, prime commerciale'
     },
     [TypeElement.HEURES_SUPPLEMENTAIRES]: {
         label: 'Heures supplémentaires',
         color: 'bg-orange-600',
-        icon: Calculator,
-        category: 'Temps',
-        description: 'Paiement des heures travaillées au-delà de l\'horaire normal',
-        example: 'Ex: Heures le soir, week-end'
+        icon: Clock,
+        category: 'Temps de travail',
+        description: 'Rémunération des heures effectuées au-delà de la durée normale',
+        example: 'Ex : Heures de soirée, heures de week-end'
     },
     [TypeElement.DEDUCTION_ABSENCE]: {
         label: 'Retenue pour absence',
         color: 'bg-red-600',
-        icon: AlertTriangle,
+        icon: CalendarX,
         category: 'Retenues',
-        description: 'Déduction du salaire en cas d\'absence non justifiée',
-        example: 'Ex: Absence injustifiée, Retard'
+        description: 'Déduction appliquée en cas d’absence non justifiée',
+        example: 'Ex : Absence injustifiée, retard répété'
     },
     [TypeElement.DEDUCTION_AUTRE]: {
         label: 'Autre retenue',
         color: 'bg-red-500',
-        icon: AlertTriangle,
+        icon: Scissors,
         category: 'Retenues',
-        description: 'Autres déductions diverses du salaire',
-        example: 'Ex: Avance sur salaire, Prêt'
+        description: 'Retenues diverses appliquées sur le salaire',
+        example: 'Ex : Avance sur salaire, remboursement de prêt'
     },
     [TypeElement.COTISATION_SOCIALE]: {
-        label: 'Cotisation sociale',
+        label: 'Cotisations sociales',
         color: 'bg-indigo-600',
         icon: Users,
-        category: 'Social',
-        description: 'Cotisations obligatoires pour la sécurité sociale',
-        example: 'Ex: CNSS, AMO, Retraite'
+        category: 'Charges sociales',
+        description: 'Prélèvements obligatoires destinés à la sécurité sociale',
+        example: 'Ex : CNSS, AMO, retraite'
     },
     [TypeElement.IMPOT]: {
-        label: 'Impôt et taxes',
+        label: 'Impôts et taxes',
         color: 'bg-slate-600',
         icon: FileText,
-        category: 'Fiscal',
-        description: 'Impôts et taxes prélevés sur le salaire',
-        example: 'Ex: IR, Taxe professionnelle'
+        category: 'Fiscalité',
+        description: 'Prélèvements fiscaux appliqués sur le revenu salarial',
+        example: 'Ex : IR, taxe professionnelle'
     },
     [TypeElement.AUTRE]: {
         label: 'Élément personnalisé',
         color: 'bg-gray-600',
         icon: HelpCircle,
-        category: 'Autre',
-        description: 'Pour des éléments spécifiques à votre organisation',
-        example: 'Ex: Frais de transport, Ticket restaurant'
+        category: 'Divers',
+        description: 'Éléments spécifiques propres à l’organisation',
+        example: 'Ex : Frais de transport, tickets restaurant'
+    },
+    [TypeElement.INDEMNITE]: {
+        label: 'Indemnités',
+        color: 'bg-teal-600',
+        icon: Gift,
+        category: 'Avantages',
+        description: 'Montants compensatoires ou avantages accordés aux salariés',
+        example: 'Ex : Indemnité de déplacement, indemnité de licenciement'
     }
 };
 
@@ -126,16 +134,16 @@ export const modeCalculConfig: Record<ModeCalculType, {
         description: 'Un pourcentage appliqué sur une base',
         help: 'Par exemple: 3% du salaire de base, ou 20% des ventes'
     },
-    [ModeCalcul.BAREME]: {
-        label: 'Grille progressive',
-        icon: TrendingUp,
-        color: 'purple',
-        bgColor: 'from-purple-50 to-violet-50',
-        borderColor: 'border-purple-200',
-        focusColor: 'focus:border-purple-500 focus:ring-purple-200',
-        description: 'Calcul par tranches (comme l\'impôt)',
-        help: 'Utilisé pour les calculs complexes avec plusieurs niveaux'
-    },
+    // [ModeCalcul.BAREME]: {
+    //     label: 'Grille progressive',
+    //     icon: TrendingUp,
+    //     color: 'purple',
+    //     bgColor: 'from-purple-50 to-violet-50',
+    //     borderColor: 'border-purple-200',
+    //     focusColor: 'focus:border-purple-500 focus:ring-purple-200',
+    //     description: 'Calcul par tranches (comme l\'impôt)',
+    //     help: 'Utilisé pour les calculs complexes avec plusieurs niveaux'
+    // },
     [ModeCalcul.PAR_JOUR]: {
         label: 'Par jour',
         icon: CalendarDays,
@@ -155,17 +163,17 @@ export const modeCalculConfig: Record<ModeCalculType, {
         focusColor: 'focus:border-cyan-500 focus:ring-cyan-200',
         description: 'Tarif horaire multiplié par les heures travaillées',
         help: 'Utile pour les heures supplémentaires ou les contrats horaires.'
-    },
-    [ModeCalcul.FORMULE]: {
-        label: 'Formule personnalisée',
-        icon: Code,
-        color: 'pink',
-        bgColor: 'from-pink-50 to-rose-50',
-        borderColor: 'border-pink-200',
-        focusColor: 'focus:border-pink-500 focus:ring-pink-200',
-        description: 'Calcul défini via une formule',
-        help: 'Permet d\'entrer une équation spécifique pour des cas complexes.'
-    }
+    }//,
+    // [ModeCalcul.FORMULE]: {
+    //     label: 'Formule personnalisée',
+    //     icon: Code,
+    //     color: 'pink',
+    //     bgColor: 'from-pink-50 to-rose-50',
+    //     borderColor: 'border-pink-200',
+    //     focusColor: 'focus:border-pink-500 focus:ring-pink-200',
+    //     description: 'Calcul défini via une formule',
+    //     help: 'Permet d\'entrer une équation spécifique pour des cas complexes.'
+    // }
 };
 
 export const getTypeConfig = (type: TypeElementType) => typeConfig[type];

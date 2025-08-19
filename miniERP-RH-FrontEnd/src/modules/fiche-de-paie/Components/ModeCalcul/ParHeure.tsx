@@ -6,18 +6,14 @@ import { modeCalculConfig } from '../../config/ElementPaieConfig';
 import { ModeCalcul } from '../../types/ElementPaieTypes';
 
 interface ParHeureProps {
-    tarifHeure: string;
-    nbHeures: string;
-    onTarifHeureChange: (value: string) => void;
-    onNbHeuresChange: (value: string) => void;
+    taux: string;
+    onTauxChange: (value: string) => void;
     calculatePreview: number;
 }
 
 export const ParHeure: React.FC<ParHeureProps> = ({
-    tarifHeure,
-    nbHeures,
-    onTarifHeureChange,
-    onNbHeuresChange,
+    taux,
+    onTauxChange,
     calculatePreview
 }) => {
     const config = modeCalculConfig[ModeCalcul.PAR_HEURE];
@@ -32,36 +28,22 @@ export const ParHeure: React.FC<ParHeureProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="tarifHeure" className="text-sm font-medium text-gray-700">
+                        <Label htmlFor="taux" className="text-sm font-medium text-gray-700">
                             Tarif par heure (DH) *
                         </Label>
                         <Input
-                            id="tarifHeure"
+                            id="taux"
                             type="number"
                             step="0.01"
-                            value={tarifHeure}
-                            onChange={(e) => onTarifHeureChange(e.target.value)}
+                            value={taux}
+                            onChange={(e) => onTauxChange(e.target.value)}
                             placeholder="0.00"
-                            className={`h-12 border-2 ${config.borderColor} ${config.focusColor}`}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="nbHeures" className="text-sm font-medium text-gray-700">
-                            Nombre d'heures *
-                        </Label>
-                        <Input
-                            id="nbHeures"
-                            type="number"
-                            value={nbHeures}
-                            onChange={(e) => onNbHeuresChange(e.target.value)}
-                            placeholder="0"
                             className={`h-12 border-2 ${config.borderColor} ${config.focusColor}`}
                         />
                     </div>
                 </div>
 
-                {tarifHeure && nbHeures && (
+                {taux && (
                     <div className="bg-white p-4 rounded-lg border border-indigo-300 mt-4 animate-in fade-in-50 duration-300">
                         <div className="flex items-center gap-3">
                             <Calculator className="h-5 w-5 text-indigo-600" />
@@ -70,7 +52,7 @@ export const ParHeure: React.FC<ParHeureProps> = ({
                                     Résultat : {calculatePreview.toFixed(2)} DH
                                 </p>
                                 <p className="text-sm text-indigo-700">
-                                    {tarifHeure} DH × {nbHeures} heures
+                                    {taux} DH × nombre d'heures
                                 </p>
                             </div>
                         </div>

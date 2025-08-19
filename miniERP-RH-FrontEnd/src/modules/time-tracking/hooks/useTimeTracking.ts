@@ -291,12 +291,14 @@ export const useTimeTracking = () => {
     }, []);
 
     // Effet pour charger les pointages dès que empId est disponible
+    const [todayPointage, setTodayPointage] = useState<any>(null);
     useEffect(() => {
         if (empId) {
             const loadTodayPointages = async () => {
                 const today = new Date();
                 const todayString = formatLocalDate(today);
                 const pointageData = await getPointages('jour', todayString);
+                setTodayPointage(pointageData);
 
                 if (pointageData) {
                     const entries: TimeEntry[] = [];
@@ -344,12 +346,39 @@ export const useTimeTracking = () => {
 
                     setTodayEntries(entries);
 
-                    if (pointageData.heuresTravaillees) {
-                        const durationMatch = pointageData.heuresTravaillees.match(/PT(\d+(?:\.\d+)?)S/);
-                        if (durationMatch) {
-                            const seconds = parseFloat(durationMatch[1]);
-                            setTotalWorkedToday(seconds);
+                    // Calcul du temps de pause (en secondes)
+                    let pauseSeconds = 0;
+                    if (pointageData.pauseDebutee && pointageData.pauseTerminee) {
+                        const [h1, m1, s1] = pointageData.pauseDebutee.split(':').map(Number);
+                        const [h2, m2, s2] = pointageData.pauseTerminee.split(':').map(Number);
+                        const t1 = h1 * 3600 + m1 * 60 + (s1 || 0);
+                        const t2 = h2 * 3600 + m2 * 60 + (s2 || 0);
+                        pauseSeconds = t2 - t1 > 0 ? t2 - t1 : 0;
+                        setBreakTime(pauseSeconds);
+                    } else {
+                        setBreakTime(0);
+                    }
+
+                    // Calcul du temps total travaillé (en secondes)
+                    let totalSeconds = 0;
+                    if (pointageData.heureEntree && pointageData.heureSortie) {
+                        const [h1, m1, s1] = pointageData.heureEntree.split(':').map(Number);
+                        const [h2, m2, s2] = pointageData.heureSortie.split(':').map(Number);
+                        const t1 = h1 * 3600 + m1 * 60 + (s1 || 0);
+                        const t2 = h2 * 3600 + m2 * 60 + (s2 || 0);
+                        totalSeconds = t2 - t1 > 0 ? t2 - t1 : 0;
+                        setTotalWorkedToday(totalSeconds);
+                    } else if (pointageData.heuresTravaillees) {
+                        // Extraction plus robuste du format ISO 8601 duration
+                        const match = pointageData.heuresTravaillees.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                        if (match) {
+                            const hours = parseInt(match[1] || '0', 10);
+                            const minutes = parseInt(match[2] || '0', 10);
+                            const seconds = parseInt(match[3] || '0', 10);
+                            setTotalWorkedToday(hours * 3600 + minutes * 60 + seconds);
                         }
+                    } else {
+                        setTotalWorkedToday(0);
                     }
 
                     const hasEntree = pointageData.heureEntree;
@@ -396,7 +425,10 @@ export const useTimeTracking = () => {
         const loadWeekStats = async () => {
             if (empId) {
                 const today = new Date();
-                const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+                // Trouver le lundi de la semaine courante
+                const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay(); // 1=lundi, 7=dimanche
+                const monday = new Date(today);
+                monday.setDate(today.getDate() - dayOfWeek + 1);
                 const mondayStr = formatLocalDate(monday);
 
                 const weekPointages = await getPointages('semaine', mondayStr);
@@ -404,17 +436,52 @@ export const useTimeTracking = () => {
                 if (weekPointages && Array.isArray(weekPointages)) {
                     let totalSeconds = 0;
                     let arrivals: string[] = [];
+                    let lateArrivals = 0;
+                    let absences = 0;
+
+                    // Calculer le nombre de jours écoulés dans la semaine (lundi = 1)
+                    const todayDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
+                    const daysElapsed = todayDayOfWeek; // ex: lundi=1, mardi=2...
+
+                    // Pour chaque jour écoulé, vérifier s'il y a un pointage
+                    // weekPointages doit contenir les jours pointés, mais il peut manquer des jours (absences)
+                    // On suppose que chaque pointage a une propriété 'date' au format YYYY-MM-DD
+                    const pointagesByDate = new Map();
+                    weekPointages.forEach((p: any) => {
+                        if (p.date) pointagesByDate.set(p.date, p);
+                    });
+
+                    for (let i = 0; i < daysElapsed; i++) {
+                        const d = new Date(monday);
+                        d.setDate(monday.getDate() + i);
+                        const dateStr = formatLocalDate(d);
+                        const pointage = pointagesByDate.get(dateStr);
+                        if (!pointage || !pointage.heureEntree) absences++;
+                    }
 
                     weekPointages.forEach((pointage: any) => {
-                        if (pointage.heuresTravaillees) {
-                            const durationMatch = pointage.heuresTravaillees.match(/PT(\d+(?:\.\d+)?)S/);
-                            if (durationMatch) {
-                                totalSeconds += parseFloat(durationMatch[1]);
+                        // Total heures
+                        if (pointage.heureEntree && pointage.heureSortie) {
+                            const [h1, m1, s1] = pointage.heureEntree.split(':').map(Number);
+                            const [h2, m2, s2] = pointage.heureSortie.split(':').map(Number);
+                            const t1 = h1 * 3600 + m1 * 60 + (s1 || 0);
+                            const t2 = h2 * 3600 + m2 * 60 + (s2 || 0);
+                            totalSeconds += t2 - t1 > 0 ? t2 - t1 : 0;
+                        } else if (pointage.heuresTravaillees) {
+                            // Fallback si pas d'heure sortie/entrée
+                            const match = pointage.heuresTravaillees.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                            if (match) {
+                                const hours = parseInt(match[1] || '0', 10);
+                                const minutes = parseInt(match[2] || '0', 10);
+                                const seconds = parseInt(match[3] || '0', 10);
+                                totalSeconds += hours * 3600 + minutes * 60 + seconds;
                             }
                         }
 
+                        // Arrivée
                         if (pointage.heureEntree) {
                             arrivals.push(pointage.heureEntree);
+                            if (pointage.heureEntree > '09:00:00') lateArrivals++;
                         }
                     });
 
@@ -436,8 +503,8 @@ export const useTimeTracking = () => {
                         totalHours,
                         averageArrival,
                         overtimeHours: Math.max(0, totalHours - 40),
-                        absences: Math.max(0, 5 - weekPointages.length),
-                        lateArrivals: arrivals.filter(time => time > '09:00:00').length
+                        absences,
+                        lateArrivals
                     });
                 }
             }
@@ -474,6 +541,7 @@ export const useTimeTracking = () => {
         totalWorkedTime,
         totalBreakTime,
         effectiveWorkTime,
+        todayPointage, // <-- expose le pointage brut du jour
 
         // Fonctions
         formatTime,

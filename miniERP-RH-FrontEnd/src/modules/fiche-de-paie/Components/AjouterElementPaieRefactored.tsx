@@ -1,14 +1,8 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-// Hook personnalisé
 import { useElementPaieForm } from '../hooks/useElementPaieForm';
-
-// Types
 import { ModeCalcul } from '../types/ElementPaieTypes';
-
-// Composants
 import { FormHeader } from './FormHeader';
 import { ProgressIndicator } from './ProgressIndicator';
 import { ValidationErrors } from './ValidationErrors';
@@ -19,26 +13,26 @@ import { Description } from './Description';
 import { ActionButtons } from './ActionButtons';
 import { SummaryPanel } from './SummaryPanel';
 import { HelpGuide } from './HelpGuide';
-
-// Composants de mode de calcul
 import { MontantFixe } from './ModeCalcul/MontantFixe';
 import { Pourcentage } from './ModeCalcul/Pourcentage';
 import { ParJour } from './ModeCalcul/ParJour';
 import { ParHeure } from './ModeCalcul/ParHeure';
-import { Formule } from './ModeCalcul/Formule';
-import { Bareme } from './ModeCalcul/Bareme';
+// import { Formule } from './ModeCalcul/Formule';
+// import { Bareme } from './ModeCalcul/Bareme';
 
 interface ElementPaieFormProps {
     isModal?: boolean;
     onSubmitSuccess?: (data: any) => void;
     onCancel?: () => void;
     className?: string;
+    employeId: number;
 }
 
 const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
     isModal = false,
     onSubmitSuccess,
     onCancel,
+    employeId,
     className = ""
 }) => {
     const {
@@ -56,21 +50,33 @@ const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
         steps
     } = useElementPaieForm();
 
-    // Gestion du submit avec callback personnalisé pour le modal
     const handleSubmit = async () => {
-        const success = await originalHandleSubmit();
-        if (success) {
-            if (onSubmitSuccess) {
-                onSubmitSuccess(formData);
+        try {
+            const response = await fetch(`http://localhost:8080/api/fiche-paie/ajouter-element-paie?employeId=${employeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (onSubmitSuccess) {
+                    onSubmitSuccess(data);
+                    console.log('✅ Élément de paie enregistré avec succès !', data);
+                } else {
+                    alert('✅ Élément de paie enregistré avec succès !');
+                }
             } else {
-                alert('✅ Élément de paie enregistré avec succès !');
+                alert('❌ Erreur lors de l\'enregistrement');
             }
-        } else {
+        } catch (error) {
             alert('❌ Erreur lors de l\'enregistrement');
+            console.error(error);
         }
     };
 
-    // Gestion de l'annulation pour le modal
     const handleCancel = () => {
         if (onCancel) {
             onCancel();
@@ -79,7 +85,6 @@ const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
         }
     };
 
-    // Container principal adaptatif (page complète ou modal)
     const containerClass = isModal
         ? `w-full ${className}`
         : `min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-4 ${className}`;
@@ -88,7 +93,6 @@ const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
         ? "w-full"
         : "max-w-6xl mx-auto";
 
-    // Layout adaptatif (single column pour modal, grid pour page)
     const layoutClass = isModal
         ? "space-y-6"
         : "grid grid-cols-1 lg:grid-cols-3 gap-6";
@@ -112,42 +116,38 @@ const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
                         calculatePreview={calculatePreview}
                     />
                 );
-            case ModeCalcul.BAREME:
-                return (
-                    <Bareme
-                        tauxBase={formData.tauxBase || ''}
-                        seuilMin={formData.seuilMin || ''}
-                        onTauxBaseChange={(value) => handleInputChange('tauxBase', value)}
-                        onSeuilMinChange={(value) => handleInputChange('seuilMin', value)}
-                    />
-                );
+            // case ModeCalcul.BAREME:
+            //     return (
+            //         <Bareme
+            //             tauxBase={formData.tauxBase || ''}
+            //             seuilMin={formData.seuilMin || ''}
+            //             onTauxBaseChange={(value) => handleInputChange('tauxBase', value)}
+            //             onSeuilMinChange={(value) => handleInputChange('seuilMin', value)}
+            //         />
+            //     );
             case ModeCalcul.PAR_JOUR:
                 return (
                     <ParJour
-                        tarifJour={formData.tarifJour || ''}
-                        nbJours={formData.nbJours || ''}
-                        onTarifJourChange={(value) => handleInputChange('tarifJour', value)}
-                        onNbJoursChange={(value) => handleInputChange('nbJours', value)}
+                        taux={formData.taux || ''}
+                        onTauxChange={(value) => handleInputChange('taux', value)}
                         calculatePreview={calculatePreview}
                     />
                 );
             case ModeCalcul.PAR_HEURE:
                 return (
                     <ParHeure
-                        tarifHeure={formData.tarifHeure || ''}
-                        nbHeures={formData.nbHeures || ''}
-                        onTarifHeureChange={(value) => handleInputChange('tarifHeure', value)}
-                        onNbHeuresChange={(value) => handleInputChange('nbHeures', value)}
+                        taux={formData.taux || ''}
+                        onTauxChange={(value) => handleInputChange('taux', value)}
                         calculatePreview={calculatePreview}
                     />
                 );
-            case ModeCalcul.FORMULE:
-                return (
-                    <Formule
-                        formule={formData.formule || ''}
-                        onFormuleChange={(value) => handleInputChange('formule', value)}
-                    />
-                );
+            // case ModeCalcul.FORMULE:
+            //     return (
+            //         <Formule
+            //             formule={formData.formule || ''}
+            //             onFormuleChange={(value) => handleInputChange('formule', value)}
+            //         />
+            //     );
             default:
                 return null;
         }

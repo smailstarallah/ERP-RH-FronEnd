@@ -42,7 +42,7 @@ export const CurrentStatus: React.FC<CurrentStatusProps> = ({
                     </div>
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
                         <div className="text-2xl font-bold text-orange-800">
-                            {formatTime(totalBreakTime)}
+                            {isWorking ? formatTime(totalBreakTime) : '00:00:00'}
                         </div>
                         <div className="text-sm text-orange-600 mt-1">Temps de pause</div>
                     </div>

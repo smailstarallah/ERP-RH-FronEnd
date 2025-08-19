@@ -11,14 +11,14 @@ const initialFormData: ElementPaie = {
     taux: '',
     base: '',
     description: '',
-    formule: '',
-    periodicite: '',
-    nbHeures: '',
-    nbJours: '',
-    tarifHeure: '',
-    tarifJour: '',
-    tauxBase: '',
-    seuilMin: ''
+    // formule: '',
+    // periodicite: '',
+    // nbHeures: '',
+    // nbJours: '',
+    // tarifHeure: '',
+    // tarifJour: '',
+    // tauxBase: '',
+    // seuilMin: ''
 };
 
 export const useElementPaieForm = () => {
@@ -67,24 +67,22 @@ export const useElementPaieForm = () => {
             if (!formData.base) errors.push('Veuillez saisir la base de calcul');
         }
 
-        if (formData.modeCalcul === ModeCalcul.BAREME) {
-            if (!formData.tauxBase) errors.push('Veuillez saisir le taux de base');
-            if (!formData.seuilMin) errors.push('Veuillez saisir le seuil minimum');
-        }
+        // if (formData.modeCalcul === ModeCalcul.BAREME) {
+        //     if (!formData.tauxBase) errors.push('Veuillez saisir le taux de base');
+        //     if (!formData.seuilMin) errors.push('Veuillez saisir le seuil minimum');
+        // }
 
         if (formData.modeCalcul === ModeCalcul.PAR_JOUR) {
-            if (!formData.tarifJour) errors.push('Veuillez saisir le tarif par jour');
-            if (!formData.nbJours) errors.push('Veuillez saisir le nombre de jours');
+            if (!formData.taux) errors.push('Veuillez saisir le tarif par jour');
         }
 
         if (formData.modeCalcul === ModeCalcul.PAR_HEURE) {
-            if (!formData.tarifHeure) errors.push('Veuillez saisir le tarif par heure');
-            if (!formData.nbHeures) errors.push('Veuillez saisir le nombre d\'heures');
+            if (!formData.taux) errors.push('Veuillez saisir le tarif par heure');
         }
 
-        if (formData.modeCalcul === ModeCalcul.FORMULE && !formData.formule) {
-            errors.push('Veuillez saisir la formule de calcul');
-        }
+        // if (formData.modeCalcul === ModeCalcul.FORMULE && !formData.formule) {
+        //     errors.push('Veuillez saisir la formule de calcul');
+        // }
 
         setValidationErrors(errors);
         return errors.length === 0;
@@ -115,7 +113,7 @@ export const useElementPaieForm = () => {
     }, []);
 
     const calculatePreview = useCallback((): number => {
-        const { modeCalcul, montant, taux, base, tarifJour, nbJours, tarifHeure, nbHeures } = formData;
+        const { modeCalcul, montant, taux, base } = formData;
 
         switch (modeCalcul) {
             case ModeCalcul.MONTANT:
@@ -125,29 +123,29 @@ export const useElementPaieForm = () => {
                     return ((parseFloat(base) || 0) * (parseFloat(taux) || 0)) / 100;
                 }
                 return 0;
-            case ModeCalcul.BAREME:
-                // Calcul simple de démonstration pour le barème
-                if (formData.tauxBase && formData.seuilMin) {
-                    const seuilMinValue = parseFloat(formData.seuilMin) || 0;
-                    const tauxBaseValue = parseFloat(formData.tauxBase) || 0;
-                    // Exemple: si on a une base de calcul, appliquer le barème
-                    if (formData.base) {
-                        const baseValue = parseFloat(formData.base) || 0;
-                        if (baseValue > seuilMinValue) {
-                            return ((baseValue - seuilMinValue) * tauxBaseValue) / 100;
-                        }
-                    }
-                    return seuilMinValue * (tauxBaseValue / 100);
-                }
-                return 0;
+            // case ModeCalcul.BAREME:
+            //     // Calcul simple de démonstration pour le barème
+            //     if (formData.tauxBase && formData.seuilMin) {
+            //         const seuilMinValue = parseFloat(formData.seuilMin) || 0;
+            //         const tauxBaseValue = parseFloat(formData.tauxBase) || 0;
+            //         // Exemple: si on a une base de calcul, appliquer le barème
+            //         if (formData.base) {
+            //             const baseValue = parseFloat(formData.base) || 0;
+            //             if (baseValue > seuilMinValue) {
+            //                 return ((baseValue - seuilMinValue) * tauxBaseValue) / 100;
+            //             }
+            //         }
+            //         return seuilMinValue * (tauxBaseValue / 100);
+            //     }
+            //     return 0;
             case ModeCalcul.PAR_JOUR:
-                if (tarifJour && nbJours) {
-                    return (parseFloat(tarifJour) || 0) * (parseFloat(nbJours) || 0);
+                if (taux) {
+                    return (parseFloat(taux) || 0);
                 }
                 return 0;
             case ModeCalcul.PAR_HEURE:
-                if (tarifHeure && nbHeures) {
-                    return (parseFloat(tarifHeure) || 0) * (parseFloat(nbHeures) || 0);
+                if (taux) {
+                    return (parseFloat(taux) || 0);
                 }
                 return 0;
             default:
@@ -156,7 +154,7 @@ export const useElementPaieForm = () => {
     }, [formData]);
 
     const isFormValid = useCallback(() => {
-        const { type, libelle, modeCalcul, montant, taux, base, tarifJour, nbJours, tarifHeure, nbHeures, formule } = formData;
+        const { type, libelle, modeCalcul, montant, taux, base } = formData;
 
         if (!type || !libelle || !modeCalcul) return false;
 
@@ -165,14 +163,14 @@ export const useElementPaieForm = () => {
                 return !!montant;
             case ModeCalcul.TAUX:
                 return !!(taux && base);
-            case ModeCalcul.BAREME:
-                return !!(formData.tauxBase && formData.seuilMin);
+            // case ModeCalcul.BAREME:
+            //     return !!(formData.tauxBase && formData.seuilMin);
             case ModeCalcul.PAR_JOUR:
-                return !!(tarifJour && nbJours);
+                return !!(taux);
             case ModeCalcul.PAR_HEURE:
-                return !!(tarifHeure && nbHeures);
-            case ModeCalcul.FORMULE:
-                return !!formule;
+                return !!(taux);
+            // case ModeCalcul.FORMULE:
+            //     return !!formule;
             default:
                 return true;
         }

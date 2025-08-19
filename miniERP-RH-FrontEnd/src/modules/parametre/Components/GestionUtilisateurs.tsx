@@ -529,7 +529,8 @@ const formSchema = z.object({
     preNom: z.string().min(1, 'Prénom requis'),
     email: z.string().email('Email invalide').min(1, 'Email requis'),
     telephone: z.string().min(1, 'Téléphone requis'),
-    dateNaissance: z.date({ required_error: 'Date de naissance requise' }),
+    password: z.string().min(6, 'Mot de passe requis (6 caractères minimum)'),
+    dateNaissance: z.date('Date de naissance requise'),
     poste: z.string().min(1, 'Poste requis'),
     departement: z.string().min(1, 'Département requis'),
     adresse: z.string().default(''),
@@ -540,7 +541,6 @@ const formSchema = z.object({
     userType: z.string().default('employe'),
 });
 
-type FormData = z.infer<typeof formSchema>;
 
 interface RegisterRequest {
     nom: string;
@@ -559,7 +559,7 @@ interface RegisterRequest {
 }
 
 interface User {
-    id?: string;
+    id: number;
     nom: string;
     preNom: string;
     email: string;
@@ -596,6 +596,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             preNom: '',
             email: '',
             telephone: '',
+            password: '',
             dateNaissance: undefined as Date | undefined,
             poste: '',
             departement: '',
@@ -610,8 +611,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     const departments = ['IT', 'RH', 'Finance', 'Marketing', 'Production', 'Qualité', 'Logistique', 'Commercial'];
     const userTypes = [
-        { value: 'employe', label: 'Employé' },
-        { value: 'manager', label: 'Manager' },
+        { value: 'EMPLOYE', label: 'Employé' },
+        { value: 'MANAGER', label: 'Manager' },
         { value: 'admin', label: 'Administrateur' },
         { value: 'rh', label: 'RH' },
     ];
@@ -621,7 +622,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         setIsLoading(true);
 
         try {
-            const requestData: RegisterRequest = {
+            const requestData: RegisterRequest & { password: string } = {
                 ...data,
                 adresse: data.adresse || undefined,
                 cin: data.cin || undefined,
@@ -629,9 +630,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 dateEmbauche: data.dateEmbauche ? data.dateEmbauche.toISOString() : undefined,
                 salaireBase: data.salaireBase || undefined,
                 tauxHoraire: data.tauxHoraire || undefined,
+                password: data.password,
             };
 
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch('http://localhost:8080/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -667,32 +669,32 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-full max-w-5xl h-[95vh] p-0 gap-0 overflow-hidden">
-                {/* Header */}
-                <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-blue-800 text-white flex-shrink-0">
-                    <DialogTitle className="flex items-center gap-2 text-lg">
-                        <UserPlus className="w-5 h-5" />
-                        Nouvel Employé
-                    </DialogTitle>
-                </DialogHeader>
+            <DialogContent className="w-full max-w-5xl h-[95vh] p-0 gap-0 overflow-hidden bg-blue-50 border border-gray-200 rounded-2xl shadow-2xl">
+                {/* Header institutionnel */}
+                <div className="px-8 py-3 bg-white border-b border-gray-100 flex items-center gap-4 rounded-t-2xl">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 border border-blue-100">
+                        <UserPlus className="w-7 h-7 text-blue-800" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-blue-900 tracking-tight uppercase">Nouvel Employé</h2>
+                </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto bg-blue-50 px-8 py-4">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSubmit)} className="p-6 space-y-6" id="add-user-form">
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" id="add-user-form">
                             {/* Error Message */}
                             {apiError && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 shadow-sm">
                                     <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm text-red-700">{apiError}</span>
                                 </div>
                             )}
 
                             {/* Informations personnelles */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 -mx-2 px-2 py-2 rounded">
-                                    <User className="w-4 h-4 text-blue-600" />
-                                    <h3 className="font-semibold text-blue-800">Informations personnelles</h3>
+                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
+                                    <User className="w-5 h-5 text-blue-700" />
+                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Informations personnelles</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -787,13 +789,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
                             {/* Contact */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 -mx-2 px-2 py-2 rounded">
-                                    <Mail className="w-4 h-4 text-blue-600" />
-                                    <h3 className="font-semibold text-blue-800">Contact</h3>
+                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
+                                    <Mail className="w-5 h-5 text-blue-700" />
+                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Contact</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -808,6 +810,25 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                                         type="email"
                                                         className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                                                         placeholder="exemple@entreprise.com"
+                                                        aria-required="true"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem className="md:col-span-2">
+                                                <FormLabel className="text-sm text-slate-700 font-medium">Mot de passe *</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        {...field}
+                                                        type="password"
+                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                        placeholder="Mot de passe (min. 6 caractères)"
                                                         aria-required="true"
                                                     />
                                                 </FormControl>
@@ -853,13 +874,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
                             {/* Professionnel */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 -mx-2 px-2 py-2 rounded">
-                                    <IdCard className="w-4 h-4 text-blue-600" />
-                                    <h3 className="font-semibold text-blue-800">Informations professionnelles</h3>
+                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
+                                    <IdCard className="w-5 h-5 text-blue-700" />
+                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Informations professionnelles</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -968,13 +989,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
                             {/* Rémunération */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 -mx-2 px-2 py-2 rounded">
-                                    <DollarSign className="w-4 h-4 text-blue-600" />
-                                    <h3 className="font-semibold text-blue-800">Rémunération (optionnel)</h3>
+                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
+                                    <DollarSign className="w-5 h-5 text-blue-700" />
+                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Rémunération (optionnel)</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -1022,19 +1043,19 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
                             {/* Récapitulatif */}
                             {(form.getValues('nom') || form.getValues('email') || form.getValues('poste')) && (
-                                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+                                <section className="bg-blue-100 rounded-xl p-5 shadow">
                                     <div className="flex items-center gap-2 mb-3">
-                                        <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                                        <h4 className="font-semibold text-blue-800">Récapitulatif</h4>
+                                        <CheckCircle2 className="w-5 h-5 text-blue-700" />
+                                        <h4 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Récapitulatif</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                                         {form.getValues('nom') && form.getValues('preNom') && (
                                             <div>
-                                                <span className="text-blue-700 font-medium">Nom:</span>{' '}
+                                                <span className="text-blue-900 font-medium">Nom:</span>{' '}
                                                 <span className="text-slate-700">
                                                     {form.getValues('preNom')} {form.getValues('nom')}
                                                 </span>
@@ -1042,37 +1063,37 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         )}
                                         {form.getValues('email') && (
                                             <div>
-                                                <span className="text-blue-700 font-medium">Email:</span>{' '}
+                                                <span className="text-blue-900 font-medium">Email:</span>{' '}
                                                 <span className="text-slate-700">{form.getValues('email')}</span>
                                             </div>
                                         )}
                                         {form.getValues('poste') && (
                                             <div>
-                                                <span className="text-blue-700 font-medium">Poste:</span>{' '}
+                                                <span className="text-blue-900 font-medium">Poste:</span>{' '}
                                                 <span className="text-slate-700">{form.getValues('poste')}</span>
                                             </div>
                                         )}
                                         {form.getValues('departement') && (
                                             <div>
-                                                <span className="text-blue-700 font-medium">Département:</span>{' '}
+                                                <span className="text-blue-900 font-medium">Département:</span>{' '}
                                                 <span className="text-slate-700">{form.getValues('departement')}</span>
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                </section>
                             )}
                         </form>
                     </Form>
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t bg-gradient-to-r from-blue-50 to-blue-100 flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:justify-end">
+                <div className="px-8 py-3 border-t border-gray-100 bg-white flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:justify-end rounded-b-2xl">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="h-10 border-blue-300 text-blue-700 hover:bg-blue-50 transition-colors"
+                        className="h-11 border border-blue-200 text-blue-800 bg-white hover:bg-blue-50 rounded-lg font-semibold shadow-sm"
                     >
                         Annuler
                     </Button>
@@ -1080,7 +1101,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                         type="submit"
                         form="add-user-form"
                         disabled={isLoading}
-                        className="h-10 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white min-w-[130px] transition-colors"
+                        className="h-11 bg-blue-800 hover:bg-blue-900 text-white min-w-[140px] rounded-lg font-semibold shadow-md"
                     >
                         {isLoading ? (
                             <>
@@ -1178,6 +1199,7 @@ const useUserManagement = () => {
 
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('Erreur lors de la récupération des employés:', errorText);
                 throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
             }
 

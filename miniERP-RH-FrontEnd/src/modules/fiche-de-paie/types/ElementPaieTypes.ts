@@ -8,6 +8,7 @@ export const TypeElement = {
     DEDUCTION_ABSENCE: 'DEDUCTION_ABSENCE',
     DEDUCTION_AUTRE: 'DEDUCTION_AUTRE',
     COTISATION_SOCIALE: 'COTISATION_SOCIALE',
+    INDEMNITE: 'INDEMNITE',
     IMPOT: 'IMPOT',
     AUTRE: 'AUTRE'
 } as const;
@@ -17,10 +18,10 @@ export type TypeElementType = typeof TypeElement[keyof typeof TypeElement];
 export const ModeCalcul = {
     TAUX: 'TAUX',
     MONTANT: 'MONTANT',
-    BAREME: 'BAREME',
+    // BAREME: 'BAREME',
     PAR_JOUR: 'PAR_JOUR',
-    PAR_HEURE: 'PAR_HEURE',
-    FORMULE: 'FORMULE'
+    PAR_HEURE: 'PAR_HEURE'
+    // FORMULE: 'FORMULE'
 } as const;
 
 export type ModeCalculType = typeof ModeCalcul[keyof typeof ModeCalcul];
@@ -35,14 +36,14 @@ export interface ElementPaie {
     taux: string;
     base: string;
     description: string;
-    formule?: string;
-    periodicite?: string;
-    nbHeures?: string;
-    nbJours?: string;
-    tarifHeure?: string;
-    tarifJour?: string;
-    tauxBase?: string;
-    seuilMin?: string;
+    // formule?: string;
+    // periodicite?: string;
+    // nbHeures?: string;
+    // nbJours?: string;
+    // tarifHeure?: string;
+    // tarifJour?: string;
+    // tauxBase?: string;
+    // seuilMin?: string;
 }
 
 export interface StepConfig {

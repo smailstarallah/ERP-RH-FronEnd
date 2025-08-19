@@ -5,13 +5,15 @@ interface DaySummaryProps {
     totalBreakTime: number;
     effectiveWorkTime: number;
     formatTimeShort: (seconds: number) => string;
+    todayPointage?: any;
 }
 
 export const DaySummary: React.FC<DaySummaryProps> = ({
     totalWorkedTime,
     totalBreakTime,
     effectiveWorkTime,
-    formatTimeShort
+    formatTimeShort,
+    todayPointage
 }) => {
     return (
         <Card>
@@ -19,7 +21,7 @@ export const DaySummary: React.FC<DaySummaryProps> = ({
                 <CardTitle className="text-lg">Aujourd'hui</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex justify-between">
+                <div className="flex justify-between mt-4">
                     <span className="text-slate-600">Temps total</span>
                     <span className="font-semibold">
                         {formatTimeShort(totalWorkedTime)}
