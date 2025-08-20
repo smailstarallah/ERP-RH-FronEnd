@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
     Users, Building2, Loader2, AlertCircle, Calendar, Phone, Mail,
-    Eye, Badge, RefreshCw, Search, Filter, ChevronDown, MapPin, Clock
+    Eye, Badge, RefreshCw, Search, Filter, ChevronDown, MapPin, Clock,
+    MoreVertical,
+    Calculator
 } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+
+
 import {
     Card,
     CardContent,
@@ -349,7 +360,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4 mr-1" />
+                        <Calculator className="w-4 h-4" />
                         Ajouter un élément de paie
                     </Button>
                 </DialogTrigger>
@@ -531,76 +542,104 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                             <p className="text-sm text-muted-foreground">Essayez de modifier vos filtres de recherche</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                             {filteredEmployees.map((employee) => (
-                                <div key={employee.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-3 sm:space-y-0">
-                                    {/* Section principale avec avatar et info */}
-                                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1">
-                                        <SimpleAvatar className="flex-shrink-0">
-                                            {getInitials(employee.nom, employee.preNom)}
-                                        </SimpleAvatar>
+                                <div key={employee.id} className="py-3 sm:py-4 hover:bg-muted/30 px-2 sm:px-0 transition-colors">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                            <SimpleAvatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                                                {getInitials(employee.nom, employee.preNom)}
+                                            </SimpleAvatar>
 
-                                        <div className="space-y-2 min-w-0 flex-1">
-                                            {/* Nom et statut */}
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <h3 className="font-semibold text-sm sm:text-base truncate">
-                                                    {employee.nom} {employee.preNom}
-                                                </h3>
-                                                <BadgeComponent
-                                                    variant={employee.active ? "default" : "destructive"}
-                                                    className="text-xs flex-shrink-0"
-                                                >
-                                                    {employee.active ? 'Actif' : 'Inactif'}
-                                                </BadgeComponent>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center space-x-2 mb-1">
+                                                    <h3 className="text-sm sm:text-base font-medium truncate">
+                                                        {employee.nom} {employee.preNom}
+                                                    </h3>
+                                                    <BadgeComponent
+                                                        variant={employee.active ? "default" : "destructive"}
+                                                        className="text-xs flex-shrink-0"
+                                                    >
+                                                        {employee.active ? 'Actif' : 'Inactif'}
+                                                    </BadgeComponent>
+                                                </div>
+
+                                                {/* Informations compactes */}
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+                                                    <span className="flex items-center space-x-1">
+                                                        <Badge className="w-3 h-3" />
+                                                        <span>{employee.numeroEmploye}</span>
+                                                    </span>
+                                                    <span className="flex items-center space-x-1">
+                                                        <Building2 className="w-3 h-3" />
+                                                        <span className="truncate max-w-[120px] sm:max-w-none">{employee.departement}</span>
+                                                    </span>
+                                                    <span className="hidden sm:inline">{employee.poste}</span>
+                                                    <span className="hidden md:flex items-center space-x-1">
+                                                        <Mail className="w-3 h-3" />
+                                                        <span className="truncate max-w-[150px] lg:max-w-none">{employee.email}</span>
+                                                    </span>
+                                                    <span className="hidden lg:flex items-center space-x-1">
+                                                        <Phone className="w-3 h-3" />
+                                                        <span>{employee.telephone}</span>
+                                                    </span>
+                                                </div>
+
+                                                {/* Poste visible sur mobile uniquement */}
+                                                <div className="sm:hidden mt-1">
+                                                    <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded inline-block">
+                                                        {employee.poste}
+                                                    </span>
+                                                </div>
                                             </div>
+                                        </div>
 
-                                            {/* Informations organisationnelles */}
-                                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                                                <span className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded">
-                                                    <Badge className="w-3 h-3" />
-                                                    <span className="truncate max-w-[80px] sm:max-w-none">{employee.numeroEmploye}</span>
-                                                </span>
-                                                <span className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded">
-                                                    <Building2 className="w-3 h-3" />
-                                                    <span className="truncate max-w-[100px] sm:max-w-none">{employee.departement}</span>
-                                                </span>
-                                                <span className="hidden sm:inline-block bg-muted/50 px-2 py-1 rounded truncate">
-                                                    {employee.poste}
-                                                </span>
-                                            </div>
-
-                                            {/* Poste pour mobile */}
+                                        {/* Actions - Dropdown sur mobile, boutons sur desktop */}
+                                        <div className="flex items-center ml-2 sm:ml-4">
+                                            {/* Version mobile avec dropdown */}
                                             <div className="sm:hidden">
-                                                <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded inline-block">
-                                                    {employee.poste}
-                                                </span>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48">
+                                                        <DropdownMenuItem className="flex items-center space-x-2">
+                                                            <EmployeeDetailModal employee={employee} />
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="flex items-center space-x-2">
+                                                            <ElementPaieFormtest employeId={employee.id} />
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-xs text-muted-foreground">
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center space-x-1">
+                                                                    <Mail className="w-3 h-3" />
+                                                                    <span className="truncate">{employee.email}</span>
+                                                                </div>
+                                                                <div className="flex items-center space-x-1">
+                                                                    <Phone className="w-3 h-3" />
+                                                                    <span>{employee.telephone}</span>
+                                                                </div>
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
 
-                                            {/* Informations de contact - cachées sur très petit écran */}
-                                            <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
-                                                <span className="flex items-center gap-1 truncate">
-                                                    <Mail className="w-3 h-3 flex-shrink-0" />
-                                                    <span className="truncate max-w-[150px] lg:max-w-none">{employee.email}</span>
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Phone className="w-3 h-3 flex-shrink-0" />
-                                                    <span className="whitespace-nowrap">{employee.telephone}</span>
-                                                </span>
+                                            {/* Version desktop avec boutons séparés */}
+                                            <div className="hidden sm:flex items-center space-x-1">
+                                                <EmployeeDetailModal employee={employee} />
+                                                <ElementPaieFormtest employeId={employee.id} />
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Bouton d'action */}
-                                    <div className="flex justify-end sm:justify-start sm:ml-4">
-                                        <EmployeeDetailModal employee={employee} />
-                                    </div>
-                                    <div className="flex justify-end sm:justify-start sm:ml-4">
-                                        <ElementPaieFormtest employeId={employee.id} />
-                                    </div>
-
                                 </div>
                             ))}
                         </div>
+
+
                     )}
                 </CardContent>
             </Card>

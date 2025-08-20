@@ -2,26 +2,29 @@ import { useState, useCallback, useEffect } from 'react';
 import { ModeCalcul } from '../types/ElementPaieTypes';
 import type { ElementPaie } from '../types/ElementPaieTypes';
 
-const initialFormData: ElementPaie = {
-    type: '',
-    sousType: '',
-    libelle: '',
-    montant: '',
-    modeCalcul: '',
-    taux: '',
-    base: '',
-    description: '',
-    // formule: '',
-    // periodicite: '',
-    // nbHeures: '',
-    // nbJours: '',
-    // tarifHeure: '',
-    // tarifJour: '',
-    // tauxBase: '',
-    // seuilMin: ''
-};
 
 export const useElementPaieForm = () => {
+    const initialFormData: ElementPaie = {
+        type: '',
+        sousType: '',
+        libelle: '',
+        montant: '',
+        modeCalcul: '',
+        taux: '',
+        base: '',
+        description: '',
+        soumisIR: true,
+        soumisCNSS: true,
+        // formule: '',
+        // periodicite: '',
+        // nbHeures: '',
+        // nbJours: '',
+        // tarifHeure: '',
+        // tarifJour: '',
+        // tauxBase: '',
+        // seuilMin: ''
+    };
+
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<ElementPaie>(initialFormData);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,11 +44,29 @@ export const useElementPaieForm = () => {
         }
     }, [formData.type, formData.libelle, formData.modeCalcul]);
 
-    const handleInputChange = useCallback((field: keyof ElementPaie, value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: value
-        }));
+    const handleInputChange = useCallback((field: keyof ElementPaie, value: string | boolean) => {
+        setFormData(prev => {
+            if (field === 'soumisIR' || field === 'soumisCNSS') {
+                let boolValue: boolean;
+                if (typeof value === 'boolean') {
+                    boolValue = value;
+                } else if (value === 'true') {
+                    boolValue = true;
+                } else if (value === 'false') {
+                    boolValue = false;
+                } else {
+                    boolValue = Boolean(value);
+                }
+                return {
+                    ...prev,
+                    [field]: boolValue
+                };
+            }
+            return {
+                ...prev,
+                [field]: value
+            };
+        });
         if (validationErrors.length > 0) {
             setValidationErrors([]);
         }

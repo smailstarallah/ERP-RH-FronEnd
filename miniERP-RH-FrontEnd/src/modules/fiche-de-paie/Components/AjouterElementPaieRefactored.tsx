@@ -191,6 +191,10 @@ const ElementPaieForm: React.FC<ElementPaieFormProps> = ({
                                         <GeneralInfo
                                             libelle={formData.libelle}
                                             sousType={formData.sousType}
+                                            soumisIR={formData.soumisIR}
+                                            soumisCNSS={formData.soumisCNSS}
+                                            onSousIRChange={(value) => handleInputChange('soumisIR', value)}
+                                            onSousCNSSChange={(value) => handleInputChange('soumisCNSS', value)}
                                             onLibelleChange={(value) => handleInputChange('libelle', value)}
                                             onSousTypeChange={(value) => handleInputChange('sousType', value)}
                                         />

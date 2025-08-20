@@ -36,6 +36,8 @@ export interface ElementPaie {
     taux: string;
     base: string;
     description: string;
+    soumisIR: boolean;
+    soumisCNSS: boolean;
     // formule?: string;
     // periodicite?: string;
     // nbHeures?: string;

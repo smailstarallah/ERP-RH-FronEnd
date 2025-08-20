@@ -4,6 +4,12 @@ import logo from "@/assets/images/logo.png"
 
 
 export default function LoginPage() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        // Redirection vers la page d'accueil si l'utilisateur est déjà connecté
+        window.location.href = '/';
+    }
+
     return (
         <div className="grid min-h-screen lg:grid-cols-2">
             {/* Section formulaire */}
