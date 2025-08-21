@@ -44,6 +44,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import ElementPaieForm from './AjouterElementPaieRefactored';
+import ElementPaieManager from './ElementPaieManager';
 // Avatar remplacé par un composant simple
 
 // Interfaces TypeScript
@@ -157,8 +158,8 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         }
     };
 
-    const getInitials = (nom: string, prenom: string): string => {
-        return `${nom.charAt(0)}${prenom.charAt(0)}`.toUpperCase();
+    const getInitials = (nom: string, preNom: string): string => {
+        return `${nom?.charAt(0) || ''}${preNom?.charAt(0) || ''}`.toUpperCase();
     };
 
     // Composant Avatar simple sans dépendance externe
@@ -199,14 +200,9 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         return { total, active, inactive: total - active };
     };
 
-    const EmployeeDetailModal = ({ employee }: { employee: Employe & { departement: string } }) => (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-1" />
-                    Détails
-                </Button>
-            </DialogTrigger>
+    // Typage des props pour EmployeeDetailModal
+    const EmployeeDetailModal = ({ employee, open, onOpenChange }: { employee: any, open: boolean, onOpenChange: (open: boolean) => void }) => (
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
@@ -342,28 +338,16 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         </Dialog>
     );
 
-    const ElementPaieFormtest = (
-        { employeId }: { employeId: number }
-    ) => {
-        const [isOpen, setIsOpen] = useState(false);
-
+    // Typage des props pour ElementPaieFormtest
+    const ElementPaieFormtest = ({ employeId, open, onOpenChange }: { employeId: number, open: boolean, onOpenChange: (open: boolean) => void }) => {
         const handleSubmitSuccess = (data: any) => {
-            console.log('Élément de paie créé avec succès:', data);
-            setIsOpen(false);
+            onOpenChange(false);
         };
-
         const handleCancel = () => {
-            setIsOpen(false);
+            onOpenChange(false);
         };
-
         return (
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                        <Calculator className="w-4 h-4" />
-                        Ajouter un élément de paie
-                    </Button>
-                </DialogTrigger>
+            <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
                     <DialogHeader className="p-6 pb-0">
                         <DialogTitle>Ajouter un élément de paie</DialogTitle>
@@ -381,6 +365,72 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                     </div>
                 </DialogContent>
             </Dialog>
+        );
+    };
+
+    // Typage des props pour EmployeeActions
+    const EmployeeActions = ({ employee }: { employee: any }) => {
+        const [openDetail, setOpenDetail] = useState(false);
+        const [openPaie, setOpenPaie] = useState(false);
+
+        return (
+            <>
+                {/* Version mobile avec dropdown, déplacé plus haut */}
+                <div className="sm:hidden flex justify-end mb-2 -mt-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-10 w-10 p-0 rounded-full border border-primary/30 shadow-md hover:bg-primary/10">
+                                <MoreVertical className="w-5 h-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => setOpenDetail(true)} className="font-semibold text-primary hover:bg-primary/10">
+                                <Eye className="w-4 h-4 mr-2" /> Détails
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setOpenPaie(true)} className="font-semibold text-blue-700 hover:bg-blue-50">
+                                <Calculator className="w-4 h-4 mr-2" /> Ajouter paie
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs text-muted-foreground">
+                                <div className="space-y-1">
+                                    <div className="flex items-center space-x-1">
+                                        <Mail className="w-3 h-3" />
+                                        <span className="truncate">{employee.email}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                        <Phone className="w-3 h-3" />
+                                        <span>{employee.telephone}</span>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <div className="hidden sm:flex items-center space-x-2 lg:space-x-3">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        onClick={() => setOpenDetail(true)}
+                    >
+                        <Eye className="w-4 h-4" />
+                        <span>Détails</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        onClick={() => setOpenPaie(true)}
+                    >
+                        <Calculator className="w-4 h-4" />
+                        <span>Gérer paie</span>
+                    </Button>
+                </div>
+                {/* Modals rendus en dehors du DropdownMenu */}
+                <EmployeeDetailModal employee={employee} open={openDetail} onOpenChange={setOpenDetail} />
+                <ElementPaieManager employeId={employee.id} open={openPaie} onOpenChange={setOpenPaie} />
+            </>
         );
     };
 
@@ -413,7 +463,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
     const stats = getTotalStats();
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
@@ -423,7 +473,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle>
@@ -475,7 +525,7 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Rechercher</label>
                             <div className="relative">
@@ -544,9 +594,9 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                     ) : (
                         <div className="space-y-2">
                             {filteredEmployees.map((employee) => (
-                                <div key={employee.id} className="py-3 sm:py-4 hover:bg-muted/30 px-2 sm:px-0 transition-colors">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                <div key={employee.id} className="py-2 sm:py-3 md:py-4 hover:bg-muted/30 px-1 sm:px-2 md:px-0 transition-colors rounded-lg">
+                                    <div className="flex flex-row sm:flex-row sm:items-center gap-2 sm:gap-0">
+                                        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                                             <SimpleAvatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                                                 {getInitials(employee.nom, employee.preNom)}
                                             </SimpleAvatar>
@@ -565,19 +615,19 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                                                 </div>
 
                                                 {/* Informations compactes */}
-                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-muted-foreground">
                                                     <span className="flex items-center space-x-1">
                                                         <Badge className="w-3 h-3" />
                                                         <span>{employee.numeroEmploye}</span>
                                                     </span>
                                                     <span className="flex items-center space-x-1">
                                                         <Building2 className="w-3 h-3" />
-                                                        <span className="truncate max-w-[120px] sm:max-w-none">{employee.departement}</span>
+                                                        <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">{employee.departement}</span>
                                                     </span>
                                                     <span className="hidden sm:inline">{employee.poste}</span>
                                                     <span className="hidden md:flex items-center space-x-1">
                                                         <Mail className="w-3 h-3" />
-                                                        <span className="truncate max-w-[150px] lg:max-w-none">{employee.email}</span>
+                                                        <span className="truncate max-w-[100px] md:max-w-[150px] lg:max-w-none">{employee.email}</span>
                                                     </span>
                                                     <span className="hidden lg:flex items-center space-x-1">
                                                         <Phone className="w-3 h-3" />
@@ -594,45 +644,9 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                                             </div>
                                         </div>
 
-                                        {/* Actions - Dropdown sur mobile, boutons sur desktop */}
-                                        <div className="flex items-center ml-2 sm:ml-4">
-                                            {/* Version mobile avec dropdown */}
-                                            <div className="sm:hidden">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <MoreVertical className="w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-48">
-                                                        <DropdownMenuItem className="flex items-center space-x-2">
-                                                            <EmployeeDetailModal employee={employee} />
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem className="flex items-center space-x-2">
-                                                            <ElementPaieFormtest employeId={employee.id} />
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-xs text-muted-foreground">
-                                                            <div className="space-y-1">
-                                                                <div className="flex items-center space-x-1">
-                                                                    <Mail className="w-3 h-3" />
-                                                                    <span className="truncate">{employee.email}</span>
-                                                                </div>
-                                                                <div className="flex items-center space-x-1">
-                                                                    <Phone className="w-3 h-3" />
-                                                                    <span>{employee.telephone}</span>
-                                                                </div>
-                                                            </div>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-
-                                            {/* Version desktop avec boutons séparés */}
-                                            <div className="hidden sm:flex items-center space-x-1">
-                                                <EmployeeDetailModal employee={employee} />
-                                                <ElementPaieFormtest employeId={employee.id} />
-                                            </div>
+                                        {/* Actions - toujours à droite */}
+                                        <div className="flex-0 flex items-center justify-end">
+                                            <EmployeeActions employee={employee} />
                                         </div>
                                     </div>
                                 </div>
