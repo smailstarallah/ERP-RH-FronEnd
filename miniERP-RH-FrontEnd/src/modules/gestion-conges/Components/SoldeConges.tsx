@@ -72,44 +72,55 @@ export const SoldeConges = () => {
 
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-200">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
+        <div className="bg-white rounded-xl shadow p-3 sm:p-6 border border-blue-100">
+            <h2 className="text-lg font-bold text-blue-700 mb-4 flex items-center gap-2">
+                <span className="inline-block w-4 h-4 rounded-full bg-blue-200" />
                 Solde de congés
             </h2>
 
             {loading ? (
                 <div className="text-center py-4">
-                    <span className="text-gray-500">Chargement...</span>
+                    <span className="text-blue-400">Chargement...</span>
                 </div>
             ) : soldes.length > 0 ? (
-                <div className="space-y-4">
-                    {soldes.map((solde, index) => (
-                        <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                            <h3 className="font-semibold text-gray-800 mb-3">
-                                {solde.typeCongeLibelle} - {solde.annee}
-                            </h3>
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">Congés acquis</span>
-                                    <span className="font-medium text-green-600">{solde.soldeInitial} jours</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">Congés pris</span>
-                                    <span className="font-medium text-red-600">{solde.soldePris} jours</span>
-                                </div>
-                                <div className="border-t pt-2">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-base font-semibold text-gray-800">Solde restant</span>
-                                        <span className="text-lg font-bold text-blue-600">{solde.soldeRestant} jours</span>
+                <div>
+                    {/* Header: visible on sm+ screens, hidden on mobile */}
+                    <div className="hidden sm:grid grid-cols-5 gap-2 px-3 pb-1 text-xs text-blue-500 font-semibold uppercase tracking-wide">
+                        <span className="col-span-2">Type</span>
+                        <span>Acquis</span>
+                        <span>Pris</span>
+                        <span>Restant</span>
+                    </div>
+                    <ul className="space-y-2">
+                        {soldes.map((solde, index) => (
+                            <li
+                                key={index}
+                                className="grid grid-cols-5 gap-2 items-center bg-blue-50/60 border border-blue-100 rounded-lg px-2 sm:px-3 py-2 text-sm"
+                            >
+                                {/* Mobile legend for each row */}
+                                <div className="col-span-5 flex flex-col sm:hidden text-[11px] text-blue-400 pb-1">
+                                    <span className="font-semibold text-blue-700">{solde.typeCongeLibelle} <span className="text-blue-300">({solde.annee})</span></span>
+                                    <div className="flex gap-2 mt-1">
+                                        <span>Acquis: <span className="text-green-600 font-semibold">{solde.soldeInitial}</span></span>
+                                        <span>Pris: <span className="text-red-500 font-semibold">{solde.soldePris}</span></span>
+                                        <span>Restant: <span className="text-blue-700 font-bold">{solde.soldeRestant} j</span></span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
+                                {/* Desktop columns */}
+                                <div className="col-span-2 hidden sm:flex flex-row items-center gap-2 min-w-[100px]">
+                                    <span className="font-semibold text-blue-700">{solde.typeCongeLibelle}</span>
+                                    <span className="text-xs text-blue-400">{solde.annee}</span>
+                                </div>
+                                <span className="hidden sm:block text-green-600 font-semibold text-center">{solde.soldeInitial}</span>
+                                <span className="hidden sm:block text-red-500 font-semibold text-center">{solde.soldePris}</span>
+                                <span className="hidden sm:block text-blue-700 font-bold text-center">{solde.soldeRestant} j</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             ) : (
                 <div className="text-center py-4">
-                    <span className="text-gray-500">Aucun solde de congé disponible</span>
+                    <span className="text-blue-400">Aucun solde de congé disponible</span>
                 </div>
             )}
         </div>

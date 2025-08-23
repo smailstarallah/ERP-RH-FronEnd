@@ -176,51 +176,55 @@ export function DemandeCongeForm() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-                <FormField
-                    control={form.control}
-                    name="dateDebut"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Période de congé</FormLabel>
-                            <FormControl>
-                                <Calendar
-                                    mode="range"
-                                    defaultMonth={dateRange?.from}
-                                    selected={dateRange}
-                                    onSelect={setDateRange}
-                                    className="rounded-lg border shadow-sm"
-                                />
-                            </FormControl>
-                            <FormDescription>
-                                Sélectionnez la date de début et de fin de votre congé.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-xl mx-auto space-y-8 bg-white/90 ">
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-1">
+                        <FormField
+                            control={form.control}
+                            name="dateDebut"
+                            render={() => (
+                                <FormItem>
+                                    <FormLabel className="text-blue-700 font-semibold">Période de congé</FormLabel>
+                                    <FormControl>
+                                        <Calendar
+                                            mode="range"
+                                            defaultMonth={dateRange?.from}
+                                            selected={dateRange}
+                                            onSelect={setDateRange}
+                                            className="rounded-xl border-2 border-blue-100 shadow-md bg-blue-50"
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        <span className="text-blue-500">Sélectionnez la date de début et de fin de votre congé.</span>
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
 
                 <FormField
                     control={form.control}
                     name="typeConge"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Type de congé</FormLabel>
+                            <FormLabel className="text-blue-700 font-semibold">Type de congé</FormLabel>
                             <FormControl>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingTypes}>
-                                    <SelectTrigger className="w-full">
+                                    <SelectTrigger className="w-full h-12 rounded-lg border-2 border-blue-100 bg-white text-blue-700 font-medium shadow-sm focus:ring-2 focus:ring-blue-300">
                                         <SelectValue placeholder={
                                             loadingTypes
                                                 ? "Chargement..."
                                                 : "Sélectionnez un type de congé"
                                         } />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-xl border-blue-100 bg-white">
                                         <SelectGroup>
                                             <SelectLabel>Types de congés</SelectLabel>
                                             {typeConges && typeConges.length > 0 ? (
                                                 typeConges.map((type) => (
-                                                    <SelectItem key={type.id} value={type.id.toString()}>
+                                                    <SelectItem key={type.id} value={type.id.toString()} className="hover:bg-blue-50">
                                                         {type.nom}
                                                     </SelectItem>
                                                 ))
@@ -236,7 +240,7 @@ export function DemandeCongeForm() {
                                 </Select>
                             </FormControl>
                             <FormDescription>
-                                Choisissez le type de congé approprié pour votre demande.
+                                <span className="text-blue-500">Choisissez le type de congé approprié pour votre demande.</span>
                             </FormDescription>
                             <FormMessage />
                         </FormItem>
@@ -248,18 +252,23 @@ export function DemandeCongeForm() {
                     name="motif"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Motif</FormLabel>
+                            <FormLabel className="text-blue-700 font-semibold">Motif</FormLabel>
                             <FormControl>
-                                <Input placeholder="Entrez le motif de votre congé" {...field} />
+                                <Input placeholder="Entrez le motif de votre congé" {...field} className="h-12 rounded-lg border-2 border-blue-100 bg-white text-blue-700 font-medium shadow-sm focus:ring-2 focus:ring-blue-300" />
                             </FormControl>
                             <FormDescription>
-                                Précisez la raison de votre demande de congé.
+                                <span className="text-blue-500">Précisez la raison de votre demande de congé.</span>
                             </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Submit {pending && <Loader />}</Button>
+                <div className="flex justify-end pt-4">
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition-all duration-200 flex items-center gap-2">
+                        {pending && <Loader className="animate-spin w-5 h-5" />}
+                        Envoyer la demande
+                    </Button>
+                </div>
             </form>
         </Form>
     )
