@@ -51,34 +51,16 @@ const data = {
       icon: Home,
       isActive: true,
     },
-    {
-      title: "Inbox",
-      url: "#",
-      icon: Inbox,
-      badge: "10",
-    },
   ],
   navSecondary: [
-    {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
+
     {
       title: "Parameters",
       url: "/parametres",
       icon: Settings2,
     },
-    {
-      title: "Templates",
-      url: "#",
-      icon: Blocks,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
-    },
+
+
     {
       title: "Help",
       url: "#",
@@ -102,20 +84,21 @@ const data = {
       emoji: "💼",
     },
     {
-      name: "Book Notes & Reading List",
-      url: "#",
-      emoji: "📚",
-    },
-    {
-      name: "Sustainable Gardening Tips & Plant Care",
-      url: "#",
-      emoji: "🌱",
-    },
-    {
-      name: "Language Learning Progress & Resources",
-      url: "#",
-      emoji: "🗣️",
+      name: "Dashboard",
+      url: "/dashboard",
+      emoji: "📊",
     }
+    // },
+    // {
+    //   name: "Sustainable Gardening Tips & Plant Care",
+    //   url: "#",
+    //   emoji: "🌱",
+    // },
+    // {
+    //   name: "Language Learning Progress & Resources",
+    //   url: "#",
+    //   emoji: "🗣️",
+    // }
   ],
 }
 

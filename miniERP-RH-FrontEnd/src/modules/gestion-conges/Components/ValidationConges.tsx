@@ -180,18 +180,28 @@ export const ValidationConges = () => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 lg:p-8 border border-blue-100 w-full max-w-full overflow-hidden">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-700 mb-4 sm:mb-6 md:mb-8 flex items-center gap-2 flex-wrap">
-                <Calendar className="w-5 sm:w-5 md:w-6 h-5 sm:h-5 md:h-6 text-blue-400 flex-shrink-0" />
-                <span className="break-words">Validation des demandes de congés</span>
-            </h2>
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 border border-blue-100/50 w-full max-w-full overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center gap-4 mb-6 sm:mb-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                    <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-blue-800 flex items-center gap-2">
+                        Validation des demandes de congés
+                    </h2>
+                    <p className="text-blue-600/80 text-sm">Gérez les demandes de congés de votre équipe</p>
+                </div>
+            </div>
 
             {loading ? (
-                <div className="text-center py-8 sm:py-10 md:py-12">
-                    <span className="text-blue-400 text-sm sm:text-base">Chargement des demandes...</span>
+                <div className="text-center py-12">
+                    <div className="inline-flex items-center gap-3 px-8 py-4 bg-blue-50 rounded-2xl border border-blue-100">
+                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-blue-600 font-semibold">Chargement des demandes...</span>
+                    </div>
                 </div>
             ) : demandes.length > 0 ? (
-                <div className="w-full">
+                <div className="max-h-60 overflow-y-auto">
                     {/* Vue desktop/tablette */}
                     <div className="hidden sm:block overflow-x-auto rounded-xl border border-blue-50 bg-white">
                         <Table className="min-w-[650px] text-sm lg:text-base w-full">

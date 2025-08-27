@@ -17,7 +17,6 @@ export const ParametrePage = () => {
     const menuItems = [
         { id: "conges", label: "Gestion des Congés", icon: ClipboardList },
         { id: "utilisateurs", label: "Gestion Utilisateurs", icon: Users },
-        { id: "parametres", label: "Paramètres Congés", icon: Settings },
         { id: "profil", label: "Mon Profil", icon: User },
     ];
 

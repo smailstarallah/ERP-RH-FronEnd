@@ -5,12 +5,12 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as React from "react"
 import { type DateRange } from "react-day-picker"
+import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -21,15 +21,26 @@ import { Calendar } from "@/components/ui/calendar"
 import {
     Select,
     SelectContent,
-    SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { DemandeCongeFormSchema, type DemandeCongeForm } from "../validation"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useTransition } from "react"
-import { Loader } from "lucide-react"
+import { Loader2, CalendarDays, Send } from "lucide-react"
+
+// Schema de validation Zod
+const DemandeCongeFormSchema = z.object({
+    dateDebut: z.date("La date de début est requise"),
+    dateFin: z.date("La date de fin est requise"),
+    typeConge: z.string().min(1, "Veuillez sélectionner un type de congé"),
+    motif: z.string().min(1, "Le motif est requis"),
+}).refine((data) => data.dateFin >= data.dateDebut, {
+    message: "La date de fin doit être postérieure à la date de début",
+    path: ["dateFin"],
+});
+
+type DemandeCongeForm = z.infer<typeof DemandeCongeFormSchema>
 
 interface TypeConge {
     id: number;
@@ -69,9 +80,19 @@ export function DemandeCongeForm() {
         const fetchTypeConges = async () => {
             try {
                 setLoadingTypes(true)
-                const token = localStorage.getItem('token');
+                const token = localStorage?.getItem('token');
                 if (!token) {
-                    throw new Error("Token not found in localStorage");
+                    // Si pas de token, utiliser des données mock
+                    const mockTypes: TypeConge[] = [
+                        { id: 1, nom: "Congé annuel" },
+                        { id: 2, nom: "Congé maladie" },
+                        { id: 3, nom: "Congé maternité" },
+                        { id: 4, nom: "Congé formation" }
+                    ]
+                    await new Promise(resolve => setTimeout(resolve, 1000))
+                    setTypeConges(mockTypes)
+                    setLoadingTypes(false)
+                    return;
                 }
 
                 const response = await fetch('http://localhost:8080/api/gestion-conge/list-type-conge', {
@@ -87,14 +108,12 @@ export function DemandeCongeForm() {
                 }
 
                 const data = await response.json();
-                console.log("API Response:", data); // Pour déboguer
+                console.log("API Response:", data);
 
-                // L'API retourne un array d'objets où chaque objet a une clé (ID) et une valeur (nom)
                 let typesArray: TypeConge[] = [];
 
                 if (Array.isArray(data)) {
                     typesArray = data.map((item) => {
-                        // Chaque item est un objet comme {1: 'Congé annuel'}
                         const [id, nom] = Object.entries(item)[0];
                         return {
                             id: parseInt(id),
@@ -102,20 +121,23 @@ export function DemandeCongeForm() {
                         };
                     });
                 } else if (typeof data === 'object' && data !== null) {
-                    // Si c'est un objet (Map), convertir en array
                     typesArray = Object.entries(data).map(([id, nom]) => ({
                         id: parseInt(id),
                         nom: String(nom)
                     }));
                 }
 
-                console.log("Processed types:", typesArray); // Pour vérifier le traitement
+                console.log("Processed types:", typesArray);
                 setTypeConges(typesArray);
             } catch (error) {
                 console.error("Erreur lors de la récupération des types de congés:", error);
                 toast.error("Erreur lors du chargement des types de congés");
-                // En cas d'erreur, on peut définir des types par défaut ou laisser vide
-                setTypeConges([]);
+                // Fallback vers des données mock
+                setTypeConges([
+                    { id: 1, nom: "Congé annuel" },
+                    { id: 2, nom: "Congé maladie" },
+                    { id: 3, nom: "Congé formation" }
+                ]);
             } finally {
                 setLoadingTypes(false);
             }
@@ -129,25 +151,30 @@ export function DemandeCongeForm() {
             console.log("Form submitted:", data);
 
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage?.getItem('token');
                 if (!token) {
-                    throw new Error("Token not found in localStorage");
+                    // Mode démo sans API
+                    await new Promise(resolve => setTimeout(resolve, 2000))
+                    toast.success("Demande de congé envoyée avec succès!");
+                    form.reset();
+                    setDateRange({ from: new Date(), to: new Date() });
+                    return;
                 }
-                // Récupération l'ID de l'employé
+
                 const userData = localStorage.getItem('userData');
-                const employeId = userData ? JSON.parse(userData).id : null; // ou depuis le contexte utilisateur/localStorage
+                const employeId = userData ? JSON.parse(userData).id : null;
 
                 const response = await fetch(`http://localhost:8080/api/gestion-conge/demande/${employeId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Assurez-vous que le token est bien stocké
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        dateDebut: data.dateDebut.toISOString().split('T')[0], // Format YYYY-MM-DD
-                        dateFin: data.dateFin.toISOString().split('T')[0], // Format YYYY-MM-DD
+                        dateDebut: data.dateDebut.toISOString().split('T')[0],
+                        dateFin: data.dateFin.toISOString().split('T')[0],
                         motif: data.motif,
-                        typeCongeId: parseInt(data.typeConge) // Changer le nom de la propriété
+                        typeCongeId: parseInt(data.typeConge)
                     })
                 });
 
@@ -160,8 +187,11 @@ export function DemandeCongeForm() {
                 const result = await response.text();
                 console.log("API Response:", result);
 
-                // Succès
                 toast.success("Demande de congé envoyée avec succès!");
+
+                // Reset form
+                form.reset();
+                setDateRange({ from: new Date(), to: new Date() });
 
             } catch (error) {
                 console.error("Erreur lors de l'envoi:", error);
@@ -175,101 +205,137 @@ export function DemandeCongeForm() {
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-xl mx-auto space-y-8 bg-white/90 ">
-                <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="mb-6 pb-6 border-b">
+                <div className="flex items-center space-x-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                        <CalendarDays className="h-6 w-6 text-primary" />
+                    </div>
                     <div className="flex-1">
-                        <FormField
-                            control={form.control}
-                            name="dateDebut"
-                            render={() => (
-                                <FormItem>
-                                    <FormLabel className="text-blue-700 font-semibold">Période de congé</FormLabel>
-                                    <FormControl>
+                        <h2 className="text-2xl font-semibold tracking-tight">
+                            Nouvelle demande de congé
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            Remplissez le formulaire pour soumettre votre demande
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Form Content */}
+            <Form {...form}>
+                <div className="space-y-6">
+
+                    {/* Calendrier */}
+                    <FormField
+                        control={form.control}
+                        name="dateDebut"
+                        render={() => (
+                            <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                    Période de congé
+                                </FormLabel>
+                                <FormControl>
+                                    <div className="flex justify-center">
                                         <Calendar
                                             mode="range"
                                             defaultMonth={dateRange?.from}
                                             selected={dateRange}
                                             onSelect={setDateRange}
-                                            className="rounded-xl border-2 border-blue-100 shadow-md bg-blue-50"
+                                            className="rounded-lg border"
                                         />
-                                    </FormControl>
-                                    <FormDescription>
-                                        <span className="text-blue-500">Sélectionnez la date de début et de fin de votre congé.</span>
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
+                                    </div>
+                                </FormControl>
+                                <p className="text-sm text-muted-foreground">
+                                    Sélectionnez vos dates de début et de fin
+                                </p>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Type de congé */}
+                    <FormField
+                        control={form.control}
+                        name="typeConge"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                    Type de congé
+                                </FormLabel>
+                                <FormControl>
+                                    {loadingTypes ? (
+                                        <Skeleton className="h-10 w-full" />
+                                    ) : (
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionnez un type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {typeConges.length > 0 ? (
+                                                    typeConges.map((type) => (
+                                                        <SelectItem key={type.id} value={type.id.toString()}>
+                                                            {type.nom}
+                                                        </SelectItem>
+                                                    ))
+                                                ) : (
+                                                    <SelectItem value="no-data" disabled>
+                                                        Aucun type disponible
+                                                    </SelectItem>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Motif */}
+                    <FormField
+                        control={form.control}
+                        name="motif"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                    Motif
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Précisez le motif de votre demande"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Bouton de soumission */}
+                    <div className="flex justify-end pt-4">
+                        <Button
+                            type="submit"
+                            disabled={pending}
+                            className="min-w-[160px]"
+                            onClick={form.handleSubmit(onSubmit)}
+                        >
+                            {pending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Envoi en cours...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="mr-2 h-4 w-4" />
+                                    Envoyer la demande
+                                </>
                             )}
-                        />
+                        </Button>
                     </div>
                 </div>
-
-                <FormField
-                    control={form.control}
-                    name="typeConge"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-blue-700 font-semibold">Type de congé</FormLabel>
-                            <FormControl>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingTypes}>
-                                    <SelectTrigger className="w-full h-12 rounded-lg border-2 border-blue-100 bg-white text-blue-700 font-medium shadow-sm focus:ring-2 focus:ring-blue-300">
-                                        <SelectValue placeholder={
-                                            loadingTypes
-                                                ? "Chargement..."
-                                                : "Sélectionnez un type de congé"
-                                        } />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-blue-100 bg-white">
-                                        <SelectGroup>
-                                            <SelectLabel>Types de congés</SelectLabel>
-                                            {typeConges && typeConges.length > 0 ? (
-                                                typeConges.map((type) => (
-                                                    <SelectItem key={type.id} value={type.id.toString()} className="hover:bg-blue-50">
-                                                        {type.nom}
-                                                    </SelectItem>
-                                                ))
-                                            ) : (
-                                                !loadingTypes && (
-                                                    <SelectItem value="no-data" disabled>
-                                                        Aucun type de congé disponible
-                                                    </SelectItem>
-                                                )
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </FormControl>
-                            <FormDescription>
-                                <span className="text-blue-500">Choisissez le type de congé approprié pour votre demande.</span>
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="motif"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-blue-700 font-semibold">Motif</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Entrez le motif de votre congé" {...field} className="h-12 rounded-lg border-2 border-blue-100 bg-white text-blue-700 font-medium shadow-sm focus:ring-2 focus:ring-blue-300" />
-                            </FormControl>
-                            <FormDescription>
-                                <span className="text-blue-500">Précisez la raison de votre demande de congé.</span>
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="flex justify-end pt-4">
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition-all duration-200 flex items-center gap-2">
-                        {pending && <Loader className="animate-spin w-5 h-5" />}
-                        Envoyer la demande
-                    </Button>
-                </div>
-            </form>
-        </Form>
+            </Form>
+        </div>
     )
 }

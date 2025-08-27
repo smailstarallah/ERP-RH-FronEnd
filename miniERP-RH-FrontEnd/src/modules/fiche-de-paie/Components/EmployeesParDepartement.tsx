@@ -3,7 +3,10 @@ import {
     Users, Building2, Loader2, AlertCircle, Calendar, Phone, Mail,
     Eye, Badge, RefreshCw, Search, Filter, ChevronDown, MapPin, Clock,
     MoreVertical,
-    Calculator
+    Calculator,
+    FileText,
+    Download,
+    DollarSign
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -368,6 +371,148 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         );
     };
 
+    // Add PDF download/preview state and helpers
+    type TestState = { isLoading: boolean; error: string | null; success: string | null; pdfUrl: string | null };
+    const [, setTestState] = useState<TestState>({ isLoading: false, error: null, success: null, pdfUrl: null });
+
+    // simple static fiche-paie base URL (hardcoded so it's easy to read)
+    const fichePaieBase = 'http://localhost:8080/api/fiche-paie';
+
+    const downloadPdf = async (employeId: string) => {
+        if (!employeId || !employeId.trim()) {
+            setTestState(prev => ({ ...prev, error: 'Veuillez saisir un ID de fiche de paie' }));
+            return;
+        }
+        setTestState({ isLoading: true, error: null, success: null, pdfUrl: null });
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${fichePaieBase}/${encodeURIComponent(employeId)}/pdf`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+            });
+
+            if (!response.ok) {
+                let errorMessage = `Erreur HTTP: ${response.status}`;
+                if (response.status === 404) {
+                    errorMessage = 'Fiche de paie non trouvée';
+                } else if (response.status === 500) {
+                    errorMessage = 'Erreur serveur interne';
+                } else {
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch {
+                        errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+                    }
+                }
+                throw new Error(errorMessage);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/pdf')) {
+                throw new Error('Le serveur n\'a pas retourné un fichier PDF');
+            }
+
+            const blob = await response.blob();
+            if (blob.size === 0) {
+                throw new Error('Le fichier PDF est vide');
+            }
+
+            const pdfUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = `fiche_paie_${employeId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTestState({
+                isLoading: false,
+                error: null,
+                success: `PDF téléchargé avec succès (${(blob.size / 1024).toFixed(2)} KB)`,
+                pdfUrl: pdfUrl
+            });
+
+            // revoke object URL after a while
+            setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+        } catch (error) {
+            setTestState({
+                isLoading: false,
+                error: error instanceof Error ? error.message : 'Erreur inconnue lors du téléchargement',
+                success: null,
+                pdfUrl: null
+            });
+        }
+    };
+
+    const previewPdf = async (employeId: string) => {
+        if (!employeId || !employeId.trim()) {
+            setTestState(prev => ({ ...prev, error: 'Veuillez saisir un ID d\'employé' }));
+            return;
+        }
+        setTestState({ isLoading: true, error: null, success: null, pdfUrl: null });
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${fichePaieBase}/${encodeURIComponent(employeId)}/pdf`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+            });
+
+            if (!response.ok) {
+                let errorMessage = `Erreur HTTP: ${response.status}`;
+                if (response.status === 404) {
+                    errorMessage = 'Fiche de paie non trouvée';
+                } else if (response.status === 500) {
+                    errorMessage = 'Erreur serveur interne';
+                } else {
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch {
+                        errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+                    }
+                }
+                throw new Error(errorMessage);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/pdf')) {
+                throw new Error('Le serveur n\'a pas retourné un fichier PDF');
+            }
+
+            const blob = await response.blob();
+            if (blob.size === 0) {
+                throw new Error('Le fichier PDF est vide');
+            }
+
+            const pdfUrl = URL.createObjectURL(blob);
+            window.open(pdfUrl, '_blank');
+
+            setTestState({
+                isLoading: false,
+                error: null,
+                success: `PDF ouvert dans un nouvel onglet (${(blob.size / 1024).toFixed(2)} KB)`,
+                pdfUrl: pdfUrl
+            });
+
+            // revoke object URL after a while
+            setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+        } catch (error) {
+            setTestState({
+                isLoading: false,
+                error: error instanceof Error ? error.message : 'Erreur lors de la prévisualisation',
+                success: null,
+                pdfUrl: null
+            });
+        }
+    };
+
     // Typage des props pour EmployeeActions
     const EmployeeActions = ({ employee }: { employee: any }) => {
         const [openDetail, setOpenDetail] = useState(false);
@@ -423,8 +568,26 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                         className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
                         onClick={() => setOpenPaie(true)}
                     >
-                        <Calculator className="w-4 h-4" />
+                        <DollarSign className="w-4 h-4" />
                         <span>Gérer paie</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        onClick={() => previewPdf(String(employee.id))}
+                    >
+                        <FileText className="w-4 h-4" />
+                        <span>Prévision</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        onClick={() => downloadPdf(String(employee.id))}
+                    >
+                        <Download className="w-4 h-4" />
+                        <span>Télécharger</span>
                     </Button>
                 </div>
                 {/* Modals rendus en dehors du DropdownMenu */}

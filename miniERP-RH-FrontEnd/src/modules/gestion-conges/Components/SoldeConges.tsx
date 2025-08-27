@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { CalendarDays, FileText } from "lucide-react"
 
 interface SoldeConge {
     annee: number;
@@ -38,20 +41,16 @@ export const SoldeConges = () => {
                 }
 
                 const data = await response.json();
-                console.log("######API Response:", data); // Pour déboguer
+                console.log("######API Response:", data);
 
-                // Traiter les données selon le format reçu
                 let soldesArray: SoldeConge[] = [];
 
                 if (Array.isArray(data)) {
                     soldesArray = data.map((item) => {
-                        // Si l'item est un objet avec des clés numériques
                         if (typeof item === 'object' && !item.hasOwnProperty('annee')) {
-                            // Extraire la première entrée de l'objet
                             const [, value] = Object.entries(item)[0];
                             return value as SoldeConge;
                         }
-                        // Sinon, c'est déjà un objet SoldeConge
                         return item as SoldeConge;
                     });
                 }
@@ -70,59 +69,128 @@ export const SoldeConges = () => {
         fetchSoldeConges();
     }, []);
 
+    const getStatusVariant = (restant: number, initial: number) => {
+        const percentage = (restant / initial) * 100;
+        if (percentage > 70) return "secondary";
+        if (percentage > 30) return "default";
+        return "destructive";
+    };
+
+    if (loading) {
+        return (
+            <Card className="w-full">
+                <CardHeader className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                        <Skeleton className="h-12 w-12 rounded-lg" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-48" />
+                            <Skeleton className="h-4 w-64" />
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
-        <div className="bg-white rounded-xl shadow p-3 sm:p-6 border border-blue-100">
-            <h2 className="text-lg font-bold text-blue-700 mb-4 flex items-center gap-2">
-                <span className="inline-block w-4 h-4 rounded-full bg-blue-200" />
-                Solde de congés
-            </h2>
-
-            {loading ? (
-                <div className="text-center py-4">
-                    <span className="text-blue-400">Chargement...</span>
-                </div>
-            ) : soldes.length > 0 ? (
-                <div>
-                    {/* Header: visible on sm+ screens, hidden on mobile */}
-                    <div className="hidden sm:grid grid-cols-5 gap-2 px-3 pb-1 text-xs text-blue-500 font-semibold uppercase tracking-wide">
-                        <span className="col-span-2">Type</span>
-                        <span>Acquis</span>
-                        <span>Pris</span>
-                        <span>Restant</span>
+        <Card className="w-full shadow-sm">
+            <CardHeader className="pb-6">
+                <div className="flex items-center space-x-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                        <CalendarDays className="h-6 w-6 text-primary" />
                     </div>
-                    <ul className="space-y-2">
-                        {soldes.map((solde, index) => (
-                            <li
-                                key={index}
-                                className="grid grid-cols-5 gap-2 items-center bg-blue-50/60 border border-blue-100 rounded-lg px-2 sm:px-3 py-2 text-sm"
-                            >
-                                {/* Mobile legend for each row */}
-                                <div className="col-span-5 flex flex-col sm:hidden text-[11px] text-blue-400 pb-1">
-                                    <span className="font-semibold text-blue-700">{solde.typeCongeLibelle} <span className="text-blue-300">({solde.annee})</span></span>
-                                    <div className="flex gap-2 mt-1">
-                                        <span>Acquis: <span className="text-green-600 font-semibold">{solde.soldeInitial}</span></span>
-                                        <span>Pris: <span className="text-red-500 font-semibold">{solde.soldePris}</span></span>
-                                        <span>Restant: <span className="text-blue-700 font-bold">{solde.soldeRestant} j</span></span>
+                    <div className="flex-1 space-y-1">
+                        <CardTitle className="text-2xl font-semibold tracking-tight">
+                            Solde de congés
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Gestion et suivi de vos droits aux congés annuels
+                        </p>
+                    </div>
+                </div>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+                {soldes.length > 0 ? (
+                    <>
+                        {/* Vue Desktop - Liste simple */}
+                        <div className="hidden md:block space-y-3">
+                            {soldes.map((solde, index) => (
+                                <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="h-2 w-2 rounded-full bg-primary" />
+                                        <div>
+                                            <span className="font-medium">{solde.typeCongeLibelle}</span>
+                                            <span className="ml-2 text-sm text-muted-foreground">({solde.annee})</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space-x-8">
+                                        <div className="text-center">
+                                            <div className="text-sm text-muted-foreground">Acquis</div>
+                                            <div className="font-semibold">{solde.soldeInitial}j</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-sm text-muted-foreground">Utilisés</div>
+                                            <div className="font-semibold">{solde.soldePris}j</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-sm text-muted-foreground">Restants</div>
+                                            <div className="font-semibold text-primary">{solde.soldeRestant}j</div>
+                                        </div>
                                     </div>
                                 </div>
-                                {/* Desktop columns */}
-                                <div className="col-span-2 hidden sm:flex flex-row items-center gap-2 min-w-[100px]">
-                                    <span className="font-semibold text-blue-700">{solde.typeCongeLibelle}</span>
-                                    <span className="text-xs text-blue-400">{solde.annee}</span>
+                            ))}
+                        </div>
+
+                        {/* Vue Mobile - Liste simple */}
+                        <div className="md:hidden space-y-3">
+                            {soldes.map((solde, index) => (
+                                <div key={index} className="p-4 rounded-lg border bg-card">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center space-x-2">
+                                            <div className="h-2 w-2 rounded-full bg-primary" />
+                                            <span className="font-medium">{solde.typeCongeLibelle}</span>
+                                        </div>
+                                        <span className="text-sm text-muted-foreground">{solde.annee}</span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4 text-center text-sm">
+                                        <div>
+                                            <div className="text-muted-foreground">Acquis</div>
+                                            <div className="font-semibold">{solde.soldeInitial}j</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Utilisés</div>
+                                            <div className="font-semibold">{solde.soldePris}j</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-muted-foreground">Restants</div>
+                                            <div className="font-semibold text-primary">{solde.soldeRestant}j</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span className="hidden sm:block text-green-600 font-semibold text-center">{solde.soldeInitial}</span>
-                                <span className="hidden sm:block text-red-500 font-semibold text-center">{solde.soldePris}</span>
-                                <span className="hidden sm:block text-blue-700 font-bold text-center">{solde.soldeRestant} j</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ) : (
-                <div className="text-center py-4">
-                    <span className="text-blue-400">Aucun solde de congé disponible</span>
-                </div>
-            )}
-        </div>
-    )
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/50 mb-4">
+                            <FileText className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                            Aucun solde disponible
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md">
+                            Vos soldes de congés apparaîtront ici une fois qu'ils seront configurés par votre service RH.
+                        </p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
 }
