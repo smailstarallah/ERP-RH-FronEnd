@@ -13,7 +13,7 @@ import EffectivenessChart from "./Components/EffectivenessChart";
 import { Switch } from "@/components/ui/switch";
 import { TeamPresence } from "./Components/TeamPresence";
 import { HoursChart } from "./Components/HoursChart";
-import WeeklyTimeSheetCalendar from "./Components/PresenceCalendar";
+import { ProfessionalTimeSheetCalendar } from "./Components/PresenceCalendar";
 import { ProjectAndTaskManager } from "./Components/ProjectAndTaskManager";
 import { KpiAndStatistics } from "./Components/KpiAndStatistics";
 
@@ -123,6 +123,7 @@ export const TimeTrackingPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+            <ProfessionalTimeSheetCalendar />
             <div className="max-w-6xl mx-auto space-y-6">
 
                 <TimeHeader
@@ -153,7 +154,6 @@ export const TimeTrackingPage: React.FC = () => {
 
                         {/* <PresenceCalendar /> */}
 
-                        <WeeklyTimeSheetCalendar />
 
                         <WeekStatsCard weekStats={weekStats} weekRows={weekRows} />
                         <TodayHistory todayEntries={todayEntries} />

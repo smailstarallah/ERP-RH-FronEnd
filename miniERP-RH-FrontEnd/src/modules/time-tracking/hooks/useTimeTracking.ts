@@ -170,7 +170,6 @@ export const useTimeTracking = () => {
             }
 
             const data = await response.json();
-            console.log('Pointages récupérés:', data);
             return data;
         } catch (error: unknown) {
             console.error('Erreur API:', error);
