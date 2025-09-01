@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Profil } from "./Components/Profil";
 import GestionUtilisateurs from "./Components/GestionUtilisateurs";
 import { ParametreConges } from "./Components/ParametreConges";
+import { WeeklyPlanner } from "./Components/ParametreTimeTracking";
 
 
 export const ParametrePage = () => {
@@ -16,6 +17,7 @@ export const ParametrePage = () => {
 
     const menuItems = [
         { id: "conges", label: "Gestion des Congés", icon: ClipboardList },
+        { id: "WeeklyPlanner", label: "suivi de temps", icon: ClipboardList },
         { id: "utilisateurs", label: "Gestion Utilisateurs", icon: Users },
         { id: "profil", label: "Mon Profil", icon: User },
     ];
@@ -24,7 +26,7 @@ export const ParametrePage = () => {
         switch (currentPage) {
             case "conges": return <ParametreConges />;
             case "utilisateurs": return <GestionUtilisateurs />;
-            // case "parametres": return <Parametres />;
+            case "WeeklyPlanner": return <WeeklyPlanner />;
             // case "calendrier": return <Calendrier />;
             case "profil": return <Profil />;
             default: return <ParametreConges />;
@@ -35,7 +37,7 @@ export const ParametrePage = () => {
         switch (currentPage) {
             case "conges": return "Gestion des congés";
             case "utilisateurs": return "Gestion des utilisateurs";
-            case "parametres": return "Paramètres des congés";
+            case "WeeklyPlanner": return "Paramètres du suivi de temps";
             case "profil": return "Mon profil";
             default: return "Gestion des congés";
         }

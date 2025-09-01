@@ -1,85 +1,66 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import * as React from "react"
-import { type DateRange } from "react-day-picker"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { toast } from "sonner"
+import { useTransition } from "react"
+import { motion } from "framer-motion"
+import { type DateRange } from "react-day-picker"
+import { Loader2, CalendarIcon, Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Textarea } from "@/components/ui/textarea" // <-- Import du Textarea
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTransition } from "react"
-import { Loader2, CalendarDays, Send } from "lucide-react"
 
-// Schema de validation Zod
+// --- Schema de validation Zod (inchangé) ---
 const DemandeCongeFormSchema = z.object({
-    dateDebut: z.date("La date de début est requise"),
-    dateFin: z.date("La date de fin est requise"),
-    typeConge: z.string().min(1, "Veuillez sélectionner un type de congé"),
-    motif: z.string().min(1, "Le motif est requis"),
+    dateDebut: z.date("La date de début est requise."),
+    dateFin: z.date("La date de fin est requise."),
+    typeConge: z.string().min(1, "Veuillez sélectionner un type de congé."),
+    motif: z.string().min(1, "Le motif est requis.").max(500, "Le motif ne doit pas dépasser 500 caractères."),
 }).refine((data) => data.dateFin >= data.dateDebut, {
-    message: "La date de fin doit être postérieure à la date de début",
+    message: "La date de fin doit être postérieure ou égale à la date de début.",
     path: ["dateFin"],
 });
 
-type DemandeCongeForm = z.infer<typeof DemandeCongeFormSchema>
+type DemandeCongeFormValues = z.infer<typeof DemandeCongeFormSchema>
 
 interface TypeConge {
     id: number;
     nom: string;
 }
 
+// --- Le Composant Formulaire Amélioré ---
 export function DemandeCongeForm() {
-    const [pending, startCongeTransition] = useTransition()
+    const [isPending, startTransition] = useTransition()
     const [typeConges, setTypeConges] = React.useState<TypeConge[]>([])
-    const [loadingTypes, setLoadingTypes] = React.useState(true)
-    const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
-        from: new Date(),
-        to: new Date(),
-    })
+    const [isLoadingTypes, setIsLoadingTypes] = React.useState(true)
+    const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
 
-    const form = useForm<DemandeCongeForm>({
+    const form = useForm<DemandeCongeFormValues>({
         resolver: zodResolver(DemandeCongeFormSchema),
         defaultValues: {
-            dateDebut: new Date(),
-            dateFin: new Date(),
             typeConge: "",
             motif: "",
         },
     })
 
+    // --- Logique métier (inchangée) ---
     React.useEffect(() => {
-        if (dateRange?.from) {
-            form.setValue("dateDebut", dateRange.from)
-        }
-        if (dateRange?.to) {
-            form.setValue("dateFin", dateRange.to)
-        }
+        if (dateRange?.from) form.setValue("dateDebut", dateRange.from)
+        if (dateRange?.to) form.setValue("dateFin", dateRange.to)
     }, [dateRange, form])
 
-    // Récupération des types de congés depuis l'API
     React.useEffect(() => {
         const fetchTypeConges = async () => {
             try {
-                setLoadingTypes(true)
+                setIsLoadingTypes(true)
                 const token = localStorage?.getItem('token');
                 if (!token) {
                     // Si pas de token, utiliser des données mock
@@ -91,7 +72,7 @@ export function DemandeCongeForm() {
                     ]
                     await new Promise(resolve => setTimeout(resolve, 1000))
                     setTypeConges(mockTypes)
-                    setLoadingTypes(false)
+                    setIsLoadingTypes(false)
                     return;
                 }
 
@@ -134,20 +115,20 @@ export function DemandeCongeForm() {
                 toast.error("Erreur lors du chargement des types de congés");
                 // Fallback vers des données mock
                 setTypeConges([
-                    { id: 1, nom: "Congé annuel" },
+                    { id: 1, nom: "Congé annuel juste testing" },
                     { id: 2, nom: "Congé maladie" },
                     { id: 3, nom: "Congé formation" }
                 ]);
             } finally {
-                setLoadingTypes(false);
+                setIsLoadingTypes(false);
             }
         };
 
         fetchTypeConges();
     }, []);
 
-    function onSubmit(data: DemandeCongeForm) {
-        startCongeTransition(async () => {
+    function onSubmit(data: DemandeCongeFormValues) {
+        startTransition(async () => {
             console.log("Form submitted:", data);
 
             try {
@@ -204,138 +185,112 @@ export function DemandeCongeForm() {
         });
     }
 
+    // --- Rendu du composant ---
     return (
-        <div className="w-full max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="mb-6 pb-6 border-b">
+        <Card className="w-full max-w-2xl mx-auto shadow-lg border-gray-200/80">
+            <CardHeader className="bg-blue-600 text-white rounded-t-lg py-4">
                 <div className="flex items-center space-x-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                        <CalendarDays className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                        <h2 className="text-2xl font-semibold tracking-tight">
-                            Nouvelle demande de congé
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            Remplissez le formulaire pour soumettre votre demande
-                        </p>
+                    <CalendarIcon className="h-7 w-7" />
+                    <div>
+                        <CardTitle className="text-xl font-bold">Nouvelle demande de congé</CardTitle>
+                        <CardDescription className="text-blue-200">Remplissez ce formulaire pour soumettre votre demande.</CardDescription>
                     </div>
                 </div>
-            </div>
+            </CardHeader>
 
-            {/* Form Content */}
             <Form {...form}>
-                <div className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <CardContent className="p-6 space-y-8">
+                            {/* Étape 1: Période */}
+                            <FormField
+                                control={form.control}
+                                name="dateDebut"
+                                render={() => (
+                                    <FormItem>
+                                        <FormLabel className="text-base font-semibold text-gray-800">Période du congé</FormLabel>
+                                        <FormControl>
+                                            <div className="flex justify-center p-2 border rounded-lg bg-gray-50/80">
+                                                <Calendar
+                                                    mode="range"
+                                                    selected={dateRange}
+                                                    onSelect={setDateRange}
+                                                    className="bg-white"
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage className="pt-1" />
+                                    </FormItem>
+                                )}
+                            />
 
-                    {/* Calendrier */}
-                    <FormField
-                        control={form.control}
-                        name="dateDebut"
-                        render={() => (
-                            <FormItem>
-                                <FormLabel className="text-base font-medium">
-                                    Période de congé
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="flex justify-center">
-                                        <Calendar
-                                            mode="range"
-                                            defaultMonth={dateRange?.from}
-                                            selected={dateRange}
-                                            onSelect={setDateRange}
-                                            className="rounded-lg border"
-                                        />
-                                    </div>
-                                </FormControl>
-                                <p className="text-sm text-muted-foreground">
-                                    Sélectionnez vos dates de début et de fin
-                                </p>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                            {/* Étape 2: Type de congé */}
+                            <FormField
+                                control={form.control}
+                                name="typeConge"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-base font-semibold text-gray-800">Type de congé</FormLabel>
+                                        <FormControl>
+                                            {isLoadingTypes ? (
+                                                <Skeleton className="h-10 w-full" />
+                                            ) : (
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <SelectTrigger className="h-11">
+                                                        <SelectValue placeholder="Sélectionnez un type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {typeConges.map((type) => (
+                                                            <SelectItem key={type.id} value={String(type.id)}>
+                                                                {type.nom}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                    {/* Type de congé */}
-                    <FormField
-                        control={form.control}
-                        name="typeConge"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-base font-medium">
-                                    Type de congé
-                                </FormLabel>
-                                <FormControl>
-                                    {loadingTypes ? (
-                                        <Skeleton className="h-10 w-full" />
-                                    ) : (
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionnez un type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {typeConges.length > 0 ? (
-                                                    typeConges.map((type) => (
-                                                        <SelectItem key={type.id} value={type.id.toString()}>
-                                                            {type.nom}
-                                                        </SelectItem>
-                                                    ))
-                                                ) : (
-                                                    <SelectItem value="no-data" disabled>
-                                                        Aucun type disponible
-                                                    </SelectItem>
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                            {/* Étape 3: Motif */}
+                            <FormField
+                                control={form.control}
+                                name="motif"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-base font-semibold text-gray-800">Motif de la demande</FormLabel>
+                                        <FormControl>
+                                            <Textarea // <-- Utilisation du Textarea
+                                                placeholder="Veuillez préciser le motif de votre absence (ex: vacances, raison familiale...)"
+                                                className="resize-none"
+                                                rows={4}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
 
-                    {/* Motif */}
-                    <FormField
-                        control={form.control}
-                        name="motif"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-base font-medium">
-                                    Motif
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Précisez le motif de votre demande"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    {/* Bouton de soumission */}
-                    <div className="flex justify-end pt-4">
-                        <Button
-                            type="submit"
-                            disabled={pending}
-                            className="min-w-[160px]"
-                            onClick={form.handleSubmit(onSubmit)}
-                        >
-                            {pending ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Envoi en cours...
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    Envoyer la demande
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </div>
+                        <CardFooter className="p-6 pt-2">
+                            <Button type="submit" disabled={isPending} className="w-full bg-blue-600 hover:bg-blue-700 h-11 text-base">
+                                {isPending ? (
+                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Envoi en cours...</>
+                                ) : (
+                                    <><Send className="mr-2 h-5 w-5" /> Envoyer ma demande</>
+                                )}
+                            </Button>
+                        </CardFooter>
+                    </motion.div>
+                </form>
             </Form>
-        </div>
+        </Card>
     )
 }

@@ -13,7 +13,9 @@ import EffectivenessChart from "./Components/EffectivenessChart";
 import { Switch } from "@/components/ui/switch";
 import { TeamPresence } from "./Components/TeamPresence";
 import { HoursChart } from "./Components/HoursChart";
-import PresenceCalendar from "./Components/PresenceCalendar";
+import WeeklyTimeSheetCalendar from "./Components/PresenceCalendar";
+import { ProjectAndTaskManager } from "./Components/ProjectAndTaskManager";
+import { KpiAndStatistics } from "./Components/KpiAndStatistics";
 
 interface TeamStatus {
     employeeId: string;
@@ -55,6 +57,12 @@ export const TimeTrackingPage: React.FC = () => {
         anomalies: true
     });
     const [error, setError] = useState<string | null>(null);
+
+    // Temporary mock data for projects, isLoading, and api
+    // Replace with real data and logic as needed
+    const [projects, setProjects] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const api = {};
 
     // Fonction pour récupérer le statut de l'équipe
     const fetchTeamStatus = async () => {
@@ -137,17 +145,15 @@ export const TimeTrackingPage: React.FC = () => {
                             totalBreakTime={totalBreakTime}
                         />
 
-                        <TimeActions
-                            isWorking={isWorking}
-                            isOnBreak={isOnBreak}
-                            loading={loading}
-                            onCheckIn={handleCheckIn}
-                            onCheckOut={handleCheckOut}
-                            onBreakStart={handleBreakStart}
-                            onBreakEnd={handleBreakEnd}
-                        />
+                        <TimeActions />
 
-                        <PresenceCalendar />
+                        <KpiAndStatistics />
+
+                        <ProjectAndTaskManager />
+
+                        {/* <PresenceCalendar /> */}
+
+                        <WeeklyTimeSheetCalendar />
 
                         <WeekStatsCard weekStats={weekStats} weekRows={weekRows} />
                         <TodayHistory todayEntries={todayEntries} />

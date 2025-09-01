@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { CalendarDays, FileText } from "lucide-react"
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CalendarDays, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
+// --- Interface (Aucun changement) ---
 interface SoldeConge {
     annee: number;
     soldeInitial: number;
@@ -13,10 +15,12 @@ interface SoldeConge {
     typeCongeLibelle: string;
 }
 
+// --- Le Composant Amélioré ---
 export const SoldeConges = () => {
-    const [soldes, setSoldes] = useState<SoldeConge[]>([])
-    const [loading, setLoading] = useState(true)
+    const [soldes, setSoldes] = useState<SoldeConge[]>([]);
+    const [loading, setLoading] = useState(true);
 
+    // --- Logique de fetch (Aucun changement) ---
     useEffect(() => {
         const fetchSoldeConges = async () => {
             try {
@@ -69,128 +73,99 @@ export const SoldeConges = () => {
         fetchSoldeConges();
     }, []);
 
-    const getStatusVariant = (restant: number, initial: number) => {
-        const percentage = (restant / initial) * 100;
-        if (percentage > 70) return "secondary";
-        if (percentage > 30) return "default";
-        return "destructive";
-    };
-
+    // --- Composant de chargement (Skeleton) ---
     if (loading) {
         return (
-            <Card className="w-full">
-                <CardHeader className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                        <Skeleton className="h-12 w-12 rounded-lg" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-48" />
-                            <Skeleton className="h-4 w-64" />
-                        </div>
+            <div className="w-full p-2">
+                <div className="bg-blue-600 text-white rounded-t-lg p-4 flex items-center space-x-4">
+                    <Skeleton className="h-8 w-8 bg-white/20" />
+                    <Skeleton className="h-6 w-48 bg-white/20" />
+                </div>
+                <div className="p-6 bg-white rounded-b-lg border border-t-0">
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                        ))}
                     </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Skeleton className="h-10 w-full" />
-                    {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-16 w-full" />
-                    ))}
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         );
     }
 
+    // --- Composant Principal ---
     return (
-        <Card className="w-full shadow-sm">
-            <CardHeader className="pb-6">
-                <div className="flex items-center space-x-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                        <CalendarDays className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                        <CardTitle className="text-2xl font-semibold tracking-tight">
-                            Solde de congés
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                            Gestion et suivi de vos droits aux congés annuels
-                        </p>
-                    </div>
+        <div className="w-full shadow-lg rounded-xl border border-gray-200/80">
+            {/* Header inspiré de l'image */}
+            <div className="bg-blue-600 text-white rounded-t-lg p-4 flex items-center space-x-4">
+                <CalendarDays className="h-7 w-7" />
+                <div>
+                    <h2 className="text-xl font-bold">Solde de vos congés</h2>
+                    <p className="text-sm text-blue-200">Consultez vos droits restants pour l'année en cours.</p>
                 </div>
-            </CardHeader>
+            </div>
 
-            <CardContent className="space-y-6">
-                {soldes.length > 0 ? (
-                    <>
-                        {/* Vue Desktop - Liste simple */}
-                        <div className="hidden md:block space-y-3">
+            {/* Contenu de la carte */}
+            <CardContent className="bg-gray-50/80 p-4 sm:p-6 rounded-b-lg">
+                <AnimatePresence>
+                    {soldes.length > 0 ? (
+                        <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
                             {soldes.map((solde, index) => (
-                                <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="h-2 w-2 rounded-full bg-primary" />
-                                        <div>
-                                            <span className="font-medium">{solde.typeCongeLibelle}</span>
-                                            <span className="ml-2 text-sm text-muted-foreground">({solde.annee})</span>
-                                        </div>
+                                <motion.div
+                                    key={index}
+                                    className="bg-white p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center sm:justify-between transition-shadow hover:shadow-md"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                    {/* Informations sur le type de congé */}
+                                    <div className="flex-1 mb-4 sm:mb-0">
+                                        <p className="font-semibold text-gray-800">{solde.typeCongeLibelle}</p>
+                                        <p className="text-sm text-gray-500">Année {solde.annee}</p>
                                     </div>
-                                    <div className="flex items-center space-x-8">
-                                        <div className="text-center">
-                                            <div className="text-sm text-muted-foreground">Acquis</div>
-                                            <div className="font-semibold">{solde.soldeInitial}j</div>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="text-sm text-muted-foreground">Utilisés</div>
-                                            <div className="font-semibold">{solde.soldePris}j</div>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="text-sm text-muted-foreground">Restants</div>
-                                            <div className="font-semibold text-primary">{solde.soldeRestant}j</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
 
-                        {/* Vue Mobile - Liste simple */}
-                        <div className="md:hidden space-y-3">
-                            {soldes.map((solde, index) => (
-                                <div key={index} className="p-4 rounded-lg border bg-card">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center space-x-2">
-                                            <div className="h-2 w-2 rounded-full bg-primary" />
-                                            <span className="font-medium">{solde.typeCongeLibelle}</span>
+                                    {/* Jauges et chiffres */}
+                                    <div className="flex items-center space-x-4 sm:space-x-6 text-sm">
+                                        <div className="text-center">
+                                            <div className="text-gray-500">Acquis</div>
+                                            <div className="font-bold text-lg text-gray-700">{solde.soldeInitial}j</div>
                                         </div>
-                                        <span className="text-sm text-muted-foreground">{solde.annee}</span>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                                        <div>
-                                            <div className="text-muted-foreground">Acquis</div>
-                                            <div className="font-semibold">{solde.soldeInitial}j</div>
+                                        <div className="text-center">
+                                            <div className="text-gray-500">Utilisés</div>
+                                            <div className="font-bold text-lg text-gray-700">{solde.soldePris}j</div>
                                         </div>
-                                        <div>
-                                            <div className="text-muted-foreground">Utilisés</div>
-                                            <div className="font-semibold">{solde.soldePris}j</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-muted-foreground">Restants</div>
-                                            <div className="font-semibold text-primary">{solde.soldeRestant}j</div>
+                                        <div className="text-center p-2 rounded-lg bg-blue-50">
+                                            <div className="text-blue-600">Restants</div>
+                                            <div className="font-bold text-xl text-blue-700">{solde.soldeRestant}j</div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/50 mb-4">
-                            <FileText className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-2">
-                            Aucun solde disponible
-                        </h3>
-                        <p className="text-sm text-muted-foreground max-w-md">
-                            Vos soldes de congés apparaîtront ici une fois qu'ils seront configurés par votre service RH.
-                        </p>
-                    </div>
-                )}
+                        </motion.div>
+                    ) : (
+                        // État si aucun solde n'est disponible
+                        <motion.div
+                            className="flex flex-col items-center justify-center py-10 text-center"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                        >
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 mb-4">
+                                <FileText className="h-8 w-8 text-gray-500" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                                Aucun solde disponible
+                            </h3>
+                            <p className="text-sm text-gray-600 max-w-xs">
+                                Vos soldes de congés apparaîtront ici dès qu'ils seront disponibles.
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </CardContent>
-        </Card>
+        </div>
     );
 }

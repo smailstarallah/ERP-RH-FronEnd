@@ -3,6 +3,7 @@ import { DemandeCongeForm } from "./Components/DemandeConges"
 import { SoldeConges } from "./Components/SoldeConges"
 import { ValidationConges } from "./Components/ValidationConges"
 import { User } from 'lucide-react'
+import { AnalyticsDashboard } from './Components/test';
 
 export const GestionConges = () => {
     // Taken leaves state
@@ -171,12 +172,13 @@ export const GestionConges = () => {
 
                 {/* Section formulaire */}
                 <div className="w-full lg:basis-1/2">
-                    <div className="bg-card rounded-lg border shadow-sm p-6">
+                    <div>
                         <DemandeCongeForm />
                     </div>
                 </div>
 
             </div>
+            <AnalyticsDashboard />
             {/* <PdfTesterComponent /> */}
         </div>
     )
