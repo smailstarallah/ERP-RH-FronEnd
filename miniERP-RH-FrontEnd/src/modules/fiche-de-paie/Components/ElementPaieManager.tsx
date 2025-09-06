@@ -55,7 +55,6 @@ interface ApiConfig {
     headers?: Record<string, string>;
 }
 
-// Configuration API par défaut
 const DEFAULT_API_CONFIG: ApiConfig = {
     baseUrl: '/api',
     endpoints: {
@@ -226,10 +225,28 @@ const ElementPaieManager = ({
 
     const handleDelete = async (id: number) => {
         try {
-            setElements(prev => prev.filter(el => el.id !== id));
-            setDeleteConfirmId(null);
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:8080/api/fiche-paie/supprimer-element-paie/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                // Supprimer l'élément de la liste locale après succès de l'API
+                setElements(prev => prev.filter(el => el.id !== id));
+                setDeleteConfirmId(null);
+                console.log('✅ Élément de paie supprimé avec succès !');
+            } else {
+                const errorText = await response.text();
+                console.error('Erreur lors de la suppression:', response.status, errorText);
+                alert('❌ Erreur lors de la suppression de l\'élément');
+            }
         } catch (error) {
             console.error('Erreur lors de la suppression:', error);
+            alert('❌ Erreur réseau lors de la suppression');
         }
     };
 
@@ -258,178 +275,134 @@ const ElementPaieManager = ({
 
     return (
         <>
-            {/* Modal principal responsive */}
+            {/* Modal principal avec design institutionnel */}
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-w-7xl w-[95vw] sm:w-[65vw] h-[95vh] sm:h-[75vh] p-0 flex flex-col">
-                    <div className="px-6 pt-5 pb-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/30 relative">
-                        <div className="relative z-10">
-                            <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                                <span className="w-1 h-5 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></span>
-                                Gestion des éléments de paie
-                            </h2>
-                            <p className="text-sm text-slate-600 mt-1.5 leading-relaxed ml-3">
-                                Administration des composants de calcul salarial pour cet employé
-                            </p>
-                        </div>
+                <DialogContent className="max-w-7xl w-[95vw] sm:w-[65vw] h-[95vh] sm:h-[75vh] p-0 flex flex-col border border-gray-300 shadow-lg">
+                    <div className="px-6 py-4 border-b border-gray-200 bg-white">
+                        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                                <Plus className="w-4 h-4 text-white" />
+                            </div>
+                            Gestion des éléments de paie
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Administration des composants de calcul salarial
+                        </p>
                     </div>
 
                     {/* Contenu du modal, scrollable si besoin */}
                     <div className="flex-1 flex flex-col min-h-0">
-                        <div className="p-4 space-y-4 bg-gradient-to-b from-white to-slate-50/30 border-b border-slate-100">
-                            {/* En-tête avec accent créatif */}
-                            <div className="flex justify-between items-center gap-4">
-                                <div className="flex-1 min-w-0 relative">
-                                    {/* Indicateur visuel subtil */}
-                                    <div className="absolute -left-1 top-0 w-0.5 h-full bg-gradient-to-b from-blue-500 to-blue-600 rounded-full opacity-60"></div>
-
-                                    <div className="pl-4">
-                                        <h3 className="text-lg font-medium text-slate-900 truncate flex items-center gap-2">
-                                            Éléments de paie
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                        </h3>
-                                        <p className="text-sm text-slate-600 mt-0.5">
-                                            <span className="font-medium text-blue-700">{filteredElements.length}</span> élément{filteredElements.length > 1 ? 's' : ''}
-                                            {filteredElements.length > 1 ? ' référencés' : ' référencé'}
-                                        </p>
+                        <div className="p-4 bg-gray-50 border-b border-gray-200">
+                            {/* En-tête institutionnel */}
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <h3 className="text-base font-medium text-gray-800">
+                                        Éléments de paie
+                                    </h3>
+                                    <div className="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-medium rounded">
+                                        {filteredElements.length} élément{filteredElements.length > 1 ? 's' : ''}
                                     </div>
                                 </div>
 
                                 <Button
                                     onClick={handleAdd}
-                                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm transition-all duration-200 hover:shadow-md"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2"
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
-                                    Nouvel élément
+                                    Ajouter
                                 </Button>
                             </div>
 
-                            {/* Barre de contrôles optimisée */}
-                            <div className="flex gap-2">
-                                {/* Zone de recherche avec effet glassmorphism subtil */}
+                            {/* Barre de recherche et filtres */}
+                            <div className="flex gap-3 mt-3">
+                                {/* Zone de recherche */}
                                 <div className="relative flex-1">
-                                    <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-lg border border-slate-200/60"></div>
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 h-4 w-4" />
-                                        <Input
-                                            placeholder="Rechercher par libellé, type..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-10 bg-transparent border-0 shadow-none focus:ring-2 focus:ring-blue-500/20"
-                                        />
-                                    </div>
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                                    <Input
+                                        placeholder="Rechercher par libellé, type..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    />
                                 </div>
 
-                                {/* Select optimisé avec ShadCN */}
-                                <div className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm rounded-lg border border-slate-200/60 px-2 py-1">
-                                    <Filter className="h-3.5 w-3.5 text-slate-500 flex-shrink-0" />
-                                    <Select value={filterType} onValueChange={setFilterType}>
-                                        <SelectTrigger className="w-[110px] h-7 border-0 bg-transparent shadow-none focus:ring-0 text-xs font-medium">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="min-w-[140px]">
-                                            <SelectItem value="ALL" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                                                    Tous types
-                                                </div>
-                                            </SelectItem>
-                                            <SelectItem value="GAIN" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                    Gains
-                                                </div>
-                                            </SelectItem>
-                                            <SelectItem value="RETENUE" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                                    Retenues
-                                                </div>
-                                            </SelectItem>
-                                            <SelectItem value="COTISATION" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                    Cotisations
-                                                </div>
-                                            </SelectItem>
-                                            <SelectItem value="PRIME" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                                    Primes
-                                                </div>
-                                            </SelectItem>
-                                            <SelectItem value="INDEMNITE" className="text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                                    Indemnités
-                                                </div>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                {/* Filtre par type */}
+                                <Select value={filterType} onValueChange={setFilterType}>
+                                    <SelectTrigger className="w-[140px] border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                                        <Filter className="h-4 w-4 text-gray-500 mr-2" />
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">Tous types</SelectItem>
+                                        <SelectItem value="GAIN">Gains</SelectItem>
+                                        <SelectItem value="RETENUE">Retenues</SelectItem>
+                                        <SelectItem value="COTISATION">Cotisations</SelectItem>
+                                        <SelectItem value="PRIME">Primes</SelectItem>
+                                        <SelectItem value="INDEMNITE">Indemnités</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
                         {/* Contenu scrollable */}
                         <div className="flex-1 px-4 sm:px-6 overflow-y-auto" style={{ maxHeight: 'calc(60vh - 32px)', minHeight: '120px' }}>
                             {loading ? (
-                                <div className="flex items-center justify-center py-12">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                                 </div>
                             ) : filteredElements.length === 0 ? (
-                                <Card>
-                                    <CardContent className="text-center py-12">
-                                        <p className="text-muted-foreground">Aucun élément trouvé</p>
-                                    </CardContent>
-                                </Card>
+                                <div className="text-center py-8 text-gray-500">
+                                    <p>Aucun élément trouvé</p>
+                                </div>
                             ) : (
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {filteredElements.map((element) => (
-                                        <Card key={element.id} className="shadow-md border border-muted bg-white/95 w-full">
-                                            <CardHeader className="pb-1 pt-2 px-4">
-                                                <div className="flex justify-between items-center gap-2">
+                                        <Card key={element.id} className="border border-gray-200 bg-white shadow-sm">
+                                            <CardHeader className="pb-3 pt-3 px-4">
+                                                <div className="flex justify-between items-start gap-3">
                                                     <div className="flex-1 min-w-0">
-                                                        <CardTitle className="text-base font-bold truncate text-neutral-800 mb-1">{element.libelle}</CardTitle>
+                                                        <CardTitle className="text-sm font-semibold text-gray-800 mb-1">{element.libelle}</CardTitle>
                                                         {element.sousType && (
-                                                            <p className="text-xs font-medium text-muted-foreground bg-muted/60 rounded px-2 py-0.5 inline-block mt-0.5">{element.sousType}</p>
+                                                            <p className="text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 inline-block">{element.sousType}</p>
                                                         )}
                                                     </div>
-                                                    <Badge variant={getTypeVariant(element.type)} className="ml-2 flex-shrink-0 text-xs px-2 py-1 uppercase tracking-wide bg-muted text-neutral-700 border-muted-foreground">
+                                                    <Badge variant={getTypeVariant(element.type)} className="text-xs px-2 py-1 bg-blue-100 text-blue-800 border-blue-200">
                                                         {element.type}
                                                     </Badge>
                                                 </div>
                                             </CardHeader>
-                                            <CardContent className="pt-0 pb-2 px-4 space-y-2">
+                                            <CardContent className="pt-0 pb-3 px-4 space-y-3">
                                                 <div className="text-sm flex items-center gap-2">
-                                                    <span className="font-semibold text-muted-foreground">{element.modeCalcul} :</span>
-                                                    <span className="font-mono text-neutral-700 font-bold">{formatCalcul(element)}</span>
+                                                    <span className="font-medium text-gray-600">{element.modeCalcul}:</span>
+                                                    <span className="font-mono text-gray-800 font-medium">{formatCalcul(element)}</span>
                                                 </div>
 
                                                 <div className="flex flex-wrap gap-2 items-center justify-between">
-                                                    <div className="flex gap-1">
-                                                        {element.soumisIR && <Badge variant="default" className="text-xs bg-green-50 text-green-700 border-green-200">IR</Badge>}
-                                                        {element.soumisCNSS && <Badge variant="default" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">CNSS</Badge>}
+                                                    <div className="flex gap-2">
+                                                        {element.soumisIR && <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">IR</Badge>}
+                                                        {element.soumisCNSS && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">CNSS</Badge>}
                                                     </div>
 
                                                     <div className="flex gap-1">
-                                                        <Button variant="outline" size="icon" className="rounded-full border-muted/50 hover:bg-muted/60" onClick={() => handleView(element)} title="Voir">
-                                                            <Eye className="h-4 w-4 text-neutral-700" />
+                                                        <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-gray-300 hover:bg-gray-50" onClick={() => handleView(element)} title="Voir">
+                                                            <Eye className="h-4 w-4 text-gray-600" />
                                                         </Button>
-                                                        <Button variant="outline" size="icon" className="rounded-full border-muted/50 hover:bg-muted/60" onClick={() => handleEdit(element)} title="Modifier">
-                                                            <Edit className="h-4 w-4 text-neutral-500" />
+                                                        <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-gray-300 hover:bg-gray-50" onClick={() => handleEdit(element)} title="Modifier">
+                                                            <Edit className="h-4 w-4 text-gray-600" />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
-                                                            size="icon"
-                                                            className="rounded-full border-red-300/40 hover:bg-red-50"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0 border-red-300 hover:bg-red-50"
                                                             onClick={() => setDeleteConfirmId(element.id)}
                                                             title="Supprimer"
                                                         >
-                                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                                            <Trash2 className="h-4 w-4 text-red-600" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                                 {element.description && (
-                                                    <div className="text-xs text-muted-foreground mt-2 bg-muted/60 rounded px-2 py-1">
+                                                    <div className="text-xs text-gray-600 bg-gray-50 rounded px-2 py-1 border border-gray-200">
                                                         {element.description}
                                                     </div>
                                                 )}

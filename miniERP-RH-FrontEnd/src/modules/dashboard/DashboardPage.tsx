@@ -40,12 +40,12 @@ const DashboardPage = () => {
 
                     {/* Onglet Time Tracking */}
                     <TabsContent value="time" className="space-y-6">
-                        {/* <TimeModule /> */}
+                        <TimeModule />
                     </TabsContent>
 
                     {/* Onglet Fiches de Paie */}
                     <TabsContent value="payroll" className="space-y-6">
-                        {/* <PayrollModule /> */}
+                        <PayrollModule />
                     </TabsContent>
                 </Tabs>
             </div>

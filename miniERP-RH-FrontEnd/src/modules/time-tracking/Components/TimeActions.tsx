@@ -4,7 +4,8 @@ import {
     Inbox,
     ListTodo,
     PlusCircle,
-    ListPlus
+    ListPlus,
+    Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -29,7 +30,7 @@ type Priority = 'low' | 'medium' | 'high' | 'critical';
 interface TaskUI { id: string; name: string; priority: Priority; }
 interface ProjectUI { id: string; name: string; }
 interface TimelineEntry {
-    type: 'WORK' | 'BREAK';
+    type: 'WORK' | 'BREAK' | 'MEETING';
     startTime: Date;
     endTime: Date | null;
     description: string;
@@ -60,10 +61,9 @@ export const TimeActions = () => {
             try {
                 if (!empId || !api.getTodayTimeline) return;
                 const timeline = await api.getTodayTimeline(empId);
-                console.log('API getTodayTimeline response:', timeline);
-                // timeline doit être un tableau d'objets { type, startTime, endTime, description, ... }
+
                 interface ApiTimelineEntry {
-                    type: 'TRAVAIL' | 'PAUSE' | 'WORK' | 'BREAK'; // Accept both backend and frontend values
+                    type: 'TRAVAIL' | 'PAUSE' | 'REUNION' | 'WORK' | 'BREAK' | 'MEETING'; // Accept both backend and frontend values
                     startTime: string;
                     endTime: string | null;
                     description: string;
@@ -72,7 +72,7 @@ export const TimeActions = () => {
                 }
 
                 const mappedTimeline = (timeline as ApiTimelineEntry[]).map((entry: ApiTimelineEntry): TimelineEntry => {
-                    let mappedType: 'WORK' | 'BREAK';
+                    let mappedType: 'WORK' | 'BREAK' | 'MEETING';
                     switch (entry.type) {
                         case 'TRAVAIL':
                         case 'WORK':
@@ -82,8 +82,12 @@ export const TimeActions = () => {
                         case 'BREAK':
                             mappedType = 'BREAK';
                             break;
+                        case 'REUNION':
+                        case 'MEETING':
+                            mappedType = 'MEETING';
+                            break;
                         default:
-                            mappedType = 'WORK'; // fallback, but log
+                            mappedType = 'WORK';
                             console.warn('Unknown timeline entry type from API:', entry.type, entry);
                     }
                     return {
@@ -93,7 +97,6 @@ export const TimeActions = () => {
                         endTime: entry.endTime ? new Date(entry.endTime) : null
                     };
                 });
-                console.log('Mapped timeline for display:', mappedTimeline);
                 setDailyTimeline(mappedTimeline);
                 // Fix: Set status according to the last timeline entry after reload
                 if (mappedTimeline.length > 0) {
@@ -103,6 +106,8 @@ export const TimeActions = () => {
                             setStatus('WORKING');
                         } else if (last.type === 'BREAK') {
                             setStatus('ON_BREAK');
+                        } else if (last.type === 'MEETING') {
+                            setStatus('WORKING'); // Les réunions sont considérées comme du travail
                         }
                     } else {
                         setStatus('NOT_STARTED');
@@ -131,6 +136,7 @@ export const TimeActions = () => {
 
     type PendingAction =
         | { type: 'BREAK_START' }
+        | { type: 'MEETING_START' }
         | { type: 'TASK_CHANGE', task: TaskUI, project: ProjectUI };
     const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
     const [description, setDescription] = useState("");
@@ -195,7 +201,7 @@ export const TimeActions = () => {
 
     // --- GESTIONNAIRES D'ACTIONS LIÉS À L'API ---
 
-    const callPointageApi = async (type: 'ENTREE' | 'SORTIE' | 'PAUSE' | 'FIN_PAUSE', desc?: string) => {
+    const callPointageApi = async (type: 'ENTREE' | 'SORTIE' | 'PAUSE' | 'FIN_PAUSE' | 'REUNION', desc?: string) => {
         setLoading(true);
         setMessage(null);
         try {
@@ -294,7 +300,7 @@ export const TimeActions = () => {
         setDescription("");
     };
 
-    // Validation de la modale (pause ou changement de tâche)
+    // Validation de la modale (pause, réunion ou changement de tâche)
     const handleConfirmAction = async () => {
         if (!pendingAction) return;
         if (pendingAction.type === 'BREAK_START') {
@@ -308,12 +314,22 @@ export const TimeActions = () => {
                 setTaskElapsedTime(0);
                 setMessage({ type: 'info', text: 'Pause commencée' });
             }
+        } else if (pendingAction.type === 'MEETING_START') {
+            const success = await callPointageApi('REUNION', description);
+            if (success) {
+                endCurrentActivity();
+                setDailyTimeline(prev => [...prev, { type: 'MEETING', startTime: new Date(), endTime: null, description: description || "Réunion" }]);
+                setCurrentTask(null);
+                setCurrentProject(null);
+                setStatus('WORKING'); // Les réunions sont considérées comme du travail
+                setTaskElapsedTime(0);
+                setMessage({ type: 'info', text: 'Réunion commencée' });
+            }
         } else if (pendingAction.type === 'TASK_CHANGE') {
             const { task, project } = pendingAction;
             setLoading(true);
             setMessage(null);
             try {
-                console.log("eeeeeeeeeeeeeeeeeee", description);
                 const url = `http://localhost:8080/api/pointages/change-tasks/${empId}/${task.id}?description=${encodeURIComponent(description || '')}`;
                 const response = await fetch(url, {
                     method: 'POST',
@@ -347,21 +363,6 @@ export const TimeActions = () => {
         setDescription("");
     };
 
-    const handleConfirmBreak = async () => {
-        const success = await callPointageApi('PAUSE', description);
-        if (success) {
-            endCurrentActivity();
-            setDailyTimeline(prev => [...prev, { type: 'BREAK', startTime: new Date(), endTime: null, description: description || "Pause" }]);
-            setCurrentTask(null);
-            setCurrentProject(null);
-            setStatus('ON_BREAK');
-            setTaskElapsedTime(0);
-            setMessage({ type: 'info', text: 'Pause commencée' });
-        }
-        setPendingAction(null);
-        setDescription("");
-    };
-
     const handleEndBreak = async () => {
         const success = await callPointageApi('FIN_PAUSE');
         if (success) {
@@ -377,7 +378,7 @@ export const TimeActions = () => {
     // --- CALCUL DES TEMPS TOTAUX ---
     const totalWorkTime = useMemo(() => {
         return dailyTimeline
-            .filter(entry => entry.type === 'WORK')
+            .filter(entry => entry.type === 'WORK' || entry.type === 'MEETING')
             .reduce((acc, entry) => {
                 const end = entry.endTime ? entry.endTime.getTime() : Date.now();
                 return acc + Math.max(0, (end - entry.startTime.getTime()) / 1000);
@@ -440,7 +441,8 @@ export const TimeActions = () => {
                 <div className="grid grid-cols-2 gap-3">
                     {status === 'WORKING' ? (<>
                         <Button onClick={() => setPendingAction({ type: 'BREAK_START' })} variant="secondary" size="lg" className="h-12" disabled={loading}><Pause className="mr-2 h-5 w-5" /> Pause</Button>
-                        <Button onClick={() => setCommandMenuOpen(true)} size="lg" className="h-12" disabled={loading}><Briefcase className="mr-2 h-5 w-5" /> Changer Tâche</Button>
+                        <Button onClick={() => setPendingAction({ type: 'MEETING_START' })} variant="outline" size="lg" className="h-12" disabled={loading}><Users className="mr-2 h-5 w-5" /> Réunion</Button>
+                        <Button onClick={() => setCommandMenuOpen(true)} size="lg" className="h-12 col-span-2" disabled={loading}><Briefcase className="mr-2 h-5 w-5" /> Changer Tâche</Button>
                         {currentTask && (
                             <Button onClick={() => setChangeStateOpen(true)} size="lg" className="h-12 col-span-2" variant="outline" disabled={loading}>
                                 <MessageSquare className="mr-2 h-5 w-5" /> Changer l'état de la tâche
@@ -568,7 +570,11 @@ export const TimeActions = () => {
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2"><History className="h-4 w-4" /> Votre journée</h3>
                     <div className="space-y-1 max-h-48 overflow-y-auto pr-2">{dailyTimeline.map((entry, index) => (
                         <div key={index} className={`flex items-start p-2 rounded-md ${!entry.endTime ? 'bg-blue-50' : 'bg-slate-50'}`}>
-                            <div className="mt-1 mr-3">{entry.type === 'WORK' ? <Briefcase className="h-5 w-5 text-blue-500" /> : <Coffee className="h-5 w-5 text-amber-600" />}</div>
+                            <div className="mt-1 mr-3">
+                                {entry.type === 'WORK' ? <Briefcase className="h-5 w-5 text-blue-500" /> :
+                                    entry.type === 'BREAK' ? <Coffee className="h-5 w-5 text-amber-600" /> :
+                                        <Users className="h-5 w-5 text-green-600" />}
+                            </div>
                             <div className="flex-1">
                                 <p className="font-medium text-sm text-slate-800">{entry.task?.name || entry.description}</p>
                                 <p className="text-xs text-slate-500 italic">{entry.task ? entry.projectName : ''}</p>
@@ -673,26 +679,34 @@ export const TimeActions = () => {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {pendingAction?.type === 'BREAK_START' ? 'Prendre une pause' : 'Changer de tâche'}
+                            {pendingAction?.type === 'BREAK_START' ? 'Prendre une pause' :
+                                pendingAction?.type === 'MEETING_START' ? 'Commencer une réunion' :
+                                    'Changer de tâche'}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {pendingAction?.type === 'BREAK_START'
                                 ? 'Ajoutez une description (ex: Pause déjeuner). Elle sera visible dans vos rapports.'
-                                : 'Ajoutez un descriptif pour ce changement au début de tâche (optionnel). Elle sera visible dans vos rapports.'}
+                                : pendingAction?.type === 'MEETING_START'
+                                    ? 'Ajoutez une description de la réunion (ex: Réunion équipe, Point client...). Elle sera visible dans vos rapports.'
+                                    : 'Ajoutez un descriptif pour ce changement au début de tâche (optionnel). Elle sera visible dans vos rapports.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="py-2">
                         <Input
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder={pendingAction?.type === 'BREAK_START' ? 'Pause café' : 'description...'}
+                            placeholder={pendingAction?.type === 'BREAK_START' ? 'Pause café' :
+                                pendingAction?.type === 'MEETING_START' ? 'Réunion équipe' :
+                                    'description...'}
                             autoFocus
                         />
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setPendingAction(null)}>Annuler</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmAction}>
-                            {pendingAction?.type === 'BREAK_START' ? 'Démarrer la pause' : 'Valider'}
+                            {pendingAction?.type === 'BREAK_START' ? 'Démarrer la pause' :
+                                pendingAction?.type === 'MEETING_START' ? 'Commencer la réunion' :
+                                    'Valider'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

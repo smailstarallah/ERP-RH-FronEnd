@@ -1,12 +1,34 @@
 import React, { useState, useEffect } from 'react';
+
+// Styles CSS pour les animations
+const fadeInUpKeyframes = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+// Injection des styles
+if (typeof document !== 'undefined') {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = fadeInUpKeyframes;
+    document.head.appendChild(styleElement);
+}
 import {
     Users, Building2, Loader2, AlertCircle, Calendar, Phone, Mail,
-    Eye, Badge, RefreshCw, Search, Filter, ChevronDown, MapPin, Clock,
+    Eye, Badge, RefreshCw, Search, Filter, MapPin, Clock,
     MoreVertical,
     Calculator,
     FileText,
     Download,
-    DollarSign
+    DollarSign,
+    Info
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -48,9 +70,8 @@ import {
 } from '@/components/ui/select';
 import ElementPaieForm from './AjouterElementPaieRefactored';
 import ElementPaieManager from './ElementPaieManager';
-// Avatar remplacé par un composant simple
 
-// Interfaces TypeScript
+
 interface Employe {
     id: number;
     nom: string;
@@ -203,143 +224,120 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         return { total, active, inactive: total - active };
     };
 
-    // Typage des props pour EmployeeDetailModal
     const EmployeeDetailModal = ({ employee, open, onOpenChange }: { employee: any, open: boolean, onOpenChange: (open: boolean) => void }) => (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        <SimpleAvatar className="w-12 h-12">
+            <DialogContent className="max-w-2xl p-0">
+                {/* ====== EN-TÊTE BLEU (50% BLEU) ====== */}
+                <DialogHeader className="bg-blue-600 text-white rounded-t-lg p-6">
+                    <div className="flex items-center gap-4">
+                        <SimpleAvatar className="w-16 h-16 text-2xl border-2 border-white/50">
                             {getInitials(employee.nom, employee.preNom)}
                         </SimpleAvatar>
                         <div>
-                            <h3 className="text-xl font-semibold">{employee.nom} {employee.preNom}</h3>
-                            <p className="text-sm text-muted-foreground">{employee.poste}</p>
+                            <DialogTitle className="text-2xl font-bold text-white">
+                                {employee.nom} {employee.preNom}
+                            </DialogTitle>
+                            <DialogDescription className="text-blue-200">
+                                {employee.poste}
+                            </DialogDescription>
                         </div>
-                    </DialogTitle>
-                    <DialogDescription>
-                        Informations détaillées de l'employé
-                    </DialogDescription>
+                    </div>
                 </DialogHeader>
 
-                <div className="grid gap-6 mt-6">
-                    {/* Informations générales */}
-                    <div className="space-y-4">
-                        <h4 className="text-lg font-medium flex items-center gap-2">
-                            <Badge className="w-5 h-5" />
-                            Informations générales
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Numéro employé</p>
-                                <p className="font-medium">{employee.numeroEmploye}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Département</p>
-                                <BadgeComponent variant="secondary">{employee.departement}</BadgeComponent>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Type d'utilisateur</p>
-                                <BadgeComponent variant="outline">{employee.userType}</BadgeComponent>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Statut</p>
-                                <BadgeComponent variant={employee.active ? "default" : "destructive"}>
-                                    {employee.active ? 'Actif' : 'Inactif'}
-                                </BadgeComponent>
-                            </div>
-                        </div>
-                    </div>
+                {/* ====== CONTENU GRIS ET BLANC (30% GRIS, 20% BLANC) ====== */}
+                <div className="max-h-[65vh] overflow-y-auto bg-slate-50 p-6">
+                    <div className="space-y-6">
+                        {/* --- Section: Informations générales --- */}
+                        <InfoCard title="Informations générales" icon={<Info className="w-5 h-5 text-blue-600" />}>
+                            <InfoGrid>
+                                <InfoItem label="Numéro employé" value={employee.numeroEmploye} />
+                                <InfoItem label="Département">
+                                    <BadgeComponent variant="secondary">{employee.departement}</BadgeComponent>
+                                </InfoItem>
+                                <InfoItem label="Type d'utilisateur">
+                                    <BadgeComponent variant="outline">{employee.userType}</BadgeComponent>
+                                </InfoItem>
+                                <InfoItem label="Statut">
+                                    <BadgeComponent variant={employee.active ? "default" : "destructive"}>
+                                        {employee.active ? 'Actif' : 'Inactif'}
+                                    </BadgeComponent>
+                                </InfoItem>
+                            </InfoGrid>
+                        </InfoCard>
 
-                    {/* Contact */}
-                    <div className="space-y-4">
-                        <h4 className="text-lg font-medium flex items-center gap-2">
-                            <Phone className="w-5 h-5" />
-                            Contact
-                        </h4>
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className="flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-muted-foreground" />
-                                <a href={`mailto:${employee.email}`} className="text-blue-600 hover:underline">
-                                    {employee.email}
-                                </a>
+                        {/* --- Section: Contact --- */}
+                        <InfoCard title="Contact" icon={<Phone className="w-5 h-5 text-blue-600" />}>
+                            <div className="space-y-3">
+                                <ContactItem icon={<Mail />} href={`mailto:${employee.email}`} value={employee.email} />
+                                <ContactItem icon={<Phone />} href={`tel:${employee.telephone}`} value={employee.telephone} />
+                                {employee.adresse && <ContactItem icon={<MapPin />} value={employee.adresse} />}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-muted-foreground" />
-                                <a href={`tel:${employee.telephone}`} className="text-blue-600 hover:underline">
-                                    {employee.telephone}
-                                </a>
-                            </div>
-                            {employee.adresse && (
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                                    <span>{employee.adresse}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                        </InfoCard>
 
-                    {/* Dates importantes */}
-                    <div className="space-y-4">
-                        <h4 className="text-lg font-medium flex items-center gap-2">
-                            <Calendar className="w-5 h-5" />
-                            Dates importantes
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Date de naissance</p>
-                                <p>{formatDate(employee.dateNaissance)}</p>
-                            </div>
-                            {employee.dateEmbauche && (
-                                <div className="space-y-2">
-                                    <p className="text-sm text-muted-foreground">Date d'embauche</p>
-                                    <p>{formatDate(employee.dateEmbauche)}</p>
-                                </div>
-                            )}
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Dernière connexion</p>
-                                <p className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    {formatDateTime(employee.dernierConnexion)}
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">Créé le</p>
-                                <p>{formatDateTime(employee.dateCreation)}</p>
-                            </div>
-                        </div>
-                    </div>
+                        {/* --- Section: Dates importantes --- */}
+                        <InfoCard title="Dates importantes" icon={<Calendar className="w-5 h-5 text-blue-600" />}>
+                            <InfoGrid>
+                                <InfoItem label="Date de naissance" value={formatDate(employee.dateNaissance)} />
+                                {employee.dateEmbauche && <InfoItem label="Date d'embauche" value={formatDate(employee.dateEmbauche)} />}
+                                <InfoItem label="Dernière connexion" value={formatDateTime(employee.dernierConnexion)} icon={<Clock className="w-4 h-4 mr-1.5" />} />
+                                <InfoItem label="Créé le" value={formatDateTime(employee.dateCreation)} />
+                            </InfoGrid>
+                        </InfoCard>
 
-                    {/* Informations complémentaires */}
-                    {(employee.cin || employee.salairBase || employee.tauxHoraire) && (
-                        <div className="space-y-4">
-                            <h4 className="text-lg font-medium">Informations complémentaires</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {employee.cin && (
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-muted-foreground">CIN</p>
-                                        <p>{employee.cin}</p>
-                                    </div>
-                                )}
-                                {employee.salairBase && (
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-muted-foreground">Salaire de base</p>
-                                        <p>{employee.salairBase.toLocaleString()} MAD</p>
-                                    </div>
-                                )}
-                                {employee.tauxHoraire && (
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-muted-foreground">Taux horaire</p>
-                                        <p>{employee.tauxHoraire} MAD/h</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                        {/* --- Section: Informations complémentaires --- */}
+                        {(employee.cin || employee.salairBase || employee.tauxHoraire) && (
+                            <InfoCard title="Informations complémentaires" icon={<FileText className="w-5 h-5 text-blue-600" />}>
+                                <InfoGrid>
+                                    {employee.cin && <InfoItem label="CIN" value={employee.cin} />}
+                                    {employee.salairBase && <InfoItem label="Salaire de base" value={`${employee.salairBase.toLocaleString()} MAD`} />}
+                                    {employee.tauxHoraire && <InfoItem label="Taux horaire" value={`${employee.tauxHoraire} MAD/h`} />}
+                                </InfoGrid>
+                            </InfoCard>
+                        )}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
     );
+
+    // --- SOUS-COMPOSANTS POUR UNE MEILLEURE STRUCTURE ET LISIBILITÉ ---
+
+    const InfoCard = ({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) => (
+        <div className="bg-white p-4 rounded-lg border border-slate-200">
+            <h4 className="text-base font-semibold flex items-center gap-2 text-slate-800 mb-4">
+                {icon} {title}
+            </h4>
+            {children}
+        </div>
+    );
+
+    const InfoGrid = ({ children }: { children: React.ReactNode }) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">{children}</div>
+    );
+
+    const InfoItem = ({ label, value, icon, children }: { label: string, value?: string, icon?: React.ReactNode, children?: React.ReactNode }) => (
+        <div>
+            <p className="text-sm text-slate-500">{label}</p>
+            {value ? (
+                <p className="font-semibold text-slate-800 flex items-center">{icon}{value}</p>
+            ) : (
+                <div className="mt-1">{children}</div>
+            )}
+        </div>
+    );
+
+    const ContactItem = ({ icon, href, value }: { icon: React.ReactNode, href?: string, value: string }) => {
+        const content = (
+            <span className={href ? "text-blue-600 hover:underline" : "text-slate-800"}>{value}</span>
+        );
+        return (
+            <div className="flex items-center gap-3">
+                <div className="text-slate-400">{icon}</div>
+                {href ? <a href={href}>{content}</a> : content}
+            </div>
+        );
+    };
+
 
     // Typage des props pour ElementPaieFormtest
     const ElementPaieFormtest = ({ employeId, open, onOpenChange }: { employeId: number, open: boolean, onOpenChange: (open: boolean) => void }) => {
@@ -513,7 +511,6 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
         }
     };
 
-    // Typage des props pour EmployeeActions
     const EmployeeActions = ({ employee }: { employee: any }) => {
         const [openDetail, setOpenDetail] = useState(false);
         const [openPaie, setOpenPaie] = useState(false);
@@ -524,8 +521,12 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                 <div className="sm:hidden flex justify-end mb-2 -mt-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 p-0 rounded-full border border-primary/30 shadow-md hover:bg-primary/10">
-                                <MoreVertical className="w-5 h-5" />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10 p-0 rounded-full border-2 border-blue-200 bg-white shadow-lg hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 hover:scale-110"
+                            >
+                                <MoreVertical className="w-5 h-5 text-blue-600" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
@@ -533,7 +534,14 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                                 <Eye className="w-4 h-4 mr-2" /> Détails
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setOpenPaie(true)} className="font-semibold text-blue-700 hover:bg-blue-50">
-                                <Calculator className="w-4 h-4 mr-2" /> Ajouter paie
+                                <Calculator className="w-4 h-4 mr-2" /> Gérer paie
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => previewPdf(String(employee.id))} className="font-semibold text-blue-700 hover:bg-blue-50">
+                                <FileText className="w-4 h-4" /> Prévision
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => downloadPdf(String(employee.id))} className="font-semibold text-blue-700 hover:bg-blue-50">
+                                <Download className="w-4 h-4" />
+                                <span>Télécharger</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-xs text-muted-foreground">
@@ -556,41 +564,41 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
                     <Button
                         variant="outline"
                         size="sm"
-                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        className="group relative px-3 py-2 text-xs lg:text-sm border-2 border-blue-200 hover:border-blue-400 bg-white hover:bg-blue-50 text-blue-700 hover:text-blue-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
                         onClick={() => setOpenDetail(true)}
                     >
-                        <Eye className="w-4 h-4" />
-                        <span>Détails</span>
+                        <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="ml-1.5 font-medium">Détails</span>
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        className="group relative px-3 py-2 text-xs lg:text-sm border-2 border-green-200 hover:border-green-400 bg-white hover:bg-green-50 text-green-700 hover:text-green-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
                         onClick={() => setOpenPaie(true)}
                     >
-                        <DollarSign className="w-4 h-4" />
-                        <span>Gérer paie</span>
+                        <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="ml-1.5 font-medium">Paie</span>
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        className="group relative px-3 py-2 text-xs lg:text-sm border-2 border-purple-200 hover:border-purple-400 bg-white hover:bg-purple-50 text-purple-700 hover:text-purple-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
                         onClick={() => previewPdf(String(employee.id))}
                     >
-                        <FileText className="w-4 h-4" />
-                        <span>Prévision</span>
+                        <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="ml-1.5 font-medium">Aperçu</span>
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        className="px-3 py-2 text-xs lg:text-sm hover:bg-blue-50 dark:hover:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        className="group relative px-3 py-2 text-xs lg:text-sm border-2 border-indigo-200 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-indigo-700 hover:text-indigo-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
                         onClick={() => downloadPdf(String(employee.id))}
                     >
-                        <Download className="w-4 h-4" />
-                        <span>Télécharger</span>
+                        <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="ml-1.5 font-medium">PDF</span>
                     </Button>
                 </div>
-                {/* Modals rendus en dehors du DropdownMenu */}
+
                 <EmployeeDetailModal employee={employee} open={openDetail} onOpenChange={setOpenDetail} />
                 <ElementPaieManager employeId={employee.id} open={openPaie} onOpenChange={setOpenPaie} />
             </>
@@ -599,10 +607,25 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center space-y-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                    <p className="text-muted-foreground">Chargement des employés...</p>
+            <div className="container mx-auto p-2 sm:p-4 md:p-6">
+                <div className="flex items-center justify-center min-h-[500px]">
+                    <div className="text-center space-y-6">
+                        <div className="relative">
+                            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                                <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-full animate-ping"></div>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-semibold text-gray-700">Chargement en cours...</h3>
+                            <p className="text-gray-500">Récupération des données des employés</p>
+                        </div>
+                        <div className="flex justify-center space-x-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -610,206 +633,302 @@ const EmployeesParDepartement: React.FC<EmployeesParDepartementProps> = ({
 
     if (error) {
         return (
-            <Alert className="m-6" variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="flex items-center justify-between">
-                    <span>{error}</span>
-                    <Button variant="outline" size="sm" onClick={fetchEmployesParDepartement}>
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Réessayer
-                    </Button>
-                </AlertDescription>
-            </Alert>
+            <div className="container mx-auto p-2 sm:p-4 md:p-6">
+                <Alert className="border-red-200 bg-gradient-to-r from-red-50 to-rose-50 shadow-lg" variant="destructive">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                            <AlertCircle className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-red-800 mb-1">Erreur de chargement</h3>
+                            <AlertDescription className="text-red-700">
+                                {error}
+                            </AlertDescription>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={fetchEmployesParDepartement}
+                            className="border-red-300 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all duration-300 hover:scale-105"
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Réessayer
+                        </Button>
+                    </div>
+                </Alert>
+            </div>
         );
     }
 
     const stats = getTotalStats();
 
     return (
-        <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-            {/* Header */}
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
-                <p className="text-muted-foreground">
-                    Gérez et consultez les informations des employés par département
+        <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6 animate-in fade-in duration-700">
+            {/* Header amélioré avec animations */}
+            <div className="space-y-4 text-center lg:text-left">
+                <p className="text-lg text-gray-600 max-w-3xl">
+                    Consultez, gérez et administrez les fiches de paie de vos employés par département.
                 </p>
             </div>
 
-            {/* Stats Cards */}
+            {/* Stats Cards avec animations améliorées */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-                <Card>
+                <Card className="group transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle>
-                        <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <CardTitle className="text-xs sm:text-sm font-medium text-gray-700">Total</CardTitle>
+                        <div className="p-2 bg-blue-500 rounded-lg group-hover:bg-blue-600 transition-colors duration-300">
+                            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
-                        <p className="text-xs text-muted-foreground hidden sm:block">Employés</p>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-700 group-hover:text-blue-800 transition-colors">{stats.total}</div>
+                        <p className="text-xs text-gray-600 hidden sm:block font-medium">Employés</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="group transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs sm:text-sm font-medium">Actifs</CardTitle>
-                        <div className="h-3 w-3 sm:h-4 sm:w-4 bg-green-500 rounded-full"></div>
+                        <CardTitle className="text-xs sm:text-sm font-medium text-gray-700">Actifs</CardTitle>
+                        <div className="p-2 bg-green-500 rounded-lg group-hover:bg-green-600 transition-colors duration-300">
+                            <div className="h-3 w-3 sm:h-4 sm:w-4 bg-white rounded-full animate-pulse"></div>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.active}</div>
-                        <p className="text-xs text-muted-foreground hidden sm:block">En activité</p>
+                        <div className="text-xl sm:text-2xl font-bold text-green-700 group-hover:text-green-800 transition-colors">{stats.active}</div>
+                        <p className="text-xs text-gray-600 hidden sm:block font-medium">En activité</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="group transition-all duration-300 border-0 bg-gradient-to-br from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs sm:text-sm font-medium">Inactifs</CardTitle>
-                        <div className="h-3 w-3 sm:h-4 sm:w-4 bg-red-500 rounded-full"></div>
+                        <CardTitle className="text-xs sm:text-sm font-medium text-gray-700">Inactifs</CardTitle>
+                        <div className="p-2 bg-red-500 rounded-lg group-hover:bg-red-600 transition-colors duration-300">
+                            <div className="h-3 w-3 sm:h-4 sm:w-4 bg-white rounded-full"></div>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.inactive}</div>
-                        <p className="text-xs text-muted-foreground hidden sm:block">Suspendus</p>
+                        <div className="text-xl sm:text-2xl font-bold text-red-700 group-hover:text-red-800 transition-colors">{stats.inactive}</div>
+                        <p className="text-xs text-gray-600 hidden sm:block font-medium">Suspendus</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="group transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs sm:text-sm font-medium">Depts</CardTitle>
-                        <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <CardTitle className="text-xs sm:text-sm font-medium text-gray-700">Départements</CardTitle>
+                        <div className="p-2 bg-purple-500 rounded-lg group-hover:bg-purple-600 transition-colors duration-300">
+                            <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl sm:text-2xl font-bold">{departementsData.length}</div>
-                        <p className="text-xs text-muted-foreground hidden sm:block">Départements</p>
+                        <div className="text-xl sm:text-2xl font-bold text-purple-700 group-hover:text-purple-800 transition-colors">{departementsData.length}</div>
+                        <p className="text-xs text-gray-600 hidden sm:block font-medium">Structures</p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Filters */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                        <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Filtres et recherche
+            {/* Filters avec design moderne */}
+            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-500">
+                <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50/30 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-3 text-lg sm:text-xl text-gray-800">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                        </div>
+                        Recherche & Filtres Avancés
                     </CardTitle>
+                    <p className="text-sm text-gray-600 mt-2 ml-12">Trouvez rapidement l'employé recherché avec nos outils de filtrage intelligents</p>
                 </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Rechercher</label>
+                <CardContent className="p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                        <div className="space-y-3 group">
+                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <Search className="w-4 h-4 text-blue-500" />
+                                Recherche Globale
+                            </label>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                                 <Input
-                                    placeholder="Nom, email, poste..."
+                                    placeholder="Nom, email, poste, numéro..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-12 h-11 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 focus:ring-2 focus:ring-blue-200"
                                 />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Département</label>
+                        <div className="space-y-3 group">
+                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-purple-500" />
+                                Département
+                            </label>
                             <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-purple-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 focus:ring-2 focus:ring-purple-200">
                                     <SelectValue placeholder="Tous les départements" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Tous les départements</SelectItem>
+                                <SelectContent className="rounded-xl shadow-xl border-2">
+                                    <SelectItem value="all" className="rounded-lg">🏢 Tous les départements</SelectItem>
                                     {getAllDepartments().map(dept => (
-                                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                                        <SelectItem key={dept} value={dept} className="rounded-lg">📁 {dept}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Statut</label>
+                        <div className="space-y-3 group">
+                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <BadgeComponent className="w-4 h-4 text-green-500" />
+                                Statut d'Activité
+                            </label>
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-11 border-2 border-gray-200 focus:border-green-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 focus:ring-2 focus:ring-green-200">
                                     <SelectValue placeholder="Tous les statuts" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Tous les statuts</SelectItem>
-                                    <SelectItem value="active">Actifs</SelectItem>
-                                    <SelectItem value="inactive">Inactifs</SelectItem>
+                                <SelectContent className="rounded-xl shadow-xl border-2">
+                                    <SelectItem value="all" className="rounded-lg">🔄 Tous les statuts</SelectItem>
+                                    <SelectItem value="active" className="rounded-lg">✅ Employés actifs</SelectItem>
+                                    <SelectItem value="inactive" className="rounded-lg">⏸️ Employés inactifs</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="flex items-end">
-                            <Button variant="outline" onClick={fetchEmployesParDepartement} className="w-full">
-                                <RefreshCw className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">Actualiser</span>
-                                <span className="sm:hidden">Refresh</span>
+                            <Button
+                                variant="outline"
+                                onClick={fetchEmployesParDepartement}
+                                className="w-full h-11 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 rounded-xl shadow-lg transition-all duration-300 font-semibold"
+                                disabled={loading}
+                            >
+                                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                                <span className="hidden sm:inline">{loading ? 'Actualisation...' : 'Actualiser'}</span>
+                                <span className="sm:hidden">{loading ? '...' : '🔄'}</span>
                             </Button>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Employee List */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Liste des Employés</CardTitle>
-                    <CardDescription>
-                        {filteredEmployees.length} employé{filteredEmployees.length > 1 ? 's' : ''} trouvé{filteredEmployees.length > 1 ? 's' : ''}
-                    </CardDescription>
+            {/* Employee List avec design moderne */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-gradient-to-br from-gray-600 to-slate-700 rounded-lg shadow-md">
+                                <Users className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl text-gray-800">Répertoire des Employés</CardTitle>
+                                <CardDescription className="text-base font-medium">
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                        {filteredEmployees.length} employé{filteredEmployees.length > 1 ? 's' : ''} {filteredEmployees.length > 1 ? 'trouvés' : 'trouvé'}
+                                    </span>
+                                </CardDescription>
+                            </div>
+                        </div>
+                        {filteredEmployees.length > 0 && (
+                            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
+                                <Clock className="w-4 h-4" />
+                                <span>Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        )}
+                    </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     {filteredEmployees.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                            <p className="text-lg text-muted-foreground">Aucun employé trouvé</p>
-                            <p className="text-sm text-muted-foreground">Essayez de modifier vos filtres de recherche</p>
+                        <div className="text-center py-16 px-6">
+                            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-inner">
+                                <Users className="w-12 h-12 text-gray-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Aucun employé trouvé</h3>
+                            <p className="text-gray-500 mb-4">Essayez de modifier vos critères de recherche ou filtres</p>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium">
+                                <Search className="w-4 h-4" />
+                                <span>Conseil : Utilisez des mots-clés plus généraux</span>
+                            </div>
                         </div>
                     ) : (
-                        <div className="space-y-2">
-                            {filteredEmployees.map((employee) => (
-                                <div key={employee.id} className="py-2 sm:py-3 md:py-4 hover:bg-muted/30 px-1 sm:px-2 md:px-0 transition-colors rounded-lg">
-                                    <div className="flex flex-row sm:flex-row sm:items-center gap-2 sm:gap-0">
-                                        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                                            <SimpleAvatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
-                                                {getInitials(employee.nom, employee.preNom)}
-                                            </SimpleAvatar>
+                        <div className="divide-y divide-gray-100">
+                            {filteredEmployees.map((employee, index) => (
+                                <div
+                                    key={employee.id}
+                                    className="group py-4 sm:py-5 md:py-6 px-4 sm:px-6 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-300 hover:shadow-md hover:border-l-4 hover:border-l-blue-500 cursor-pointer"
+                                >
+                                    <div className="flex flex-row sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                        <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                                            <div className="relative">
+                                                <SimpleAvatar className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 shadow-lg ring-2 ring-white group-hover:ring-blue-200 transition-all duration-100 group-hover:scale-110">
+                                                    {getInitials(employee.nom, employee.preNom)}
+                                                </SimpleAvatar>
+                                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${employee.active ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                                            </div>
 
                                             <div className="min-w-0 flex-1">
-                                                <div className="flex items-center space-x-2 mb-1">
-                                                    <h3 className="text-sm sm:text-base font-medium truncate">
+                                                <div className="flex items-center space-x-3 mb-2">
+                                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors">
                                                         {employee.nom} {employee.preNom}
                                                     </h3>
                                                     <BadgeComponent
                                                         variant={employee.active ? "default" : "destructive"}
-                                                        className="text-xs flex-shrink-0"
+                                                        className={`text-xs flex-shrink-0 font-semibold px-3 py-1 ${employee.active
+                                                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                            : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                            } transition-colors duration-200`}
                                                     >
-                                                        {employee.active ? 'Actif' : 'Inactif'}
+                                                        {employee.active ? '✓ Actif' : '✗ Inactif'}
                                                     </BadgeComponent>
                                                 </div>
 
-                                                {/* Informations compactes */}
-                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-muted-foreground">
-                                                    <span className="flex items-center space-x-1">
-                                                        <Badge className="w-3 h-3" />
-                                                        <span>{employee.numeroEmploye}</span>
-                                                    </span>
-                                                    <span className="flex items-center space-x-1">
-                                                        <Building2 className="w-3 h-3" />
-                                                        <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">{employee.departement}</span>
-                                                    </span>
-                                                    <span className="hidden sm:inline">{employee.poste}</span>
-                                                    <span className="hidden md:flex items-center space-x-1">
-                                                        <Mail className="w-3 h-3" />
-                                                        <span className="truncate max-w-[100px] md:max-w-[150px] lg:max-w-none">{employee.email}</span>
-                                                    </span>
-                                                    <span className="hidden lg:flex items-center space-x-1">
-                                                        <Phone className="w-3 h-3" />
-                                                        <span>{employee.telephone}</span>
-                                                    </span>
+                                                {/* Informations enrichies avec design moderne */}
+                                                <div className="space-y-2">
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                                                        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
+                                                            <Badge className="w-3 h-3" />
+                                                            <span>#{employee.numeroEmploye}</span>
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs font-medium">
+                                                            <Building2 className="w-3 h-3" />
+                                                            <span className="truncate max-w-[100px] sm:max-w-[150px]">{employee.departement}</span>
+                                                        </span>
+                                                        <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 bg-gray-50 text-gray-700 rounded-md text-xs font-medium">
+                                                            💼 {employee.poste}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="hidden md:flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                                                        <span className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+                                                            <Mail className="w-3.5 h-3.5" />
+                                                            <span className="truncate max-w-[200px] lg:max-w-none">{employee.email}</span>
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5 hover:text-green-600 transition-colors">
+                                                            <Phone className="w-3.5 h-3.5" />
+                                                            <span>{employee.telephone}</span>
+                                                        </span>
+                                                        {employee.salairBase && (
+                                                            <span className="flex items-center gap-1.5 text-green-700 font-medium">
+                                                                <DollarSign className="w-3.5 h-3.5" />
+                                                                <span>{employee.salairBase.toLocaleString()} MAD</span>
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
 
-                                                {/* Poste visible sur mobile uniquement */}
-                                                <div className="sm:hidden mt-1">
-                                                    <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded inline-block">
-                                                        {employee.poste}
-                                                    </span>
+                                                {/* Informations mobile */}
+                                                <div className="sm:hidden mt-2 space-y-2">
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                                                        💼 {employee.poste}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-xs text-gray-600">
+                                                        <span className="flex items-center gap-1">
+                                                            <Mail className="w-3 h-3" />
+                                                            <span className="truncate max-w-[120px]">{employee.email}</span>
+                                                        </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Phone className="w-3 h-3" />
+                                                            <span>{employee.telephone}</span>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Actions - toujours à droite */}
-                                        <div className="flex-0 flex items-center justify-end">
-                                            <EmployeeActions employee={employee} />
+                                        {/* Actions améliorées */}
+                                        <div className="flex-shrink-0 flex items-center justify-end">
+                                            <div className="opacity-75 group-hover:opacity-100 transition-opacity duration-300">
+                                                <EmployeeActions employee={employee} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -1,9 +1,9 @@
 import React from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ModeCalcul, type ModeCalculType } from '../types/ElementPaieTypes';
+import { ModeCalcul, type ModeCalculType, type TypeElementType } from '../types/ElementPaieTypes';
 import { modeCalculConfig } from '../config/ElementPaieConfig';
 
 interface ModeCalculSelectorProps {
@@ -11,14 +11,20 @@ interface ModeCalculSelectorProps {
     onModeChange: (mode: string) => void;
     showHelp: boolean;
     onToggleHelp: () => void;
+    selectedType?: TypeElementType | '';
 }
 
 export const ModeCalculSelector: React.FC<ModeCalculSelectorProps> = ({
     selectedMode,
     onModeChange,
     showHelp,
-    onToggleHelp
+    onToggleHelp,
+    selectedType
 }) => {
+    const isDeductionType = selectedType === 'DEDUCTION_ABSENCE' || selectedType === 'DEDUCTION_RETARD';
+    const isHeureSupplementaireType = selectedType === 'HEURES_SUPPLEMENTAIRES';
+    const canUseAutomaticCalcul = isDeductionType || isHeureSupplementaireType;
+
     return (
         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300 border-t border-gray-200 pt-6">
             <div className="flex items-center justify-between">
@@ -44,6 +50,9 @@ export const ModeCalculSelector: React.FC<ModeCalculSelectorProps> = ({
                         <li>• <strong>Montant fixe</strong> : Le même montant chaque mois</li>
                         <li>• <strong>Pourcentage</strong> : Un pourcentage d'une base</li>
                         <li>• <strong>Par jour/heure</strong> : Calcul selon le temps</li>
+                        {canUseAutomaticCalcul && (
+                            <li>• <strong>Calcul automatique</strong> : Calcul depuis le time tracking</li>
+                        )}
                     </ul>
                 </div>
             )}
@@ -55,7 +64,29 @@ export const ModeCalculSelector: React.FC<ModeCalculSelectorProps> = ({
                 <SelectContent>
                     {Object.entries(ModeCalcul).map(([key, value]) => {
                         const config = modeCalculConfig[value];
-                        if (!config) return null;
+
+                        // Logique de filtrage selon le type d'élément
+                        if (value === ModeCalcul.AUTOMATIQUE_TIME_TRACKING && !canUseAutomaticCalcul) {
+                            return null;
+                        }
+
+                        if (!config) {
+                            // Gestion spéciale pour les modes automatiques si la config n'existe pas
+                            if (value === ModeCalcul.AUTOMATIQUE_TIME_TRACKING && canUseAutomaticCalcul) {
+                                return (
+                                    <SelectItem key={key} value={value} className="py-3">
+                                        <div className="flex items-center gap-3">
+                                            <Zap className="h-4 w-4 text-orange-600" />
+                                            <div>
+                                                <div className="font-medium">Calcul automatique</div>
+                                                <div className="text-xs text-gray-500">Calculé depuis le time tracking</div>
+                                            </div>
+                                        </div>
+                                    </SelectItem>
+                                );
+                            }
+                            return null;
+                        }
 
                         return (
                             <SelectItem key={key} value={value} className="py-3">

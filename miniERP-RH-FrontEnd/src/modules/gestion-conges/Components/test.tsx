@@ -916,7 +916,7 @@ export const AdvancedAnalyticsDashboard = () => {
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2"><BarChart2 className="text-green-500" /> Ma Vue Personnelle (Alice)</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                        <KpiCard title="Taux de Focus Hebdomadaire" value={`${data.employee_kpis.avgFocus}`} icon={Target} description="Temps sur tâches / Temps de présence" />
+                        <KpiCard title="Taux de Focus Hebdomadaire" value={`${data.employee_kpis.avgFocus}`} icon={Target} />
                         <KpiCard title="Jour le plus productif" value={data.employee_kpis.mostProductiveDay} icon={CalendarCheck} />
                         <KpiCard title="Tâches terminées" value={data.employee_kpis.totalTasksCompleted} icon={ShieldCheck} />
                     </div>

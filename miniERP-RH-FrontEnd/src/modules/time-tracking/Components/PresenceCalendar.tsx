@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { ChevronLeft, ChevronRight, Clock, Briefcase, Paperclip, MoreHorizontal, Coffee, Loader2 } from 'lucide-react';
-import { addDays, startOfWeek, format, eachDayOfInterval, isSameDay, startOfDay, getMinutes, getHours, set, getDay, isSameWeek } from 'date-fns';
+import { ChevronLeft, ChevronRight, Clock, Paperclip, MoreHorizontal, Coffee, Loader2, CalendarDays, Users } from 'lucide-react';
+import { addDays, startOfWeek, format, eachDayOfInterval, isSameDay, startOfDay, getMinutes, getHours, getDay, isSameWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Separator } from '@/components/ui/separator';
 
@@ -17,35 +17,23 @@ import { Separator } from '@/components/ui/separator';
 //================================================================================
 
 // Types internes utilisés par le composant pour une manipulation facile
-type ActivityType = 'WORK' | 'BREAK';
+type ActivityType = 'WORK' | 'BREAK' | 'MEETING';
 interface Project { id: number; name: string; color: string; client?: string; }
-interface Activity {
-    id: string; type: ActivityType; description: string;
-    startTime: Date; endTime: Date; project: Project;
-}
+interface Activity { id: string; type: ActivityType; description: string; startTime: Date; endTime: Date; project: Project; }
 interface PlannedActivity { project: Project; plannedHours: number; }
-
-// Types correspondant à la structure de la réponse de l'API
-interface ApiActivity {
-    id: string | number; type: 'WORK' | 'BREAK'; description: string;
-    startTime: string; endTime: string; project: Project;
-}
+interface ApiActivity { id: string | number; type: 'WORK' | 'BREAK' | 'MEETING'; description: string; startTime: string; endTime: string; project: Project; }
 interface ApiPlanned { dayOfWeek: number; project: Project; plannedHours: number; }
 interface ApiResponse { activities: ApiActivity[]; planned: ApiPlanned[]; }
-
-// Constantes pour le design et la mise en page
-const PIXELS_PER_MINUTE = 1.4;
-const BREAK_COLOR = '#64748b'; // gris-bleu pour les pauses
+const PIXELS_PER_MINUTE = 0.7;
+const BREAK_COLOR = '#64748b';
+const MEETING_COLOR = '#10b981'; // Couleur verte pour les réunions
 const PROJECT_COLORS = ['#3b82f6', '#ec4899', '#f97316', '#10b981', '#8b5cf6', '#ef4444'];
-let projectColorMap = new Map<number, string>(); // Cache pour garder des couleurs de projet cohérentes
-
-// Fonction pour assigner une couleur stable à un projet
+let projectColorMap = new Map<number, string>();
 const getColorForProject = (projectId: number): string => {
-    if (!projectColorMap.has(projectId)) {
-        projectColorMap.set(projectId, PROJECT_COLORS[projectColorMap.size % PROJECT_COLORS.length]);
-    }
+    if (!projectColorMap.has(projectId)) projectColorMap.set(projectId, PROJECT_COLORS[projectColorMap.size % PROJECT_COLORS.length]);
     return projectColorMap.get(projectId)!;
 };
+
 
 //================================================================================
 // 2. LOGIQUE D'API
@@ -65,10 +53,7 @@ const fetchDataForWeek = async (weekStart: Date): Promise<{ activities: Activity
         if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
         const data: ApiResponse = await response.json();
 
-        // **Pour la démo, nous utilisons des données simulées qui imitent la réponse de l'API**
-        // const data = generateFakeApiResponse(weekStart);
-
-        projectColorMap = new Map<number, string>(); // Réinitialise le cache de couleurs pour la démo
+        projectColorMap = new Map<number, string>(); // Réinitialise le cache de couleurs
 
         const activities: Activity[] = data.activities.map(apiActivity => ({
             id: String(apiActivity.id),
@@ -78,7 +63,9 @@ const fetchDataForWeek = async (weekStart: Date): Promise<{ activities: Activity
             endTime: new Date(apiActivity.endTime),
             project: {
                 ...apiActivity.project,
-                color: apiActivity.type === 'BREAK' ? BREAK_COLOR : getColorForProject(apiActivity.project.id)
+                color: apiActivity.type === 'BREAK' ? BREAK_COLOR :
+                    apiActivity.type === 'MEETING' ? MEETING_COLOR :
+                        getColorForProject(apiActivity.project.id)
             },
         }));
 
@@ -102,45 +89,7 @@ const fetchDataForWeek = async (weekStart: Date): Promise<{ activities: Activity
     }
 };
 
-const generateFakeApiResponse = (weekStart: Date): ApiResponse => {
-    const projects: Record<string, Project> = {
-        aura: { id: 1, name: 'Project X', color: '', client: 'Aura' },
-        nexus: { id: 2, name: 'ACME', color: '', client: 'ACME' },
-        office: { id: 3, name: 'Office', color: '' },
-        break: { id: 4, name: 'Break', color: '' }
-    };
-    const createApi = (day: number, start: string, end: string, proj: Project, desc: string): ApiActivity => {
-        const d = addDays(weekStart, day);
-        const [sh, sm] = start.split(':').map(Number);
-        const [eh, em] = end.split(':').map(Number);
-        return {
-            id: `${day}-${start}`, type: proj.id === 4 ? 'BREAK' : 'WORK',
-            startTime: set(d, { hours: sh, minutes: sm, seconds: 0, milliseconds: 0 }).toISOString(),
-            endTime: set(d, { hours: eh, minutes: em, seconds: 0, milliseconds: 0 }).toISOString(),
-            project: proj, description: desc
-        };
-    };
-    return {
-        activities: [
-            createApi(0, "13:00", "16:00", projects.office, "Formazione aziendale"),
-            createApi(0, "16:00", "17:00", projects.break, "Pausa pranzo"),
-            createApi(0, "17:00", "19:00", projects.nexus, "Sviluppo"),
-            createApi(1, "13:00", "14:00", projects.aura, "Riunione"),
-            createApi(1, "14:00", "15:00", projects.break, "Pausa pranzo"),
-            createApi(1, "15:00", "17:00", projects.aura, "UI/UX"),
-            createApi(1, "17:00", "18:00", projects.office, "Email"),
-        ],
-        planned: [
-            { dayOfWeek: 0, project: projects.office, plannedHours: 4 },
-            { dayOfWeek: 0, project: projects.nexus, plannedHours: 2 },
-            { dayOfWeek: 1, project: projects.aura, plannedHours: 4 },
-            { dayOfWeek: 1, project: projects.office, plannedHours: 1 },
-        ]
-    };
-}
-
 interface ProcessedActivity extends Activity { top: number; height: number; left: number; width: number; }
-
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
     useEffect(() => {
@@ -153,6 +102,7 @@ const useMediaQuery = (query: string) => {
     return matches;
 };
 
+
 //================================================================================
 // 3. SOUS-COMPOSANTS D'UI
 //================================================================================
@@ -161,44 +111,105 @@ const ActivityBlock = React.memo(({ activity }: { activity: ProcessedActivity })
     if (activity.type === 'BREAK') {
         return (
             <div
-                className="absolute z-5 p-2 rounded-md overflow-hidden w-full flex items-center justify-center"
+                className="absolute z-5 p-1 rounded-md overflow-hidden w-full flex items-center justify-center text-xs"
                 style={{
-                    top: `${activity.top}px`, height: `${activity.height}px`,
+                    top: `${activity.top}px`,
+                    height: `${Math.max(activity.height, 12)}px`,
                     // Fond hachuré pour un look plus léger
-                    backgroundImage: `repeating-linear-gradient(-45deg, transparent, transparent 4px, ${activity.project.color}20 4px, ${activity.project.color}20 5px)`
+                    backgroundImage: `repeating-linear-gradient(-45deg, transparent, transparent 2px, ${activity.project.color}20 2px, ${activity.project.color}20 3px)`
                 }}
             >
-                <div className="flex items-center gap-2 text-xs font-medium" style={{ color: activity.project.color }}>
-                    <Coffee className="h-4 w-4" /> {activity.description}
+                <div className="flex items-center gap-1 text-xs font-medium truncate" style={{ color: activity.project.color }}>
+                    <Coffee className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">{activity.description}</span>
                 </div>
             </div>
         );
     }
 
-    // Affichage standard pour les activités de travail
+    // **NOUVEAU : Affichage distinct pour les réunions**
+    if (activity.type === 'MEETING') {
+        return (
+            <Popover>
+                <PopoverTrigger asChild>
+                    <div
+                        className="absolute z-5 p-1 rounded-md overflow-hidden w-full flex items-center justify-center text-xs cursor-pointer hover:shadow-lg transition-shadow"
+                        style={{
+                            top: `${activity.top}px`,
+                            height: `${Math.max(activity.height, 12)}px`,
+                            // Fond avec motif en points pour les réunions
+                            backgroundImage: `radial-gradient(circle, ${activity.project.color}30 1px, transparent 1px)`,
+                            backgroundSize: '6px 6px',
+                            backgroundColor: `${activity.project.color}10`,
+                            border: `1px solid ${activity.project.color}40`
+                        }}
+                    >
+                        <div className="flex items-center gap-1 text-xs font-medium truncate" style={{ color: activity.project.color }}>
+                            <Users className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{activity.description}</span>
+                        </div>
+                    </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-64">
+                    <div className="flex justify-between items-start">
+                        <h4 className="font-semibold">{activity.description}</h4>
+                        <Badge variant="outline" style={{ borderColor: activity.project.color, color: activity.project.color }}>
+                            Réunion
+                        </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{activity.project.name}</p>
+                    <Separator className="my-2" />
+                    <p className="text-sm flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        {format(activity.startTime, 'p', { locale: fr })} - {format(activity.endTime, 'p', { locale: fr })}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Temps comptabilisé comme travail</p>
+                    <div className="mt-4 flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Paperclip className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </PopoverContent>
+            </Popover>
+        );
+    }
+
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <motion.div
                     layoutId={`activity-${activity.id}`}
-                    initial={{ opacity: 0, scaleY: 0.8 }} animate={{ opacity: 1, scaleY: 1 }} exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, scaleY: 0.8 }}
+                    animate={{ opacity: 1, scaleY: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className="absolute z-10 p-2 rounded-md overflow-hidden cursor-pointer group hover:shadow-lg hover:z-20 transition-shadow"
+                    className="absolute z-10 p-1 rounded-md overflow-hidden cursor-pointer group hover:shadow-lg hover:z-20 transition-shadow"
                     style={{
-                        top: `${activity.top}px`, height: `${activity.height}px`,
-                        left: `${activity.left}%`, width: `${activity.width}%`,
+                        top: `${activity.top}px`,
+                        height: `${Math.max(activity.height, 16)}px`,
+                        left: `${activity.left}%`,
+                        width: `${activity.width}%`,
                         backgroundColor: `${activity.project.color}20`,
-                        borderLeft: `3px solid ${activity.project.color}`
+                        borderLeft: `2px solid ${activity.project.color}`
                     }}
                 >
-                    <p className="font-semibold text-xs leading-tight" style={{ color: activity.project.color }}>{activity.description}</p>
-                    <p className="text-xs text-muted-foreground">{activity.project.name}</p>
+                    <p className="font-semibold text-xs leading-tight truncate" style={{ color: activity.project.color }}>
+                        {activity.description}
+                    </p>
+                    {activity.height > 20 && (
+                        <p className="text-xs text-muted-foreground truncate">{activity.project.name}</p>
+                    )}
                 </motion.div>
             </PopoverTrigger>
             <PopoverContent className="w-64">
                 <div className="flex justify-between items-start">
                     <h4 className="font-semibold">{activity.description}</h4>
-                    <Badge variant="outline" style={{ borderColor: activity.project.color, color: activity.project.color }}>{activity.project.client || "Interne"}</Badge>
+                    <Badge variant="outline" style={{ borderColor: activity.project.color, color: activity.project.color }}>
+                        {activity.project.client || "Interne"}
+                    </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{activity.project.name}</p>
                 <Separator className="my-2" />
@@ -207,27 +218,59 @@ const ActivityBlock = React.memo(({ activity }: { activity: ProcessedActivity })
                     {format(activity.startTime, 'p', { locale: fr })} - {format(activity.endTime, 'p', { locale: fr })}
                 </p>
                 <div className="mt-4 flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><Paperclip className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
                 </div>
             </PopoverContent>
         </Popover>
     );
 });
 
-const TimeAxis = React.memo(({ startHour, endHour, pixelsPerMinute }: { startHour: number, endHour: number, pixelsPerMinute: number }) => {
+const TimeAxis = React.memo(({ startHour, endHour }: { startHour: number; endHour: number }) => {
+    // Calculer les heures à afficher en fonction de la plage
+    const duration = endHour - startHour;
+    let step = 1; // Par défaut, afficher toutes les heures
+
+    // Si la plage est grande, afficher toutes les 2 heures
+    if (duration > 8) step = 2;
+    // Si la plage est très grande, afficher toutes les 3 heures
+    if (duration > 12) step = 3;
+
     const hours = [];
-    for (let i = startHour; i < endHour; i++) {
-        hours.push(i);
+    for (let hour = Math.ceil(startHour); hour <= Math.floor(endHour); hour += step) {
+        hours.push(hour);
     }
-    return <div className="relative col-start-1 row-start-3 text-right pr-2 select-none">
-        {hours.map(hour => (
-            <div key={hour} style={{ height: `${60 * pixelsPerMinute}px` }} className="-mt-3.5 flex justify-end items-start pt-3.5">
-                <span className="text-xs text-muted-foreground">{format(new Date(0, 0, 0, hour), 'p', { locale: fr })}</span>
-            </div>
-        ))}
-    </div>;
+
+    // Toujours inclure l'heure de fin si elle n'est pas déjà incluse
+    if (Math.floor(endHour) !== hours[hours.length - 1]) {
+        hours.push(Math.floor(endHour));
+    }
+
+    return (
+        <div className="relative h-full text-right select-none pr-1 text-xs">
+            {hours.map(hour => {
+                const minutesFromStart = (hour - startHour) * 60;
+                const topPosition = minutesFromStart * PIXELS_PER_MINUTE;
+                return (
+                    <div
+                        key={hour}
+                        className="absolute w-full"
+                        style={{ top: `${topPosition}px` }}
+                    >
+                        <span className="text-xs text-muted-foreground transform -translate-y-1/2 mr-4" >
+                            {hour.toString().padStart(2, '0')}:00
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
 });
+
 
 const LiveTimeIndicator = React.memo(({ startHour, pixelsPerMinute }: { startHour: number, pixelsPerMinute: number }) => {
     const [top, setTop] = useState(0);
@@ -253,19 +296,33 @@ const LiveTimeIndicator = React.memo(({ startHour, pixelsPerMinute }: { startHou
 // 4. LOGIQUE & COMPOSANT PRINCIPAL
 //================================================================================
 
-// Hook pour calculer la plage horaire dynamiquement
 const useCalendarView = (activities: Activity[]) => {
     return useMemo(() => {
-        if (activities.length === 0) return { viewStartHour: 8, viewEndHour: 19, totalViewHeight: (11 * 60) * PIXELS_PER_MINUTE };
+        if (activities.length === 0) return { viewStartHour: 8, viewEndHour: 18 };
         let minHour = 23, maxHour = 0;
         activities.forEach(act => {
-            const startH = getHours(act.startTime); const endH = getHours(act.endTime); const endM = getMinutes(act.endTime);
+            const startH = getHours(act.startTime);
+            const endH = getHours(act.endTime);
+            const endM = getMinutes(act.endTime);
             if (startH < minHour) minHour = startH;
             if (endH + (endM > 0 ? 1 : 0) > maxHour) maxHour = endH + (endM > 0 ? 1 : 0);
         });
-        const viewStartHour = Math.max(0, minHour - 1);
-        const viewEndHour = Math.min(24, maxHour);
-        return { viewStartHour, viewEndHour, totalViewHeight: (viewEndHour - viewStartHour) * 60 * PIXELS_PER_MINUTE };
+
+        // Adapter la plage horaire aux activités réelles
+        const viewStartHour = Math.max(0, minHour - 0.5); // 30 minutes avant la première activité
+        const viewEndHour = Math.min(24, maxHour + 0.5); // 30 minutes après la dernière activité
+
+        // Assurer une hauteur minimale de 4h pour une bonne lisibilité
+        const minDuration = 4;
+        if (viewEndHour - viewStartHour < minDuration) {
+            const center = Math.floor((viewStartHour + viewEndHour) / 2);
+            return {
+                viewStartHour: Math.max(0, center - Math.floor(minDuration / 2)),
+                viewEndHour: Math.min(24, center + Math.ceil(minDuration / 2))
+            };
+        }
+
+        return { viewStartHour, viewEndHour };
     }, [activities]);
 };
 
@@ -274,11 +331,22 @@ export const ProfessionalTimeSheetCalendar = () => {
     const [data, setData] = useState<{ activities: Activity[], planned: Record<number, PlannedActivity[]> }>({ activities: [], planned: {} });
     const [isLoading, setIsLoading] = useState(true);
     const [selectedMobileDay, setSelectedMobileDay] = useState(() => startOfDay(new Date()));
-
     const isMobile = useMediaQuery("(max-width: 1023px)");
-
     const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
     const daysInWeek = useMemo(() => eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) }), [weekStart]);
+
+    // Références pour synchroniser le scroll
+    const timeAxisScrollRef = React.useRef<HTMLDivElement>(null);
+    const contentScrollRef = React.useRef<HTMLDivElement>(null);
+
+    // Fonction pour synchroniser le scroll
+    const syncScroll = useCallback((source: 'timeAxis' | 'content', scrollTop: number) => {
+        if (source === 'content' && timeAxisScrollRef.current) {
+            timeAxisScrollRef.current.scrollTop = scrollTop;
+        } else if (source === 'timeAxis' && contentScrollRef.current) {
+            contentScrollRef.current.scrollTop = scrollTop;
+        }
+    }, []);
 
     useEffect(() => {
         setIsLoading(true);
@@ -288,40 +356,25 @@ export const ProfessionalTimeSheetCalendar = () => {
         });
     }, [weekStart]);
 
-    const { viewStartHour, viewEndHour, totalViewHeight } = useCalendarView(data.activities);
+    useEffect(() => {
+        setIsLoading(true);
+        fetchDataForWeek(weekStart).then(weekData => {
+            setData(weekData);
+            setIsLoading(false);
+        });
+    }, [weekStart]);
 
-    const goToCurrentWeek = useCallback(() => {
-        const today = new Date();
-        setCurrentDate(today);
-        setSelectedMobileDay(startOfDay(today));
-    }, []);
-    const goToLastWeek = useCallback(() => {
-        const today = new Date();
-        const lastWeek = addDays(today, -7);
-        setCurrentDate(lastWeek);
-        setSelectedMobileDay(startOfDay(lastWeek));
-    }, []);
 
+
+    const { viewStartHour, viewEndHour } = useCalendarView(data.activities);
 
     // Algorithme de gestion des chevauchements
     const processedActivitiesByDay = useMemo(() => {
         const grouped = new Map<string, ProcessedActivity[]>();
         daysInWeek.forEach(day => {
             const dayKey = format(day, 'yyyy-MM-dd');
-            const dayActivities = data.activities.filter(act => {
-                const isSame = isSameDay(act.startTime, day);
-                if (isSame) {
-                    console.log(`✅ Activité trouvée pour ${dayKey}:`, {
-                        id: act.id,
-                        description: act.description,
-                        startTime: act.startTime.toISOString(),
-                        endTime: act.endTime.toISOString()
-                    });
-                }
-                return isSame;
-            }).sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-
-            console.log(`📅 ${dayKey}: ${dayActivities.length} activités trouvées`);
+            const dayActivities = data.activities.filter(act => isSameDay(act.startTime, day))
+                .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 
             const processed: ProcessedActivity[] = [];
             const columns: Activity[][] = [];
@@ -358,120 +411,239 @@ export const ProfessionalTimeSheetCalendar = () => {
         return grouped;
     }, [data.activities, daysInWeek, viewStartHour]);
 
+    const totalViewHeight = useMemo(() => (viewEndHour - viewStartHour) * 60 * PIXELS_PER_MINUTE, [viewStartHour, viewEndHour]);
+
+    // Calculer la hauteur maximale dynamique basée sur le contenu
+    const maxCalendarHeight = useMemo(() => {
+        const baseHeight = 120; // Header seulement (réduit après suppression de plannedRow)
+        const contentHeight = totalViewHeight;
+        const maxScreenHeight = typeof window !== 'undefined' ? window.innerHeight * 0.80 : 450;
+        return Math.min(baseHeight + contentHeight, maxScreenHeight);
+    }, [totalViewHeight]);
+
+    const goToCurrentWeek = useCallback(() => setCurrentDate(new Date()), []);
+    const goToLastWeek = useCallback(() => setCurrentDate(addDays(new Date(), -7)), []);
     const changeWeek = useCallback((dir: 'next' | 'prev') => setCurrentDate(d => addDays(d, dir === 'next' ? 7 : -7)), []);
-    const goToToday = useCallback(() => { const today = new Date(); setCurrentDate(today); setSelectedMobileDay(startOfDay(today)); }, []);
+
+    // Calculer les heures de travail par jour
+    const getDayWorkHours = useCallback((day: Date) => {
+        const dayActivities = data.activities.filter(act =>
+            isSameDay(act.startTime, day) && (act.type === 'WORK' || act.type === 'MEETING')
+        );
+
+        const totalMinutes = dayActivities.reduce((acc, act) => {
+            const duration = (act.endTime.getTime() - act.startTime.getTime()) / (1000 * 60);
+            return acc + duration;
+        }, 0);
+
+        return Math.round(totalMinutes / 60 * 10) / 10; // Arrondi à 1 décimale
+    }, [data.activities]);
+
+    // Obtenir les projets uniques d'un jour
+    const getDayProjects = useCallback((day: Date) => {
+        const dayActivities = data.activities.filter(act =>
+            isSameDay(act.startTime, day) && act.type === 'WORK'
+        );
+
+        const projectsMap = new Map();
+        dayActivities.forEach(act => {
+            const projectId = act.project.id;
+            if (!projectsMap.has(projectId)) {
+                projectsMap.set(projectId, {
+                    ...act.project,
+                    hours: 0
+                });
+            }
+            const duration = (act.endTime.getTime() - act.startTime.getTime()) / (1000 * 60 * 60);
+            projectsMap.get(projectId).hours += duration;
+        });
+
+        return Array.from(projectsMap.values()).map(p => ({
+            ...p,
+            hours: Math.round(p.hours * 10) / 10
+        }));
+    }, [data.activities]);
+
+    const headerHeight = useMemo(() => {
+        // Calculer la hauteur nécessaire basée sur le contenu des en-têtes
+        const hasWorkHours = daysInWeek.some(day => getDayWorkHours(day) > 0);
+        const hasProjects = daysInWeek.some(day => getDayProjects(day).length > 0);
+
+        let baseHeight = 40; // Hauteur de base pour jour + nom
+        if (hasWorkHours) baseHeight += 20; // Badge des heures
+        if (hasProjects) baseHeight += 24; // Indicateurs de projets
+
+        return Math.max(baseHeight, 88); // Minimum 88px pour une bonne lisibilité
+    }, [daysInWeek, data.activities]);
 
     const dayHeaders = (days: Date[]) => (
-        days.map(day => (
-            <div key={day.toISOString()} className={`p-2 text-center ${isSameDay(day, new Date()) ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`}>
-                <p className="text-xs text-muted-foreground">{format(day, 'E', { locale: fr })}</p>
-                <p className="font-bold text-lg">{format(day, 'd')}</p>
-            </div>
-        ))
-    );
+        days.map(day => {
+            const workHours = getDayWorkHours(day);
+            const projects = getDayProjects(day);
+            const isToday = isSameDay(day, new Date());
 
-    const plannedRow = (days: Date[]) => (
-        days.map((day) => {
-            const dayOfWeek = getDay(day) === 0 ? 6 : getDay(day) - 1; // Lundi=0, Dimanche=6
-            const plannedForDay = data.planned[dayOfWeek] || [];
             return (
-                <div key={format(day, 'T')} className="p-1 min-h-[50px] space-y-1">
-                    {plannedForDay.map(p => (
-                        <Badge key={p.project.id} variant="secondary" className="w-full justify-between h-5" style={{ backgroundColor: `${p.project.color}20`, borderColor: `${p.project.color}50` }}>
-                            <span className="font-semibold text-xs truncate" style={{ color: p.project.color }}>{p.project.name}</span>
-                            <span className="text-muted-foreground text-xs">{p.plannedHours}h</span>
-                        </Badge>
-                    ))}
+                <div key={day.toISOString()} className={`p-1 text-center border-r last:border-r-0 ${isToday ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`}>
+                    <div className="flex flex-col items-center">
+                        <p className="text-xs text-muted-foreground">{format(day, 'E', { locale: fr })}</p>
+                        <p className="font-bold text-sm">{format(day, 'd')}</p>
+                        {workHours > 0 && (
+                            <div className="mt-1 w-full">
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4" style={{ fontSize: '10px' }}>
+                                    {workHours}h
+                                </Badge>
+                                {projects.length > 0 && (
+                                    <div className="mt-1 space-y-0.5 max-w-full">
+                                        {projects.slice(0, 2).map(project => (
+                                            <div
+                                                key={project.id}
+                                                className="w-full h-1 rounded-sm"
+                                                style={{ backgroundColor: project.color }}
+                                                title={`${project.name}: ${project.hours}h`}
+                                            />
+                                        ))}
+                                        {projects.length > 2 && (
+                                            <div className="text-xs text-muted-foreground" style={{ fontSize: '9px' }}>
+                                                +{projects.length - 2}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         })
     );
 
+
+
+
     const contentGrid = (days: Date[]) => (
-        <div className={`col-start-2 grid ${isMobile ? 'grid-cols-1' : 'grid-cols-7'}`}>
+        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-7'}`}>
             {days.map(day => {
                 const dayKey = format(day, 'yyyy-MM-dd');
                 return (
-                    <div key={dayKey} className="relative border-r" style={{ height: `${totalViewHeight}px` }}>
-                        {Array.from({ length: viewEndHour - viewStartHour }).map((_, i) => <div key={i} style={{ height: `${60 * PIXELS_PER_MINUTE}px` }} className="border-b border-dashed border-border/30"></div>)}
+                    <div key={dayKey} className="relative border-r last:border-r-0 dark:border-slate-700 min-h-0" style={{ height: `${totalViewHeight}px` }}>
+                        {Array.from({ length: viewEndHour - viewStartHour }).map((_, i) =>
+                            <div key={i} style={{ height: `${60 * PIXELS_PER_MINUTE}px` }} className="border-b border-dashed border-border/30 dark:border-slate-700/50"></div>
+                        )}
                         <AnimatePresence>
-                            {(processedActivitiesByDay.get(dayKey) || []).map(act => <ActivityBlock key={act.id} activity={act} />)}
+                            {(processedActivitiesByDay.get(dayKey) || []).map(act =>
+                                <ActivityBlock key={act.id} activity={act} />
+                            )}
                         </AnimatePresence>
                     </div>
                 );
             })}
-            <LiveTimeIndicator startHour={viewStartHour} pixelsPerMinute={PIXELS_PER_MINUTE} />
+            {isSameWeek(new Date(), days[0]) && <LiveTimeIndicator startHour={viewStartHour} pixelsPerMinute={PIXELS_PER_MINUTE} />}
         </div>
     );
 
 
     return (
-        <Card className="w-full shadow-lg overflow-hidden">
-            <CardContent className="p-2 sm:p-4">
-                <div className="p-2 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <h2 className="text-lg font-semibold">{format(weekStart, 'MMMM yyyy', { locale: fr })}</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Semaine du {format(weekStart, 'd MMM', { locale: fr })} au {format(addDays(weekStart, 6), 'd MMM yyyy', { locale: fr })}
-                        {isSameWeek(weekStart, new Date()) && " (semaine actuelle)"}
-                        {isSameWeek(weekStart, addDays(new Date(), -7)) && " (semaine dernière)"}
-                        {isLoading && " - Chargement..."}
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            console.log('🔍 Debug Info:');
-                            console.log('Current weekStart:', format(weekStart, 'yyyy-MM-dd'));
-                            console.log('Data state:', data);
-                            console.log('Activities count:', data.activities.length);
-                            console.log('Planned keys:', Object.keys(data.planned));
-                        }}
-                    >
-                        Debug
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => changeWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
-                    <Button variant="outline" size="sm" onClick={goToLastWeek}>Semaine dernière</Button>
-                    <Button variant="outline" size="sm" onClick={goToCurrentWeek}>Cette semaine</Button>
-                    <Button variant="outline" size="icon" onClick={() => changeWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
-                </div>
-
-                {isLoading ? (
-                    <div className="flex items-center justify-center h-96">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    </div>
-                ) : isMobile ? (
-                    // === LAYOUT MOBILE ===
-                    <div className="mt-2">
-                        <ToggleGroup type="single" value={format(selectedMobileDay, 'yyyy-MM-dd')} onValueChange={val => val && setSelectedMobileDay(new Date(val))} className="grid grid-cols-7 gap-1">
-                            {daysInWeek.map(d => <ToggleGroupItem key={format(d, 'd')} value={format(d, 'yyyy-MM-dd')} variant="outline" className={`flex flex-col h-14 ${isSameDay(d, new Date()) ? 'border-blue-500' : ''}`}>{format(d, 'E', { locale: fr })}<span className="font-bold">{format(d, 'd')}</span></ToggleGroupItem>)}
-                        </ToggleGroup>
-                        <div className="mt-4 grid grid-cols-[48px_1fr] border-t border-l">
-                            <div className="col-start-2 border-r border-b">{dayHeaders([selectedMobileDay])}</div>
-                            <div className="col-start-2 border-r border-b bg-slate-50">{plannedRow([selectedMobileDay])}</div>
-                            <div className="row-start-3"><TimeAxis startHour={viewStartHour} endHour={viewEndHour} pixelsPerMinute={PIXELS_PER_MINUTE} /></div>
-                            {contentGrid([selectedMobileDay])}
+        <div className="w-full flex flex-col">
+            <Card className="shadow-lg border-gray-200/80 flex flex-col" style={{ maxHeight: `${maxCalendarHeight}px` }}>
+                <CardHeader className="bg-blue-600 text-white rounded-t-lg p-3 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        {/* Partie gauche : Titre et date */}
+                        <div className="flex items-center space-x-3">
+                            <CalendarDays className="h-6 w-6 flex-shrink-0" />
+                            <div>
+                                <CardTitle className="text-xl font-bold capitalize">
+                                    {format(weekStart, 'MMMM yyyy', { locale: fr })}
+                                </CardTitle>
+                                <CardDescription className="text-blue-200 text-sm">
+                                    Semaine du {format(weekStart, 'd')} au {format(addDays(weekStart, 6), 'd MMMM', { locale: fr })}
+                                </CardDescription>
+                            </div>
                         </div>
-                    </div>) : (
-                    // === LAYOUT DESKTOP AVEC SCROLL ===
-                    <div className="mt-2 overflow-x-auto">
-                        <div className="min-w-[1050px]">
-                            <div className="grid grid-cols-[52px_repeat(7,_1fr)]">
-                                {/* Headers et rangées "sticky" */}
-                                <div className="col-start-2 col-span-7 grid grid-cols-7 sticky top-0 z-20 bg-background border-l border-t">{dayHeaders(daysInWeek)}</div>
-                                <div className="col-start-2 col-span-7 grid grid-cols-7 sticky top-[61px] z-20 bg-background/80 backdrop-blur-sm border-l">
-                                    {plannedRow(daysInWeek)}
+
+                        {/* Partie droite : Navigation */}
+                        <div className="flex items-center gap-2 justify-between">
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => changeWeek('prev')} className="text-white hover:bg-white/10 h-8 w-8">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <div className="hidden md:flex items-center gap-2">
+                                    <Button variant="outline" size="sm" onClick={goToLastWeek} className="bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs px-2 py-1">Sem. dernière</Button>
+                                    <Button variant="outline" size="sm" onClick={goToCurrentWeek} className="bg-white text-blue-600 hover:bg-blue-50 text-xs px-2 py-1">Aujourd'hui</Button>
                                 </div>
-                                <div className="row-start-3 col-start-1 border-t"><TimeAxis startHour={viewStartHour} endHour={viewEndHour} pixelsPerMinute={PIXELS_PER_MINUTE} /></div>
-                                <div className="row-start-3 col-start-2 col-span-7 relative border-t border-l">
-                                    {contentGrid(daysInWeek)}
+                                <Button variant="ghost" size="icon" onClick={() => changeWeek('next')} className="text-white hover:bg-white/10 h-8 w-8">
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-white/80 ml-2" />}
+                        </div>
+                    </div>
+                </CardHeader>
+
+                <CardContent className="p-0 flex-1 overflow-hidden">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-96">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : isMobile ? (
+                        // === LAYOUT MOBILE (optimisé pour les petits écrans) ===
+                        <div className="p-2">
+                            <ToggleGroup type="single" value={format(selectedMobileDay, 'yyyy-MM-dd')} onValueChange={val => val && setSelectedMobileDay(new Date(val))} className="grid grid-cols-7 gap-1 mb-2">
+                                {daysInWeek.map(d =>
+                                    <ToggleGroupItem key={format(d, 'd')} value={format(d, 'yyyy-MM-dd')} variant="outline" className={`flex flex-col h-10 text-xs ${isSameDay(d, new Date()) ? 'border-blue-500' : ''}`}>
+                                        {format(d, 'E', { locale: fr })}
+                                        <span className="font-bold">{format(d, 'd')}</span>
+                                    </ToggleGroupItem>
+                                )}
+                            </ToggleGroup>
+                            <div className="grid grid-cols-[60px_1fr] border rounded-lg overflow-hidden">
+                                <div className="col-start-2 border-b p-1 bg-slate-50 dark:bg-slate-800/50" style={{ minHeight: `${headerHeight}px` }}>{dayHeaders([selectedMobileDay])}</div>
+                                <div className="border-r bg-slate-50 dark:bg-slate-800/50 text-xs"><TimeAxis startHour={viewStartHour} endHour={viewEndHour} /></div>
+                                <div className="relative" style={{ maxHeight: `${Math.min(totalViewHeight, 350)}px`, overflowY: totalViewHeight > 350 ? 'auto' : 'visible' }}>{contentGrid([selectedMobileDay])}</div>
+                            </div>
+                        </div>
+                    ) : (
+                        // === LAYOUT DESKTOP OPTIMISÉ ===
+                        <div className="grid grid-cols-[80px_1fr]" style={{ height: `${Math.min(totalViewHeight + 60, maxCalendarHeight - 60)}px` }}>
+                            <div className="border-r dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex flex-col">
+                                {/* Headers spacer - hauteur dynamique synchronisée avec dayHeaders */}
+                                <div className="border-b dark:border-slate-700" style={{ height: `${headerHeight}px` }}></div>
+                                {/* Time axis - sticky qui suit le scroll */}
+                                <div className="flex-1 relative">
+                                    <div
+                                        ref={timeAxisScrollRef}
+                                        className="absolute inset-0 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden"
+                                        onScroll={(e) => syncScroll('timeAxis', e.currentTarget.scrollTop)}
+                                        style={{
+                                            scrollbarWidth: 'none',
+                                            msOverflowStyle: 'none'
+                                        }}
+                                    >
+                                        <TimeAxis startHour={viewStartHour} endHour={viewEndHour} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col overflow-hidden">
+                                <div className="flex-shrink-0 bg-background border-b dark:border-slate-700">
+                                    <div className="grid grid-cols-7 border-b dark:border-slate-700" style={{ minHeight: `${headerHeight}px` }}>{dayHeaders(daysInWeek)}</div>
+                                </div>
+                                <div className="flex-1 relative">
+                                    <div
+                                        ref={contentScrollRef}
+                                        className="absolute inset-0"
+                                        style={{
+                                            overflowY: totalViewHeight > (maxCalendarHeight - 120) ? 'auto' : 'visible',
+                                            overflowX: 'hidden'
+                                        }}
+                                        onScroll={(e) => syncScroll('content', e.currentTarget.scrollTop)}
+                                    >
+                                        {contentGrid(daysInWeek)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
     );
 };

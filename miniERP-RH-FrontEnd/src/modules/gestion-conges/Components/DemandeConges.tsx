@@ -187,13 +187,15 @@ export function DemandeCongeForm() {
 
     // --- Rendu du composant ---
     return (
-        <Card className="w-full max-w-2xl mx-auto shadow-lg border-gray-200/80">
-            <CardHeader className="bg-blue-600 text-white rounded-t-lg py-4">
-                <div className="flex items-center space-x-4">
-                    <CalendarIcon className="h-7 w-7" />
+        <Card className="w-full shadow-md border-slate-300 rounded-lg overflow-hidden">
+            <CardHeader className="bg-blue-600 text-white py-4">
+                <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                        <CalendarIcon className="h-4 w-4 text-white" />
+                    </div>
                     <div>
-                        <CardTitle className="text-xl font-bold">Nouvelle demande de congé</CardTitle>
-                        <CardDescription className="text-blue-200">Remplissez ce formulaire pour soumettre votre demande.</CardDescription>
+                        <CardTitle className="text-lg font-semibold text-white">Nouvelle demande de congé</CardTitle>
+                        <CardDescription className="text-blue-100 text-sm">Remplissez ce formulaire pour soumettre votre demande.</CardDescription>
                     </div>
                 </div>
             </CardHeader>
@@ -205,25 +207,27 @@ export function DemandeCongeForm() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <CardContent className="p-6 space-y-8">
+                        <CardContent className="bg-slate-50 p-4 sm:p-5 space-y-5">
                             {/* Étape 1: Période */}
                             <FormField
                                 control={form.control}
                                 name="dateDebut"
                                 render={() => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold text-gray-800">Période du congé</FormLabel>
+                                        <FormLabel className="text-sm font-medium text-slate-900">
+                                            Période du congé
+                                        </FormLabel>
                                         <FormControl>
-                                            <div className="flex justify-center p-2 border rounded-lg bg-gray-50/80">
+                                            <div className="flex justify-center p-3 border border-slate-300 rounded-lg bg-white shadow-sm">
                                                 <Calendar
                                                     mode="range"
                                                     selected={dateRange}
                                                     onSelect={setDateRange}
-                                                    className="bg-white"
+                                                    className="bg-white scale-90 sm:scale-100"
                                                 />
                                             </div>
                                         </FormControl>
-                                        <FormMessage className="pt-1" />
+                                        <FormMessage className="pt-1 text-red-600 text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -234,18 +238,20 @@ export function DemandeCongeForm() {
                                 name="typeConge"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold text-gray-800">Type de congé</FormLabel>
+                                        <FormLabel className="text-sm font-medium text-slate-900">
+                                            Type de congé
+                                        </FormLabel>
                                         <FormControl>
                                             {isLoadingTypes ? (
-                                                <Skeleton className="h-10 w-full" />
+                                                <Skeleton className="h-10 w-full rounded-lg" />
                                             ) : (
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <SelectTrigger className="h-11">
+                                                    <SelectTrigger className="h-10 border border-slate-300 focus:border-blue-500 bg-white rounded-lg shadow-sm text-sm">
                                                         <SelectValue placeholder="Sélectionnez un type" />
                                                     </SelectTrigger>
-                                                    <SelectContent>
+                                                    <SelectContent className="rounded-lg border-slate-300">
                                                         {typeConges.map((type) => (
-                                                            <SelectItem key={type.id} value={String(type.id)}>
+                                                            <SelectItem key={type.id} value={String(type.id)} className="text-sm py-2">
                                                                 {type.nom}
                                                             </SelectItem>
                                                         ))}
@@ -253,7 +259,7 @@ export function DemandeCongeForm() {
                                                 </Select>
                                             )}
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="pt-1 text-red-600 text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -264,27 +270,33 @@ export function DemandeCongeForm() {
                                 name="motif"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold text-gray-800">Motif de la demande</FormLabel>
+                                        <FormLabel className="text-sm font-medium text-slate-900">
+                                            Motif de la demande
+                                        </FormLabel>
                                         <FormControl>
-                                            <Textarea // <-- Utilisation du Textarea
-                                                placeholder="Veuillez préciser le motif de votre absence (ex: vacances, raison familiale...)"
-                                                className="resize-none"
-                                                rows={4}
+                                            <Textarea
+                                                placeholder="Précisez le motif de votre absence..."
+                                                className="resize-none border border-slate-300 focus:border-blue-500 bg-white rounded-lg shadow-sm text-sm p-3"
+                                                rows={3}
                                                 {...field}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="pt-1 text-red-600 text-xs" />
                                     </FormItem>
                                 )}
                             />
                         </CardContent>
 
-                        <CardFooter className="p-6 pt-2">
-                            <Button type="submit" disabled={isPending} className="w-full bg-blue-600 hover:bg-blue-700 h-11 text-base">
+                        <CardFooter className="bg-white border-t border-slate-300 p-4 sm:p-5">
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="w-full bg-blue-600 hover:bg-blue-700 h-10 text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                            >
                                 {isPending ? (
-                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Envoi en cours...</>
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Envoi en cours...</>
                                 ) : (
-                                    <><Send className="mr-2 h-5 w-5" /> Envoyer ma demande</>
+                                    <><Send className="mr-2 h-4 w-4" /> Envoyer ma demande</>
                                 )}
                             </Button>
                         </CardFooter>

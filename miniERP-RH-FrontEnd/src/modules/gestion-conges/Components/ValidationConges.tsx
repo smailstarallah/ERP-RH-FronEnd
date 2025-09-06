@@ -156,60 +156,64 @@ export const ValidationConges = () => {
     // --- Rendu du composant ---
     return (
         <>
-            <Card className="w-full shadow-lg border-gray-200/80">
-                <CardHeader className="bg-blue-600 text-white rounded-t-lg p-6">
-                    <div className="flex items-center space-x-4">
-                        <FileWarning className="h-7 w-7" />
+            <Card className="w-full shadow-md border-slate-300 rounded-lg overflow-hidden">
+                <CardHeader className="bg-blue-600 text-white p-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                            <FileWarning className="h-4 w-4 text-white" />
+                        </div>
                         <div>
-                            <CardTitle className="text-2xl font-bold">Validation des Congés</CardTitle>
-                            <CardDescription className="text-blue-200">Examinez et traitez les demandes de votre équipe.</CardDescription>
+                            <CardTitle className="text-lg font-semibold text-white">Validation des Congés</CardTitle>
+                            <CardDescription className="text-blue-100 text-sm">Examinez et traitez les demandes de votre équipe.</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-4 md:p-6">
+                <CardContent className="bg-slate-50 p-4 sm:p-5">
                     {loading ? (
                         <div className="space-y-3">
                             {/* Skeletons pour Desktop */}
                             <div className="hidden sm:block space-y-2">
-                                <Skeleton className="h-10 w-full" />
-                                <Skeleton className="h-12 w-full" />
-                                <Skeleton className="h-12 w-full" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-12 w-full rounded-lg" />
+                                <Skeleton className="h-12 w-full rounded-lg" />
                             </div>
                             {/* Skeletons pour Mobile */}
                             <div className="sm:hidden space-y-3">
-                                <Skeleton className="h-28 w-full rounded-lg" />
-                                <Skeleton className="h-28 w-full rounded-lg" />
+                                <Skeleton className="h-24 w-full rounded-lg" />
+                                <Skeleton className="h-24 w-full rounded-lg" />
                             </div>
                         </div>
                     ) : demandes.length > 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             {/* Vue Desktop */}
-                            <div className="hidden sm:block border rounded-lg max-h-60 overflow-y-auto">
+                            <div className="hidden sm:block border border-slate-300 rounded-lg max-h-60 overflow-y-auto shadow-sm bg-white">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Employé</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Période</TableHead>
-                                            <TableHead className="text-center">Jours</TableHead>
-                                            <TableHead>Statut</TableHead>
-                                            <TableHead className="text-right">Action</TableHead>
+                                        <TableRow className="bg-blue-600 hover:bg-blue-700">
+                                            <TableHead className="text-white font-medium text-sm">Employé</TableHead>
+                                            <TableHead className="text-white font-medium text-sm">Type</TableHead>
+                                            <TableHead className="text-white font-medium text-sm">Période</TableHead>
+                                            <TableHead className="text-center text-white font-medium text-sm">Jours</TableHead>
+                                            <TableHead className="text-white font-medium text-sm">Statut</TableHead>
+                                            <TableHead className="text-right text-white font-medium text-sm">Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {demandes.map((d) => (
-                                            <TableRow key={d.id} className="align-middle">
-                                                <TableCell className="font-medium">{d.employeNom}</TableCell>
-                                                <TableCell>{d.typeConge}</TableCell>
-                                                <TableCell>{`${formatDate(d.dateDebut)} - ${formatDate(d.dateFin)}`}</TableCell>
-                                                <TableCell className="text-center">{d.nombreJours}</TableCell>
+                                            <TableRow key={d.id} className="align-middle hover:bg-slate-50 transition-colors duration-200 border-b border-slate-200">
+                                                <TableCell className="font-medium text-slate-900 text-sm py-3">{d.employeNom}</TableCell>
+                                                <TableCell className="text-slate-700 text-sm">{d.typeConge}</TableCell>
+                                                <TableCell className="text-slate-700 text-sm">{`${formatDate(d.dateDebut)} - ${formatDate(d.dateFin)}`}</TableCell>
+                                                <TableCell className="text-center font-semibold text-blue-700 text-sm">{d.nombreJours}</TableCell>
                                                 <TableCell>
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatutDisplay(d.statut).className}`}>
+                                                    <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
                                                         {getStatutDisplay(d.statut).text}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="outline" size="sm" onClick={() => openModal(d)}><Eye className="mr-2 h-4 w-4" /> Examiner</Button>
+                                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 border border-slate-300 hover:border-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200" onClick={() => openModal(d)}>
+                                                        <Eye className="h-4 w-4 text-slate-600" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -219,37 +223,39 @@ export const ValidationConges = () => {
                             {/* Vue Mobile */}
                             <div className="sm:hidden space-y-3 max-h-60 overflow-y-auto">
                                 {demandes.map((d) => (
-                                    <Card key={d.id} className="p-4">
-                                        <div className="flex justify-between items-start">
+                                    <Card key={d.id} className="border border-slate-300 shadow-sm p-3 rounded-lg hover:shadow-md transition-shadow duration-200 bg-white">
+                                        <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <p className="font-bold text-gray-800">{d.employeNom}</p>
-                                                <p className="text-sm text-gray-500">{d.typeConge}</p>
+                                                <p className="font-medium text-slate-900 text-sm">{d.employeNom}</p>
+                                                <p className="text-xs text-slate-600">{d.typeConge}</p>
                                             </div>
-                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatutDisplay(d.statut).className}`}>
+                                            <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
                                                 {getStatutDisplay(d.statut).text}
                                             </span>
                                         </div>
-                                        <div className="border-t my-3"></div>
-                                        <div className="flex justify-between items-center text-sm">
-                                            <div className="text-gray-600 space-y-1">
-                                                <p><span className="font-semibold">Période:</span> {`${formatDate(d.dateDebut)} au ${formatDate(d.dateFin)}`}</p>
-                                                <p><span className="font-semibold">Durée:</span> {d.nombreJours} jour{d.nombreJours > 1 ? 's' : ''}</p>
+                                        <div className="border-t border-slate-200 my-3"></div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="text-slate-700 space-y-1">
+                                                <p className="text-xs"><span className="font-medium">Période:</span> {`${formatDate(d.dateDebut)} au ${formatDate(d.dateFin)}`}</p>
+                                                <p className="text-xs"><span className="font-medium">Durée:</span> <span className="text-blue-700 font-semibold">{d.nombreJours} jour{d.nombreJours > 1 ? 's' : ''}</span></p>
                                             </div>
-                                            <Button variant="outline" size="sm" onClick={() => openModal(d)}><Eye className="h-4 w-4" /></Button>
+                                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 border border-slate-300 hover:border-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200" onClick={() => openModal(d)}>
+                                                <Eye className="h-4 w-4 text-slate-600" />
+                                            </Button>
                                         </div>
                                     </Card>
                                 ))}
                             </div>
                         </motion.div>
                     ) : (
-                        <div className="text-center py-10">
+                        <div className="text-center py-8">
                             <div className="flex justify-center mb-4">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                                    <Inbox className="h-8 w-8 text-gray-500" />
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                    <Inbox className="h-8 w-8 text-slate-500" />
                                 </div>
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-800">Boîte de réception vide</h3>
-                            <p className="text-sm text-gray-600">Aucune nouvelle demande de congé à valider pour le moment.</p>
+                            <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune demande</h3>
+                            <p className="text-sm text-slate-600">Aucune nouvelle demande de congé à valider.</p>
                         </div>
                     )}
                 </CardContent>
@@ -257,47 +263,56 @@ export const ValidationConges = () => {
 
             {/* --- Modal de validation (UI améliorée) --- */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>Détails de la demande</DialogTitle>
-                        <DialogDescription>Examinez la demande de {selectedDemande?.employeNom}.</DialogDescription>
+                <DialogContent className="sm:max-w-lg rounded-2xl border-2 border-blue-200 shadow-2xl">
+                    <DialogHeader className="pb-4">
+                        <DialogTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            🔍 Détails de la demande
+                        </DialogTitle>
+                        <DialogDescription className="text-blue-600 font-medium">
+                            Examinez la demande de {selectedDemande?.employeNom}
+                        </DialogDescription>
                     </DialogHeader>
                     {selectedDemande && (
-                        <div className="space-y-4 py-4">
-                            <div className="p-4 bg-gray-50 rounded-lg border space-y-3">
+                        <div className="space-y-6 py-2">
+                            <div className="p-5 bg-gradient-to-br from-blue-50 to-white rounded-xl border-2 border-blue-200 space-y-4 shadow-md">
                                 <div className="flex justify-between items-start">
-                                    <p><span className="font-semibold">Type :</span> {selectedDemande.typeConge}</p>
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatutDisplay(selectedDemande.statut).className}`}>
+                                    <p className="text-base"><span className="font-bold text-gray-800">🏷️ Type :</span> <span className="text-gray-700">{selectedDemande.typeConge}</span></p>
+                                    <span className="px-3 py-1 text-sm font-semibold rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 shadow-md">
                                         {getStatutDisplay(selectedDemande.statut).text}
                                     </span>
                                 </div>
-                                <p><span className="font-semibold">Période :</span> {`${formatDate(selectedDemande.dateDebut)} - ${formatDate(selectedDemande.dateFin)} (${selectedDemande.nombreJours}j)`}</p>
+                                <p className="text-base"><span className="font-bold text-gray-800">📅 Période :</span> <span className="text-gray-700">{`${formatDate(selectedDemande.dateDebut)} - ${formatDate(selectedDemande.dateFin)}`}</span> <span className="text-blue-700 font-bold">({selectedDemande.nombreJours}j)</span></p>
                                 <div>
-                                    <p className="font-semibold">Motif de l'employé :</p>
-                                    <p className="text-sm text-gray-600 italic border-l-2 pl-2 mt-1">{selectedDemande.motif}</p>
+                                    <p className="font-bold text-gray-800 mb-2">💭 Motif de l'employé :</p>
+                                    <p className="text-sm text-gray-700 bg-white border-l-4 border-blue-500 pl-4 py-2 rounded-r-lg italic shadow-sm">{selectedDemande.motif}</p>
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="commentaire" className="font-semibold text-gray-800">Ajouter un commentaire (optionnel)</label>
+                                <label htmlFor="commentaire" className="font-bold text-gray-800 flex items-center gap-2 mb-3">
+                                    📝 Ajouter un commentaire (optionnel)
+                                </label>
                                 <Textarea
                                     id="commentaire"
                                     placeholder="Justification de votre décision..."
                                     value={commentaires[selectedDemande.id] || ''}
                                     onChange={(e) => handleCommentaireChange(selectedDemande.id, e.target.value)}
-                                    className="mt-2"
+                                    className="border-2 border-blue-200 focus:border-blue-500 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-base p-4"
+                                    rows={3}
                                 />
                             </div>
                         </div>
                     )}
-                    <DialogFooter className="flex-col-reverse space-y-2 sm:flex-row sm:justify-end sm:space-x-2">
-                        <Button variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</Button>
+                    <DialogFooter className="flex-col-reverse space-y-3 sm:flex-row sm:justify-end sm:space-x-3 sm:space-y-0 pt-4">
+                        <Button variant="outline" className="border-2 border-gray-300 hover:border-gray-400 rounded-xl" onClick={() => setIsModalOpen(false)}>
+                            ❌ Annuler
+                        </Button>
                         {selectedDemande && (
                             <>
-                                <Button variant="destructive" onClick={() => handleValidation(selectedDemande.id, 'REJETE')} disabled={validating[selectedDemande.id]}>
-                                    Rejeter
+                                <Button variant="destructive" className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" onClick={() => handleValidation(selectedDemande.id, 'REJETE')} disabled={validating[selectedDemande.id]}>
+                                    ❌ Rejeter
                                 </Button>
-                                <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleValidation(selectedDemande.id, 'APPROUVE')} disabled={validating[selectedDemande.id]}>
-                                    Approuver
+                                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" onClick={() => handleValidation(selectedDemande.id, 'APPROUVE')} disabled={validating[selectedDemande.id]}>
+                                    ✅ Approuver
                                 </Button>
                             </>
                         )}

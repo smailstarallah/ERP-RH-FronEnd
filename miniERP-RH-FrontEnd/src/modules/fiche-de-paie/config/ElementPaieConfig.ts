@@ -10,7 +10,11 @@ import {
     Clock,
     Gift,
     Scissors,
-    CalendarX
+    CalendarX,
+    Timer,
+    Zap,
+    Shield,
+    Receipt
 } from 'lucide-react';
 import { TypeElement, ModeCalcul, type TypeElementType, type ModeCalculType } from '../types/ElementPaieTypes';
 
@@ -36,7 +40,7 @@ export const typeConfig: Record<TypeElementType, {
         icon: DollarSign,
         category: 'Compléments',
         description: 'Prime régulière versée chaque mois, sans variation',
-        example: 'Ex : Prime d’ancienneté, prime de fonction'
+        example: 'Ex : Prime d\'ancienneté, prime de fonction'
     },
     [TypeElement.PRIME_VARIABLE]: {
         label: 'Prime variable',
@@ -59,8 +63,16 @@ export const typeConfig: Record<TypeElementType, {
         color: 'bg-red-600',
         icon: CalendarX,
         category: 'Retenues',
-        description: 'Déduction appliquée en cas d’absence non justifiée',
+        description: 'Déduction appliquée en cas d\'absence non justifiée',
         example: 'Ex : Absence injustifiée, retard répété'
+    },
+    [TypeElement.DEDUCTION_RETARD]: {
+        label: 'Retenue pour retards',
+        color: 'bg-red-700',
+        icon: Timer,
+        category: 'Retenues',
+        description: 'Déduction automatique calculée depuis le système de time tracking',
+        example: 'Ex : Retards répétés, sorties anticipées'
     },
     [TypeElement.DEDUCTION_AUTRE]: {
         label: 'Autre retenue',
@@ -91,7 +103,7 @@ export const typeConfig: Record<TypeElementType, {
         color: 'bg-gray-600',
         icon: HelpCircle,
         category: 'Divers',
-        description: 'Éléments spécifiques propres à l’organisation',
+        description: 'Éléments spécifiques propres à l\'organisation',
         example: 'Ex : Frais de transport, tickets restaurant'
     },
     [TypeElement.INDEMNITE]: {
@@ -133,6 +145,16 @@ export const modeCalculConfig: Record<ModeCalculType, {
         focusColor: 'focus:border-blue-500 focus:ring-blue-200',
         description: 'Un pourcentage appliqué sur une base',
         help: 'Par exemple: 3% du salaire de base, ou 20% des ventes'
+    },
+    [ModeCalcul.AUTOMATIQUE_TIME_TRACKING]: {
+        label: 'Calcul automatique',
+        icon: Zap,
+        color: 'orange',
+        bgColor: 'from-orange-50 to-red-50',
+        borderColor: 'border-orange-200',
+        focusColor: 'focus:border-orange-500 focus:ring-orange-200',
+        description: 'Calcul automatique depuis le système de time tracking',
+        help: 'Le montant sera calculé automatiquement en fonction des données de présence. Seul le taux horaire est requis.'
     },
     // [ModeCalcul.BAREME]: {
     //     label: 'Grille progressive',

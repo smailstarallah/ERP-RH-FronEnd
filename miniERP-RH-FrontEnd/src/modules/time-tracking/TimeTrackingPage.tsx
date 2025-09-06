@@ -15,7 +15,6 @@ import { TeamPresence } from "./Components/TeamPresence";
 import { HoursChart } from "./Components/HoursChart";
 import { ProfessionalTimeSheetCalendar } from "./Components/PresenceCalendar";
 import { ProjectAndTaskManager } from "./Components/ProjectAndTaskManager";
-import { KpiAndStatistics } from "./Components/KpiAndStatistics";
 
 interface TeamStatus {
     employeeId: string;
@@ -123,7 +122,6 @@ export const TimeTrackingPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-            <ProfessionalTimeSheetCalendar />
             <div className="max-w-6xl mx-auto space-y-6">
 
                 <TimeHeader
@@ -133,30 +131,19 @@ export const TimeTrackingPage: React.FC = () => {
                 />
 
                 <MessageAlert message={message} />
+                <ProjectAndTaskManager />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Section principale - Actions de pointage */}
                     <div className="lg:col-span-2 space-y-6">
 
-                        <CurrentStatus
-                            isWorking={isWorking}
-                            isOnBreak={isOnBreak}
-                            formatTime={formatTime}
-                            currentSessionDuration={currentSession.duration}
-                            totalBreakTime={totalBreakTime}
-                        />
-
                         <TimeActions />
 
-                        <KpiAndStatistics />
-
-                        <ProjectAndTaskManager />
-
                         {/* <PresenceCalendar /> */}
+                        <ProfessionalTimeSheetCalendar />
 
 
                         <WeekStatsCard weekStats={weekStats} weekRows={weekRows} />
-                        <TodayHistory todayEntries={todayEntries} />
                         <TeamPresence teamStatus={teamStatus} isLoading={loadingStatus.teamStatus} liveToggle={liveToggle} />
                     </div>
 

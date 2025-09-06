@@ -1,5 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TableBody, Table, TableHeader, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Clock, Calendar, AlertCircle } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -33,36 +31,42 @@ export const WeekStatsCard: React.FC<WeekStatsProps> = ({ weekStats, weekRows = 
         return `${h}h${min.toString().padStart(2, '0')}`;
     };
 
+    const formatHours = (hours: number) => {
+        const h = Math.floor(hours);
+        const minutes = Math.round((hours - h) * 60);
+        return `${h.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     return (
-        <Card className="lg:col-span-3 border-slate-200 shadow-sm">
-            <CardHeader className="pb-4 border-b border-slate-100">
+        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div className="p-3 sm:p-4 border-b border-slate-200">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                            <Calendar className="w-5 h-5 text-blue-600" />
-                            Rapport Hebdomadaire
-                        </CardTitle>
-                        <CardDescription className="text-sm text-slate-600">
-                            Suivi des horaires de travail
-                        </CardDescription>
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <Calendar className="w-4 h-4 text-white" />
+                            </div>
+                            <h3 className="text-base sm:text-lg font-semibold text-slate-900">Rapport Hebdomadaire</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">Suivi des horaires de travail</p>
                     </div>
 
                     {/* Indicateurs principaux */}
-                    <div className="hidden md:flex items-center gap-3">
-                        <div className="text-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="text-xs font-medium text-blue-700 uppercase tracking-wide">Total</div>
-                            <div className="text-lg font-bold text-blue-900">{weekStats.totalHours}h</div>
+                    <div className="hidden md:flex items-center gap-2 lg:gap-3">
+                        <div className="text-center px-3 py-2 bg-blue-100 border border-blue-200 rounded-lg">
+                            <div className="text-xs font-medium text-blue-800 uppercase tracking-wide">Total</div>
+                            <div className="text-lg font-semibold text-blue-900">{formatHours(weekStats.totalHours)}</div>
                         </div>
                         {weekStats.overtimeHours > 0 && (
-                            <div className="text-center px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                                <div className="text-xs font-medium text-amber-700 uppercase tracking-wide">Sup.</div>
-                                <div className="text-lg font-bold text-amber-800">{Math.floor(weekStats.overtimeHours)}h</div>
+                            <div className="text-center px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg">
+                                <div className="text-xs font-medium text-slate-700 uppercase tracking-wide">Sup.</div>
+                                <div className="text-lg font-semibold text-slate-800">{formatHours(weekStats.overtimeHours)}</div>
                             </div>
                         )}
                         {weekStats.absences > 0 && (
-                            <div className="text-center px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-                                <div className="text-xs font-medium text-red-700 uppercase tracking-wide">Abs.</div>
-                                <div className="text-lg font-bold text-red-800">{weekStats.absences}</div>
+                            <div className="text-center px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg">
+                                <div className="text-xs font-medium text-slate-700 uppercase tracking-wide">Abs.</div>
+                                <div className="text-lg font-semibold text-slate-800">{weekStats.absences}</div>
                             </div>
                         )}
                     </div>
@@ -71,111 +75,113 @@ export const WeekStatsCard: React.FC<WeekStatsProps> = ({ weekStats, weekRows = 
                 {/* Indicateurs mobiles */}
                 <div className="md:hidden mt-4">
                     <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center px-2 py-2 bg-blue-50 border border-blue-200 rounded">
-                            <div className="text-xs font-medium text-blue-700">TOTAL</div>
-                            <div className="text-sm font-bold text-blue-900">{weekStats.totalHours}h</div>
+                        <div className="text-center px-2 py-2 bg-blue-100 border border-blue-200 rounded-lg">
+                            <div className="text-xs font-medium text-blue-800">TOTAL</div>
+                            <div className="text-sm font-semibold text-blue-900">{formatHours(weekStats.totalHours)}</div>
                         </div>
-                        <div className="text-center px-2 py-2 bg-amber-50 border border-amber-200 rounded">
-                            <div className="text-xs font-medium text-amber-700">SUP.</div>
-                            <div className="text-sm font-bold text-amber-800">{Math.floor(weekStats.overtimeHours)}h</div>
+                        <div className="text-center px-2 py-2 bg-slate-100 border border-slate-300 rounded-lg">
+                            <div className="text-xs font-medium text-slate-700">SUP.</div>
+                            <div className="text-sm font-semibold text-slate-800">{formatHours(weekStats.overtimeHours)}</div>
                         </div>
-                        <div className="text-center px-2 py-2 bg-red-50 border border-red-200 rounded">
-                            <div className="text-xs font-medium text-red-700">ABS.</div>
-                            <div className="text-sm font-bold text-red-800">{weekStats.absences}</div>
+                        <div className="text-center px-2 py-2 bg-slate-100 border border-slate-300 rounded-lg">
+                            <div className="text-xs font-medium text-slate-700">ABS.</div>
+                            <div className="text-sm font-semibold text-slate-800">{weekStats.absences}</div>
                         </div>
                     </div>
                 </div>
-            </CardHeader>
+            </div>
 
-            <CardContent className="pt-6">
+            <div className="p-3 sm:p-4">
                 {/* Table pour écrans moyens et grands */}
-                <div className="hidden md:block">
-                    <Table className="w-full">
-                        <TableHeader>
-                            <TableRow className="border-slate-200 hover:bg-slate-50">
-                                <TableHead className="font-semibold text-slate-700 py-3">Jour</TableHead>
-                                <TableHead className="font-semibold text-slate-700 py-3">Arrivée</TableHead>
-                                <TableHead className="font-semibold text-slate-700 py-3">Sortie</TableHead>
-                                <TableHead className="font-semibold text-slate-700 py-3">Temps effectif</TableHead>
-                                <TableHead className="font-semibold text-slate-700 py-3">Pauses</TableHead>
-                                <TableHead className="font-semibold text-slate-700 py-3">Statut</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {weekRows.map((r, i) => (
-                                <TableRow
-                                    key={i}
-                                    className="border-slate-100 hover:bg-slate-25 transition-colors"
-                                >
-                                    <TableCell className="py-4 font-medium text-slate-800">
-                                        {format(r.day, "EEEE", { locale: fr }).charAt(0).toUpperCase() + format(r.day, "EEEE", { locale: fr }).slice(1)}
-                                        <div className="text-xs text-slate-500">{format(r.day, "dd/MM", { locale: fr })}</div>
-                                    </TableCell>
-                                    <TableCell className="py-4 text-slate-700">
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3 text-slate-400" />
-                                            {r.arrivee}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="py-4 text-slate-700">
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3 text-slate-400" />
-                                            {r.sortie}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="py-4 font-medium text-slate-800">
-                                        {minutesToHHmm(r.effective)}
-                                    </TableCell>
-                                    <TableCell className="py-4 text-slate-600">
-                                        {minutesToHHmm(r.pauses)}
-                                    </TableCell>
-                                    <TableCell className="py-4">
-                                        {r.retard && r.retard !== '—' ? (
-                                            <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-50 text-red-700 border border-red-200 rounded-full">
-                                                <AlertCircle className="w-3 h-3" />
-                                                {r.retard}
+                <div className="hidden md:block overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Jour</th>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Arrivée</th>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Sortie</th>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Temps effectif</th>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Pauses</th>
+                                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-900">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                                {weekRows.map((r, i) => (
+                                    <tr
+                                        key={i}
+                                        className="hover:bg-slate-50 transition-colors duration-200"
+                                    >
+                                        <td className="px-4 py-3 font-medium text-slate-900">
+                                            {format(r.day, "EEEE", { locale: fr }).charAt(0).toUpperCase() + format(r.day, "EEEE", { locale: fr }).slice(1)}
+                                            <div className="text-xs text-slate-500">{format(r.day, "dd/MM", { locale: fr })}</div>
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-700">
+                                            <div className="flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-slate-400" />
+                                                <span className="text-sm">{r.arrivee}</span>
                                             </div>
-                                        ) : (
-                                            <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-full">
-                                                À l'heure
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-700">
+                                            <div className="flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-slate-400" />
+                                                <span className="text-sm">{r.sortie}</span>
                                             </div>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                                        </td>
+                                        <td className="px-4 py-3 font-medium text-slate-900">
+                                            {minutesToHHmm(r.effective)}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-600">
+                                            {minutesToHHmm(r.pauses)}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {r.retard && r.retard !== '—' ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-slate-100 text-slate-800 border border-slate-300 rounded">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {r.retard}
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 rounded">
+                                                    À l'heure
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {/* Liste empilée pour petits écrans */}
-                <div className="md:hidden space-y-4">
+                <div className="md:hidden space-y-3">
                     {weekRows.map((r, i) => (
-                        <div key={i} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                        <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
                                 <div>
-                                    <div className="font-semibold text-slate-800">
+                                    <div className="font-medium text-slate-900">
                                         {format(r.day, "EEEE", { locale: fr }).charAt(0).toUpperCase() + format(r.day, "EEEE", { locale: fr }).slice(1)}
                                     </div>
-                                    <div className="text-sm text-slate-500">{format(r.day, "dd/MM", { locale: fr })}</div>
+                                    <div className="text-sm text-slate-600">{format(r.day, "dd/MM", { locale: fr })}</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-semibold text-slate-800">{minutesToHHmm(r.effective)}</div>
-                                    <div className="text-xs text-slate-500">Temps effectif</div>
+                                    <div className="font-medium text-slate-900">{minutesToHHmm(r.effective)}</div>
+                                    <div className="text-xs text-slate-600">Temps effectif</div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-3">
+                            <div className="grid grid-cols-2 gap-3 mb-3">
                                 <div>
-                                    <div className="text-xs font-medium text-slate-600 uppercase tracking-wide mb-1">Arrivée</div>
-                                    <div className="flex items-center gap-1 text-sm font-medium text-slate-800">
-                                        <Clock className="w-3 h-3 text-slate-400" />
+                                    <div className="text-xs font-medium text-slate-700 uppercase tracking-wide mb-1">Arrivée</div>
+                                    <div className="flex items-center gap-1 text-sm font-medium text-slate-900">
+                                        <Clock className="w-3 h-3 text-slate-500" />
                                         {r.arrivee}
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-xs font-medium text-slate-600 uppercase tracking-wide mb-1">Sortie</div>
-                                    <div className="flex items-center gap-1 text-sm font-medium text-slate-800">
-                                        <Clock className="w-3 h-3 text-slate-400" />
+                                    <div className="text-xs font-medium text-slate-700 uppercase tracking-wide mb-1">Sortie</div>
+                                    <div className="flex items-center gap-1 text-sm font-medium text-slate-900">
+                                        <Clock className="w-3 h-3 text-slate-500" />
                                         {r.sortie}
                                     </div>
                                 </div>
@@ -183,26 +189,26 @@ export const WeekStatsCard: React.FC<WeekStatsProps> = ({ weekStats, weekRows = 
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <div className="text-xs font-medium text-slate-600 uppercase tracking-wide mb-1">Pauses</div>
-                                    <div className="text-sm font-medium text-slate-700">{minutesToHHmm(r.pauses)}</div>
+                                    <div className="text-xs font-medium text-slate-700 uppercase tracking-wide mb-1">Pauses</div>
+                                    <div className="text-sm font-medium text-slate-900">{minutesToHHmm(r.pauses)}</div>
                                 </div>
                                 <div>
                                     {r.retard && r.retard !== '—' ? (
-                                        <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-50 text-red-700 border border-red-200 rounded-full">
+                                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-slate-100 text-slate-800 border border-slate-300 rounded">
                                             <AlertCircle className="w-3 h-3" />
                                             {r.retard}
-                                        </div>
+                                        </span>
                                     ) : (
-                                        <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-full">
+                                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 rounded">
                                             À l'heure
-                                        </div>
+                                        </span>
                                     )}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };

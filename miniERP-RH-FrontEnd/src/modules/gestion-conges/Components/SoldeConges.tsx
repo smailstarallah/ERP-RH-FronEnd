@@ -76,13 +76,16 @@ export const SoldeConges = () => {
     // --- Composant de chargement (Skeleton) ---
     if (loading) {
         return (
-            <div className="w-full p-2">
-                <div className="bg-blue-600 text-white rounded-t-lg p-4 flex items-center space-x-4">
-                    <Skeleton className="h-8 w-8 bg-white/20" />
-                    <Skeleton className="h-6 w-48 bg-white/20" />
+            <div className="w-full shadow-md rounded-lg border border-slate-300 overflow-hidden">
+                <div className="bg-blue-600 p-4 flex items-center space-x-3">
+                    <Skeleton className="h-8 w-8 bg-white/20 rounded-lg" />
+                    <div className="space-y-1">
+                        <Skeleton className="h-4 w-32 bg-white/30" />
+                        <Skeleton className="h-3 w-24 bg-white/20" />
+                    </div>
                 </div>
-                <div className="p-6 bg-white rounded-b-lg border border-t-0">
-                    <div className="space-y-4">
+                <div className="p-5 bg-slate-50">
+                    <div className="space-y-3">
                         {[1, 2, 3].map((i) => (
                             <Skeleton key={i} className="h-16 w-full rounded-lg" />
                         ))}
@@ -94,18 +97,20 @@ export const SoldeConges = () => {
 
     // --- Composant Principal ---
     return (
-        <div className="w-full shadow-lg rounded-xl border border-gray-200/80">
-            {/* Header inspiré de l'image */}
-            <div className="bg-blue-600 text-white rounded-t-lg p-4 flex items-center space-x-4">
-                <CalendarDays className="h-7 w-7" />
+        <div className="w-full shadow-md rounded-lg border border-slate-300 overflow-hidden">
+            {/* Header bleu simple */}
+            <div className="bg-blue-600 text-white p-4 flex items-center space-x-3">
+                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                    <CalendarDays className="h-4 w-4 text-white" />
+                </div>
                 <div>
-                    <h2 className="text-xl font-bold">Solde de vos congés</h2>
-                    <p className="text-sm text-blue-200">Consultez vos droits restants pour l'année en cours.</p>
+                    <h2 className="text-lg font-semibold text-white">Solde de vos congés</h2>
+                    <p className="text-blue-100 text-sm">Consultez vos droits restants.</p>
                 </div>
             </div>
 
             {/* Contenu de la carte */}
-            <CardContent className="bg-gray-50/80 p-4 sm:p-6 rounded-b-lg">
+            <CardContent className="bg-slate-50 p-4 sm:p-5">
                 <AnimatePresence>
                     {soldes.length > 0 ? (
                         <motion.div
@@ -117,30 +122,37 @@ export const SoldeConges = () => {
                             {soldes.map((solde, index) => (
                                 <motion.div
                                     key={index}
-                                    className="bg-white p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center sm:justify-between transition-shadow hover:shadow-md"
+                                    className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between shadow-sm hover:shadow-md transition-shadow duration-200"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
                                 >
                                     {/* Informations sur le type de congé */}
-                                    <div className="flex-1 mb-4 sm:mb-0">
-                                        <p className="font-semibold text-gray-800">{solde.typeCongeLibelle}</p>
-                                        <p className="text-sm text-gray-500">Année {solde.annee}</p>
+                                    <div className="flex-1 mb-3 lg:mb-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                                                <CalendarDays className="w-3 h-3 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-slate-900 text-sm">{solde.typeCongeLibelle}</p>
+                                                <p className="text-xs text-slate-600">Année {solde.annee}</p>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Jauges et chiffres */}
-                                    <div className="flex items-center space-x-4 sm:space-x-6 text-sm">
-                                        <div className="text-center">
-                                            <div className="text-gray-500">Acquis</div>
-                                            <div className="font-bold text-lg text-gray-700">{solde.soldeInitial}j</div>
+                                    {/* Métriques compactes */}
+                                    <div className="flex items-center gap-4 text-sm">
+                                        <div className="text-center bg-slate-100 rounded p-2">
+                                            <div className="text-slate-600 text-xs">Acquis</div>
+                                            <div className="font-semibold text-slate-900">{solde.soldeInitial}j</div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-gray-500">Utilisés</div>
-                                            <div className="font-bold text-lg text-gray-700">{solde.soldePris}j</div>
+                                        <div className="text-center bg-slate-100 rounded p-2">
+                                            <div className="text-slate-600 text-xs">Utilisés</div>
+                                            <div className="font-semibold text-slate-900">{solde.soldePris}j</div>
                                         </div>
-                                        <div className="text-center p-2 rounded-lg bg-blue-50">
-                                            <div className="text-blue-600">Restants</div>
-                                            <div className="font-bold text-xl text-blue-700">{solde.soldeRestant}j</div>
+                                        <div className="text-center bg-blue-100 rounded p-2">
+                                            <div className="text-blue-700 text-xs font-medium">Restants</div>
+                                            <div className="font-bold text-blue-900">{solde.soldeRestant}j</div>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -149,18 +161,18 @@ export const SoldeConges = () => {
                     ) : (
                         // État si aucun solde n'est disponible
                         <motion.div
-                            className="flex flex-col items-center justify-center py-10 text-center"
+                            className="flex flex-col items-center justify-center py-8 text-center"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                         >
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 mb-4">
-                                <FileText className="h-8 w-8 text-gray-500" />
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-4">
+                                <FileText className="h-8 w-8 text-slate-500" />
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-2">
                                 Aucun solde disponible
                             </h3>
-                            <p className="text-sm text-gray-600 max-w-xs">
-                                Vos soldes de congés apparaîtront ici dès qu'ils seront disponibles.
+                            <p className="text-sm text-slate-600">
+                                Vos soldes de congés apparaîtront ici.
                             </p>
                         </motion.div>
                     )}

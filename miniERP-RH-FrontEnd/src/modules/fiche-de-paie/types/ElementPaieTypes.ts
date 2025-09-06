@@ -6,6 +6,7 @@ export const TypeElement = {
     PRIME_VARIABLE: 'PRIME_VARIABLE',
     HEURES_SUPPLEMENTAIRES: 'HEURES_SUPPLEMENTAIRES',
     DEDUCTION_ABSENCE: 'DEDUCTION_ABSENCE',
+    DEDUCTION_RETARD: 'DEDUCTION_RETARD',
     DEDUCTION_AUTRE: 'DEDUCTION_AUTRE',
     COTISATION_SOCIALE: 'COTISATION_SOCIALE',
     INDEMNITE: 'INDEMNITE',
@@ -18,6 +19,7 @@ export type TypeElementType = typeof TypeElement[keyof typeof TypeElement];
 export const ModeCalcul = {
     TAUX: 'TAUX',
     MONTANT: 'MONTANT',
+    AUTOMATIQUE_TIME_TRACKING: 'AUTOMATIQUE_TIME_TRACKING',
     // BAREME: 'BAREME',
     PAR_JOUR: 'PAR_JOUR',
     PAR_HEURE: 'PAR_HEURE'
@@ -38,6 +40,8 @@ export interface ElementPaie {
     description: string;
     soumisIR: boolean;
     soumisCNSS: boolean;
+    calculAutomatique?: boolean; // Pour les déductions d'absence automatiques
+    uniteCalcul?: 'HEURE' | 'JOUR'; // Unité pour le calcul automatique
     // formule?: string;
     // periodicite?: string;
     // nbHeures?: string;

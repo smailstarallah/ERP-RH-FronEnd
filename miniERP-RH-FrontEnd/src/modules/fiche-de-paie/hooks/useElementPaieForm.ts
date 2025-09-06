@@ -15,6 +15,7 @@ export const useElementPaieForm = () => {
         description: '',
         soumisIR: true,
         soumisCNSS: true,
+        uniteCalcul: 'HEURE', // Valeur par défaut
         // formule: '',
         // periodicite: '',
         // nbHeures: '',
@@ -99,6 +100,11 @@ export const useElementPaieForm = () => {
 
         if (formData.modeCalcul === ModeCalcul.PAR_HEURE) {
             if (!formData.taux) errors.push('Veuillez saisir le tarif par heure');
+        }
+
+        if (formData.modeCalcul === ModeCalcul.AUTOMATIQUE_TIME_TRACKING) {
+            if (!formData.taux) errors.push('Veuillez saisir le taux de déduction');
+            if (!formData.uniteCalcul) errors.push('Veuillez sélectionner l\'unité de calcul');
         }
 
         // if (formData.modeCalcul === ModeCalcul.FORMULE && !formData.formule) {

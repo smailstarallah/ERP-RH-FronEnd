@@ -137,12 +137,10 @@ export const useProjectApi = () => {
 
 
     return {
-        // Les données dont l'UI a besoin
         projects,
         isLoading,
         error,
 
-        // Les fonctions que l'UI peut appeler
         api,
     };
 };

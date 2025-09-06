@@ -300,6 +300,7 @@ export const useTimeTracking = () => {
     }, []);
 
     // Effet pour charger les pointages dès que empId est disponible
+    //pas necessaire !!!!!!!!!!!!!!!!!!
     const [todayPointage, setTodayPointage] = useState<any>(null);
     useEffect(() => {
         if (empId) {
@@ -440,119 +441,20 @@ export const useTimeTracking = () => {
                 monday.setDate(today.getDate() - dayOfWeek + 1);
                 const mondayStr = formatLocalDate(monday);
 
-                const weekPointages = await getPointages('semaine', mondayStr);
+                const weekData = await getPointages('semaine', mondayStr);
 
-                if (weekPointages && Array.isArray(weekPointages)) {
-                    let totalSeconds = 0;
-                    let arrivals: string[] = [];
-                    let lateArrivals = 0;
-                    let absences = 0;
+                if (weekData) {
+                    // Le backend doit retourner directement la structure attendue
+                    const { weekStats, weekRows } = weekData;
 
-                    // Calculer le nombre de jours écoulés dans la semaine (lundi = 1)
-                    const todayDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
-                    const daysElapsed = todayDayOfWeek; // ex: lundi=1, mardi=2...
+                    // Convertir les chaînes de date en objets Date pour weekRows
+                    const processedRows = weekRows.map((row: any) => ({
+                        ...row,
+                        day: new Date(row.day)
+                    }));
 
-                    // Pour chaque jour écoulé, construire une ligne réutilisable par le composant WeekStatsCard
-                    // weekPointages doit contenir les jours pointés, mais il peut manquer des jours (absences)
-                    // On suppose que chaque pointage a une propriété 'date' au format YYYY-MM-DD
-                    const pointagesByDate = new Map<string, any>();
-                    weekPointages.forEach((p: any) => {
-                        if (p.date) pointagesByDate.set(p.date, p);
-                    });
-
-                    const rows: WeekRow[] = [];
-                    for (let i = 0; i < daysElapsed; i++) {
-                        const d = new Date(monday);
-                        d.setDate(monday.getDate() + i);
-                        const dateStr = formatLocalDate(d);
-                        const pointage = pointagesByDate.get(dateStr);
-
-                        let arrivee = '—';
-                        let sortie = '—';
-                        let effectiveMinutes = 0;
-                        let pausesMinutes = 0;
-                        let retard = '—';
-
-                        if (pointage) {
-                            if (pointage.heureEntree) arrivee = pointage.heureEntree.substring(0, 5);
-                            if (pointage.heureSortie) sortie = pointage.heureSortie.substring(0, 5);
-
-                            // calcul pauses (en minutes)
-                            if (pointage.pauseDebutee && pointage.pauseTerminee) {
-                                const [ph1, pm1, ps1] = pointage.pauseDebutee.split(':').map(Number);
-                                const [ph2, pm2, ps2] = pointage.pauseTerminee.split(':').map(Number);
-                                const pt1 = ph1 * 3600 + pm1 * 60 + (ps1 || 0);
-                                const pt2 = ph2 * 3600 + pm2 * 60 + (ps2 || 0);
-                                const pauseSec = pt2 - pt1 > 0 ? pt2 - pt1 : 0;
-                                pausesMinutes = Math.round(pauseSec / 60);
-                            }
-
-                            // calcul temps travaillé (en minutes)
-                            if (pointage.heureEntree && pointage.heureSortie) {
-                                const [h1, m1, s1] = pointage.heureEntree.split(':').map(Number);
-                                const [h2, m2, s2] = pointage.heureSortie.split(':').map(Number);
-                                const t1 = h1 * 3600 + m1 * 60 + (s1 || 0);
-                                const t2 = h2 * 3600 + m2 * 60 + (s2 || 0);
-                                const workedSec = t2 - t1 > 0 ? t2 - t1 : 0;
-                                effectiveMinutes = Math.round(workedSec / 60) - pausesMinutes;
-                                if (effectiveMinutes < 0) effectiveMinutes = 0;
-                            } else if (pointage.heuresTravaillees) {
-                                const match = pointage.heuresTravaillees.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-                                if (match) {
-                                    const hours = parseInt(match[1] || '0', 10);
-                                    const minutes = parseInt(match[2] || '0', 10);
-                                    const seconds = parseInt(match[3] || '0', 10);
-                                    effectiveMinutes = hours * 60 + minutes + Math.round(seconds / 60);
-                                }
-                            }
-
-                            // retard en minutes (comparé à 09:00)
-                            if (pointage.heureEntree && pointage.heureEntree > '09:00:00') {
-                                const [ah, am] = pointage.heureEntree.split(':').map(Number);
-                                const late = ah * 60 + am - 9 * 60;
-                                if (late > 0) retard = `${late}m`;
-                            }
-                        } else {
-                            absences++;
-                        }
-
-                        rows.push({
-                            day: d,
-                            arrivee,
-                            sortie,
-                            effective: effectiveMinutes,
-                            pauses: pausesMinutes,
-                            retard
-                        });
-                    }
-
-                    // calculer les agrégats semaine à partir des lignes construites
-                    const totalMinutes = rows.reduce((sum, r) => sum + (r.effective || 0), 0);
-                    const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
-
-                    const arrivalTimes = rows.filter(r => r.arrivee && r.arrivee !== '—').map(r => r.arrivee);
-                    let averageArrival = '--:--';
-                    if (arrivalTimes.length > 0) {
-                        const totalArrivalMinutes = arrivalTimes.reduce((sum, t) => {
-                            const [h, m] = t.split(':').map(Number);
-                            return sum + (h * 60 + m);
-                        }, 0);
-                        const avg = Math.round(totalArrivalMinutes / arrivalTimes.length);
-                        const ah = Math.floor(avg / 60);
-                        const am = avg % 60;
-                        averageArrival = `${ah.toString().padStart(2, '0')}:${am.toString().padStart(2, '0')}`;
-                    }
-
-                    const lateArrivalsCount = rows.reduce((c, r) => c + (r.retard && r.retard !== '—' ? 1 : 0), 0);
-
-                    setWeekRows(rows);
-                    setWeekStats({
-                        totalHours,
-                        averageArrival,
-                        overtimeHours: Math.max(0, totalHours - 40),
-                        absences,
-                        lateArrivals: lateArrivalsCount
-                    });
+                    setWeekStats(weekStats);
+                    setWeekRows(processedRows);
                 }
             }
         };
