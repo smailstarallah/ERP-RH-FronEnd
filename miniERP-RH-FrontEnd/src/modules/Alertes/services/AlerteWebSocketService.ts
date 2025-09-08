@@ -64,7 +64,7 @@ class AlerteWebSocketService {
           this.emit('connect', frame);
 
           // Auto-abonnement aux topics essentiels
-          this.setupAutoSubscriptions();
+          this.setupAutoSubscriptions(userId, userRole);
           resolve(frame);
         },
 
@@ -91,20 +91,34 @@ class AlerteWebSocketService {
   }
 
   // 📡 Configuration automatique des abonnements essentiels
-  private setupAutoSubscriptions(): void {
+  private setupAutoSubscriptions(userId?: string, userRole?: string): void {
     console.log('📋 Configuration des abonnements automatiques...');
-    
-    // Topic global pour toutes les alertes
-    this.subscribeToTopic(config.topics.global, (alerte) => {
-      console.log('🌐 Nouvelle alerte globale:', alerte);
-      this.emit('message', {
-        type: 'NOUVELLE_ALERTE',
-        data: alerte,
-        source: 'global'
-      });
-    });
 
-    console.log('✅ Abonnements automatiques configurés');
+    // S'abonner aux alertes spécifiques de l'utilisateur
+    if (userId) {
+      this.subscribeToUserAlerts(userId, (alerte) => {
+        console.log('🚨 Nouvelle alerte pour l\'utilisateur:', alerte);
+        this.emit('message', {
+          type: 'NOUVELLE_ALERTE',
+          data: alerte,
+          source: 'user'
+        });
+      });
+    }
+
+    // Abonnement global seulement pour les managers/RH
+    if (userRole && (userRole === 'MANAGER' || userRole === 'RH')) {
+      this.subscribeToTopic(config.topics.global, (alerte) => {
+        console.log('🌐 Nouvelle alerte globale (manager/RH):', alerte);
+        this.emit('message', {
+          type: 'NOUVELLE_ALERTE',
+          data: alerte,
+          source: 'global'
+        });
+      });
+    }
+
+    console.log('✅ Abonnements automatiques configurés pour userId:', userId, 'role:', userRole);
   }
 
   // 👤 S'abonner aux alertes d'un utilisateur spécifique
@@ -173,10 +187,10 @@ class AlerteWebSocketService {
       const subscription = this.client!.subscribe(topic, (message) => {
         try {
           const data = JSON.parse(message.body);
-          
+
           // Émettre l'événement message générique
           this.emit('message', { type: topic.includes('stats') ? 'STATS_UPDATE' : 'NOUVELLE_ALERTE', data });
-          
+
           handler(data);
         } catch (parseError) {
           console.error('❌ Erreur parsing message:', parseError);
@@ -285,12 +299,12 @@ class AlerteWebSocketService {
       };
 
       console.log('🚀 Envoi nouvelle alerte via WebSocket:', backendData);
-      
+
       this.client!.publish({
         destination: config.destinations.nouvelleAlerte,
         body: JSON.stringify(backendData)
       });
-      
+
       return true;
     } catch (error) {
       console.error('❌ Erreur création alerte WebSocket:', error);
@@ -313,12 +327,12 @@ class AlerteWebSocketService {
       }
 
       console.log('✅ Marquage comme lue via WebSocket:', alerteIdLong);
-      
+
       this.client!.publish({
         destination: config.destinations.marquerLu,
         body: JSON.stringify(alerteIdLong)
       });
-      
+
       return true;
     } catch (error) {
       console.error('❌ Erreur marquage WebSocket:', error);

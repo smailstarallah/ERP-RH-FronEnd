@@ -4,10 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Trash2, Info, CheckCheck, AlertTriangle } from 'lucide-react';
-import type { Alerte, AlertType } from '../types';
+import type { AlerteDTO, AlertType } from '../types';
 
 interface AlertCardProps {
-  alerte: Alerte;
+  alerte: AlerteDTO;
   onMarquerCommeLue: (alerteId: string) => Promise<void>;
   onSupprimer: (alerteId: string) => Promise<void>;
   loading?: boolean;
@@ -61,9 +61,9 @@ export const AlertCard: React.FC<AlertCardProps> = ({
 
   const formatDate = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { 
-        addSuffix: true, 
-        locale: fr 
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: fr
       });
     } catch (error) {
       return 'Date invalide';
@@ -95,9 +95,9 @@ export const AlertCard: React.FC<AlertCardProps> = ({
               `}>
                 {alerte.titre}
               </h3>
-              
-              <Badge 
-                variant="secondary" 
+
+              <Badge
+                variant="secondary"
                 className={`
                   text-xs px-2 py-0.5 border
                   ${typeConfig.bgColor} ${typeConfig.textColor} ${typeConfig.borderColor}

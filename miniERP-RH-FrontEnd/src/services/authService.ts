@@ -59,10 +59,10 @@ export const getCurrentEmployeId = (): string => {
     try {
       // Décoder le JWT de façon basique (partie payload)
       const payload = JSON.parse(atob(token.split('.')[1]));
-      
+
       // Essayer plusieurs champs possibles pour l'ID
       const possibleIdFields = ['employeId', 'userId', 'id', 'sub', 'user_id', 'employee_id'];
-      
+
       for (const field of possibleIdFields) {
         if (payload[field]) {
           const numericId = extractNumericId(payload[field]);
@@ -84,26 +84,26 @@ export const getCurrentEmployeId = (): string => {
 // Fonction utilitaire pour extraire un ID numérique d'une chaîne
 const extractNumericId = (value: any): string | null => {
   if (!value) return null;
-  
+
   // Si c'est déjà un nombre
   if (typeof value === 'number') {
     return value.toString();
   }
-  
+
   // Si c'est une chaîne
   if (typeof value === 'string') {
     // Si c'est déjà purement numérique
     if (/^\d+$/.test(value)) {
       return value;
     }
-    
+
     // Essayer d'extraire des chiffres d'une chaîne comme "user_123" ou "emp-456"
     const match = value.match(/\d+/);
     if (match) {
       return match[0];
     }
   }
-  
+
   return null;
 };
 
@@ -136,11 +136,11 @@ export const getCurrentUser = (): UserInfo | null => {
     try {
       const parsed = JSON.parse(userInfo);
       return {
-        id: parseInt(parsed.employeId) || 1,
-        nom: parsed.nom || 'Utilisateur',
-        preNom: parsed.prenom || 'Test',
-        email: parsed.email || 'test@exemple.com',
-        userType: parsed.role || 'EMPLOYE',
+        id: parseInt(parsed.employeId),
+        nom: parsed.nom,
+        preNom: parsed.prenom,
+        email: parsed.email,
+        userType: parsed.role,
         active: true
       };
     } catch (error) {
@@ -175,6 +175,58 @@ export const isAuthenticated = (): boolean => {
   return !!token;
 };
 
+// Récupère le rôle de l'utilisateur connecté
+export const getCurrentUserRole = (): string => {
+  // Vérifier d'abord userData dans le localStorage (structure principale)
+  const userData = localStorage.getItem('userData');
+  if (userData) {
+    try {
+      const parsed = JSON.parse(userData);
+      if (parsed.userType) {
+        return parsed.userType;
+      }
+    } catch (error) {
+      console.warn('Erreur parsing userData:', error);
+    }
+  }
+
+  // Vérifier l'ancien format userInfo pour compatibilité
+  const userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    try {
+      const parsed = JSON.parse(userInfo);
+      if (parsed.role) {
+        return parsed.role;
+      }
+      if (parsed.userType) {
+        return parsed.userType;
+      }
+    } catch (error) {
+      console.warn('Erreur parsing userInfo:', error);
+    }
+  }
+
+  // Essayer de décoder le token JWT
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role) {
+        return payload.role;
+      }
+      if (payload.userType) {
+        return payload.userType;
+      }
+    } catch (error) {
+      console.warn('Erreur décodage token:', error);
+    }
+  }
+
+  // Retour par défaut
+  console.warn('Aucun rôle trouvé, utilisation du rôle par défaut EMPLOYE');
+  return 'EMPLOYE';
+};
+
 // Sauvegarde les informations utilisateur
 export const saveUserInfo = (userInfo: UserInfo): void => {
   localStorage.setItem('userInfo', JSON.stringify(userInfo));
@@ -189,15 +241,15 @@ export const clearUserInfo = (): void => {
 // Fonction de diagnostic pour déboguer les problèmes d'authentification
 export const debugAuthInfo = (): void => {
   console.group('🔍 Debug Auth Info');
-  
+
   // Info userData (nouvelle structure)
   const userData = localStorage.getItem('userData');
   console.log('📦 UserData localStorage:', userData ? JSON.parse(userData) : 'Aucun');
-  
+
   // Info userInfo (ancienne structure pour compatibilité)
   const userInfo = localStorage.getItem('userInfo');
   console.log('📦 UserInfo localStorage (legacy):', userInfo ? JSON.parse(userInfo) : 'Aucun');
-  
+
   // Info token
   const token = localStorage.getItem('token');
   if (token) {
@@ -210,17 +262,17 @@ export const debugAuthInfo = (): void => {
   } else {
     console.log('🔐 Token JWT:', 'Aucun');
   }
-  
+
   // ID extrait
   const extractedId = getCurrentEmployeId();
   console.log('🆔 ID Employé extrait:', extractedId);
-  
+
   // Type de l'ID
   console.log('📊 Type ID:', typeof extractedId, '- Numérique:', /^\d+$/.test(extractedId));
-  
+
   // User complet
   const currentUser = getCurrentUser();
   console.log('👤 Utilisateur complet:', currentUser);
-  
+
   console.groupEnd();
 };

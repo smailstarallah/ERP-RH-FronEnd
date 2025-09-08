@@ -110,7 +110,7 @@ export const SoldeConges = () => {
             </div>
 
             {/* Contenu de la carte */}
-            <CardContent className="bg-slate-50 p-4 sm:p-5">
+            <CardContent className="bg-slate-50 p-4 sm:p-5 overflow-y-auto max-h-96">
                 <AnimatePresence>
                     {soldes.length > 0 ? (
                         <motion.div

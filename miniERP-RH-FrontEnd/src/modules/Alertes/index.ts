@@ -3,6 +3,10 @@
 // Pages principales
 export { AlertesPage } from './AlertesPage';
 
+// NOTIFICATIONS GLOBALES POUR TOUTES LES PAGES 🚨
+export { GlobalNotifications } from './components/GlobalNotifications';
+export { NotificationLayout, withNotifications } from './layouts/NotificationLayout';
+
 // NOUVEAU SYSTÈME WEBSOCKET TEMPS RÉEL
 // Types
 export type {
@@ -25,6 +29,9 @@ export { webSocketService } from './services/WebSocketService';
 
 // Hook React principal
 export { useAlerts } from './hooks/useAlerts';
+
+// Hook pour les toasts de notification
+export { useNotificationToasts } from './hooks/useNotificationToasts';
 
 // Provider pour l'initialisation
 export { WebSocketProvider, useWebSocket } from './contexts/WebSocketProvider';

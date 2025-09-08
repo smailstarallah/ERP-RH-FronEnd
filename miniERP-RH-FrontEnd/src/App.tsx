@@ -16,7 +16,9 @@ import { ParametrePage } from './modules/parametre/ParametrePage';
 import { TimeTrackingPage } from './modules/time-tracking/TimeTrackingPage';
 import FichePaiePage from './modules/fiche-de-paie/FichePaiePage';
 import DashboardPage from './modules/dashboard/DashboardPage';
-import { AlertesPage, AlertesProvider } from './modules/Alertes';
+import { AlertesPage } from './modules/Alertes';
+import { AlertesProvider } from './modules/Alertes/contexts/AlertesContext';
+import { GlobalNotifications } from './modules/Alertes/components/GlobalNotifications';
 import { ToastManager } from './modules/Alertes/components/ToastManager';
 import { getCurrentEmployeId } from './services/authService';
 
@@ -91,47 +93,50 @@ function App() {
         </Routes>
       ) : (
         // Routes protégées avec sidebar institutionnel compact
-        <SidebarProvider>
-          <AppSidebar />
-          <FloatingMenuButton />
-          <SidebarInset>
-            <div className="flex flex-1 flex-col gap-4 bg-gradient-to-br from-slate-50 to-white min-h-screen">
-              {/* Indicateur de navigation pour mobile */}
-              <div className="md:hidden bg-blue-50 border border-blue-200 rounded-lg p-3 m-4 mb-0">
-                <div className="flex items-center gap-2 text-blue-700">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium">Système RH - Navigation active</span>
+        <AlertesProvider employeId={getCurrentEmployeId()}>
+          <SidebarProvider>
+            <AppSidebar />
+            <FloatingMenuButton />
+            <SidebarInset>
+              <div className="flex flex-1 flex-col gap-4 bg-gradient-to-br from-slate-50 to-white min-h-screen">
+                {/* Indicateur de navigation pour mobile */}
+                <div className="md:hidden bg-blue-50 border border-blue-200 rounded-lg p-3 m-4 mb-0">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">Système RH - Navigation active</span>
+                  </div>
+                </div>
+
+                {/* Contenu principal avec padding responsive */}
+                <div className="flex-1 p-4 pt-0 md:pt-4">
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/alertes" element={<AlertesPage />} />
+                    <Route path="/gestion-conges" element={<GestionConges />} />
+                    <Route path="/parametres" element={<ParametrePage />} />
+                    <Route path="/time-tracking" element={<TimeTrackingPage />} />
+                    <Route path="/fiche-paie" element={<FichePaiePage />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                  </Routes>
                 </div>
               </div>
 
-              {/* Contenu principal avec padding responsive */}
-              <div className="flex-1 p-4 pt-0 md:pt-4">
-                <Routes>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/alertes" element={
-                    <AlertesProvider employeId={getCurrentEmployeId()}>
-                      <AlertesPage />
-                    </AlertesProvider>
-                  } />
-                  <Route path="/gestion-conges" element={<GestionConges />} />
-                  <Route path="/parametres" element={<ParametrePage />} />
-                  <Route path="/time-tracking" element={<TimeTrackingPage />} />
-                  <Route path="/fiche-paie" element={<FichePaiePage />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                </Routes>
-              </div>
-            </div>
-            
-            {/* 🔔 Gestionnaire de notifications toast temps réel */}
-            <ToastManager 
-              userId={getCurrentEmployeId()}
-              maxToasts={5}
-              toastDuration={7000}
-            />
-          </SidebarInset>
-        </SidebarProvider>
+              {/* 🔔 Gestionnaire de notifications toast temps réel */}
+              <ToastManager
+                userId={getCurrentEmployeId()}
+                maxToasts={5}
+                toastDuration={7000}
+              />
+            </SidebarInset>
+          </SidebarProvider>
+
+          {/* 🚨 Notifications globales en haut à droite */}
+          <GlobalNotifications />
+
+        </AlertesProvider>
+
       )}
     </Router>
   );
