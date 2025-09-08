@@ -94,7 +94,7 @@ const TimeModule: React.FC = () => {
                     <div className="animate-pulse">
                         <div className="h-4 bg-slate-200 rounded w-1/4 mb-2"></div>
                         <div className="h-3 bg-slate-200 rounded w-1/2 mb-4"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="h-24 bg-slate-200 rounded"></div>
                             ))}
@@ -127,7 +127,7 @@ const TimeModule: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4 lg:space-y-6">
+        <div className="space-y-3 lg:space-y-4">
             {/* Header Section avec métriques institutionnelles */}
             <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
@@ -135,17 +135,19 @@ const TimeModule: React.FC = () => {
                         <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Analyse Time Tracking</h2>
                         <p className="text-sm text-slate-600 mt-1">Tableau de bord institutionnel de suivi du temps</p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-wrap gap-2">
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                            <Calendar className="w-3 h-3 mr-1" />
                             Semaine 25
                         </Badge>
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                            <CheckCircle className="w-3 h-3 mr-1" />
                             Performances optimales
                         </Badge>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     <KPICard
                         title="Taux d'utilisation"
                         value={timeData.kpis.utilisationRate.toString()}
@@ -182,8 +184,8 @@ const TimeModule: React.FC = () => {
             </div>
 
             {/* Analytics Grid principal avec design institutionnel */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-                <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -204,7 +206,7 @@ const TimeModule: React.FC = () => {
                             <select
                                 value={selectedDepartment}
                                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                                 title="Sélectionner un département"
                             >
                                 {timeData?.departments && timeData.departments.map((dept: string, index: number) => (
@@ -272,7 +274,7 @@ const TimeModule: React.FC = () => {
                         {selectedDepartment && getFilteredEmployees().length > 0 && (
                             <div className="mt-4 bg-slate-50 rounded-lg p-4">
                                 <h4 className="font-semibold text-slate-900 mb-2">Statistiques - {selectedDepartment}</h4>
-                                <div className="grid grid-cols-3 gap-4 text-center">
+                                <div className="grid grid-cols-3 gap-3 text-center">
                                     <div>
                                         <p className="text-lg font-bold text-blue-600">
                                             {getFilteredEmployees().length}
@@ -297,7 +299,7 @@ const TimeModule: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -338,7 +340,7 @@ const TimeModule: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -376,7 +378,7 @@ const TimeModule: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -390,21 +392,21 @@ const TimeModule: React.FC = () => {
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Heures supp. équipe B</span>
-                                <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">Critique</Badge>
+                                <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Critique</Badge>
                             </div>
                             <p className="text-xs text-slate-500">15h/semaine en moyenne depuis 3 semaines</p>
                         </div>
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Télétravail - Déconnexion</span>
-                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">À surveiller</Badge>
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">À surveiller</Badge>
                             </div>
                             <p className="text-xs text-slate-500">5 employés connectés après 20h régulièrement</p>
                         </div>
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Projet A - Budget</span>
-                                <Badge className="bg-green-50 text-green-700 border-green-200">Conforme</Badge>
+                                <Badge className="bg-green-100 text-green-800 border-green-200">Conforme</Badge>
                             </div>
                             <p className="text-xs text-slate-500">90% du budget consommé, livraison prévue</p>
                         </div>
@@ -413,9 +415,9 @@ const TimeModule: React.FC = () => {
             </div>
 
             {/* Section Analytique Avancée Time Tracking - NOUVEAUTÉ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Module Productivité Hebdomadaire */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -469,7 +471,7 @@ const TimeModule: React.FC = () => {
                 </Card>
 
                 {/* Module Distribution du Temps */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -512,7 +514,7 @@ const TimeModule: React.FC = () => {
                 </Card>
 
                 {/* Module Bien-être et Équilibre */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -558,8 +560,8 @@ const TimeModule: React.FC = () => {
             </div>
 
             {/* Section Efficacité des Équipes */}
-            <div className="grid grid-cols-1 gap-4">
-                <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-3">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -570,7 +572,7 @@ const TimeModule: React.FC = () => {
                         <CardDescription className="text-slate-600">Analyse comparative des performances par équipe</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             {timeData.teamEfficiency.map((team: any, index: number) => (
                                 <div key={index} className="border border-slate-200 rounded-lg p-4 text-center">
                                     <h4 className="font-semibold text-slate-900 mb-3">{team.equipe}</h4>

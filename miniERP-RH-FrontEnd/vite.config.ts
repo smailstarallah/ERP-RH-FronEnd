@@ -10,4 +10,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Polyfill pour SockJS
+    global: 'globalThis',
+  },
 })

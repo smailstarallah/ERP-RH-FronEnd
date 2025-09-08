@@ -181,67 +181,69 @@ export const ParametreConges = () => {
 
     return (
         <div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Types de congés</CardTitle>
-                    <CardDescription>Gérer les différents types de congés disponibles</CardDescription>
+            <Card className="border border-slate-200 shadow-sm">
+                <CardHeader className="bg-slate-50 border-b border-slate-200">
+                    <CardTitle className="text-lg font-semibold text-slate-900">Types de congés</CardTitle>
+                    <CardDescription className="text-sm text-slate-600">Gérer les différents types de congés disponibles</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {/* Message de feedback */}
                     {message.text && (
-                        <Alert className={`mb-4 ${message.type === 'error' ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}`}>
-                            <AlertDescription className={message.type === 'error' ? 'text-red-800' : 'text-green-800'}>
+                        <Alert className={`mb-4 ${message.type === 'error' ? 'border-red-200 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
+                            <AlertDescription className={message.type === 'error' ? 'text-red-800' : 'text-blue-800'}>
                                 {message.text}
                             </AlertDescription>
                         </Alert>
                     )}
 
-                    <div className="space-y-4 mb-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                             <div>
-                                <Label>Nom *</Label>
+                                <Label className="text-sm font-medium text-slate-900">Nom *</Label>
                                 <Input
                                     value={newLeaveName}
                                     onChange={(e) => setNewLeaveName(e.target.value)}
                                     placeholder="Ex: Congé parental"
                                     required
+                                    className="border-slate-300 focus:border-blue-500 rounded-lg"
                                 />
                             </div>
                             <div>
-                                <Label>Couleur</Label>
+                                <Label className="text-sm font-medium text-slate-900">Couleur</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         type="color"
                                         value={newLeaveColor}
                                         onChange={(e) => setNewLeaveColor(e.target.value)}
-                                        className="w-16 h-10 p-1 border rounded"
+                                        className="w-16 h-10 p-1 border border-slate-300 rounded-lg"
                                     />
                                     <Input
                                         value={newLeaveColor}
                                         onChange={(e) => setNewLeaveColor(e.target.value)}
                                         placeholder="#3b82f6"
-                                        className="flex-1"
+                                        className="flex-1 border-slate-300 focus:border-blue-500 rounded-lg"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <Label>Nombre jours max</Label>
+                                <Label className="text-sm font-medium text-slate-900">Nombre jours max</Label>
                                 <Input
                                     type="number"
                                     min={0}
                                     value={newLeaveJoursMax}
                                     onChange={(e) => setNewLeaveJoursMax(Number(e.target.value))}
                                     placeholder="30"
+                                    className="border-slate-300 focus:border-blue-500 rounded-lg"
                                 />
                             </div>
                             <div>
-                                <Label>Options</Label>
+                                <Label className="text-sm font-medium text-slate-900">Options</Label>
                                 <div className="flex items-center gap-2 mt-2">
                                     <Switch
                                         checked={newLeavePaye}
                                         onCheckedChange={setNewLeavePaye}
                                     />
-                                    <span className="text-sm">Payé</span>
+                                    <span className="text-sm text-slate-700">Payé</span>
                                 </div>
                             </div>
                         </div>
@@ -252,7 +254,7 @@ export const ParametreConges = () => {
                                     e.preventDefault();
                                     addLeaveType(e as any);
                                 }}
-                                className="w-full sm:w-auto"
+                                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                                 disabled={loading}
                             >
                                 {loading ? 'Enregistrement...' : 'Ajouter'}
@@ -266,7 +268,7 @@ export const ParametreConges = () => {
                                     setNewLeaveJoursMax(0);
                                     setMessage({ type: '', text: '' });
                                 }}
-                                className="w-full sm:w-auto"
+                                className="w-full sm:w-auto border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg"
                                 disabled={loading}
                             >
                                 Réinitialiser
@@ -274,10 +276,10 @@ export const ParametreConges = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <h4 className="font-medium text-sm text-slate-600">Types configurés</h4>
+                    <div className="space-y-3 lg:space-y-4">
+                        <h4 className="font-medium text-sm text-slate-700">Types configurés</h4>
                         {leaveTypes.map((t) => (
-                            <div key={t.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-md bg-slate-50 border gap-3">
+                            <div key={t.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg bg-slate-50 border border-slate-200 gap-3">
                                 <div className="flex items-center gap-3">
                                     <div
                                         className="w-4 h-4 rounded-full border"
@@ -288,7 +290,7 @@ export const ParametreConges = () => {
                                         <div className="text-xs text-slate-500 flex flex-wrap gap-2">
                                             <span>{t.nombreJoursMax} jours max</span>
                                             <span>•</span>
-                                            <span className={t.paye ? "text-green-600" : "text-red-600"}>
+                                            <span className={t.paye ? "text-blue-600" : "text-slate-600"}>
                                                 {t.paye ? "Payé" : "Non payé"}
                                             </span>
                                         </div>
@@ -298,7 +300,7 @@ export const ParametreConges = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => removeLeaveType(t.id)}
-                                    className="w-full sm:w-auto"
+                                    className="w-full sm:w-auto border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg"
                                     disabled={loading}
                                 >
                                     Supprimer

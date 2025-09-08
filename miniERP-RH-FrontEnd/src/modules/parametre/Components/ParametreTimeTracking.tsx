@@ -147,24 +147,24 @@ export const WeeklyPlanner = () => {
     };
     return (
         <TooltipProvider>
-            <div className="w-full min-h-screen flex justify-center items-start bg-background overflow-x-auto">
-                <Card className="w-full max-w-4xl mx-auto shadow-lg my-4 md:my-8 flex-1">
-                    <CardHeader>
+            <div className="w-full min-h-screen flex justify-center items-start overflow-x-auto">
+                <Card className="w-full max-w-4xl mx-auto shadow-sm border border-slate-200 my-2 md:my-4 flex-1">
+                    <CardHeader className="bg-slate-50 border-b border-slate-200">
                         {/* AMÉLIORATION: Header adaptatif */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                            <div className="flex-shrink-0 bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-                                <CalendarDays className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <CalendarDays className="h-4 w-4 text-white" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl">Planification Hebdomadaire</CardTitle>
-                                <CardDescription>Définissez le modèle d'horaires. Sélectionnez un ou plusieurs jours pour les modifier en groupe.</CardDescription>
+                                <CardTitle className="text-lg font-semibold text-slate-900">Planification Hebdomadaire</CardTitle>
+                                <CardDescription className="text-sm text-slate-600">Définissez le modèle d'horaires. Sélectionnez un ou plusieurs jours pour les modifier en groupe.</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4 lg:space-y-6">
                         {/* AMÉLIORATION: Sélecteur de jours adaptatif */}
                         <div className="overflow-x-auto">
-                            <Label className="text-sm font-medium">1. Sélectionnez les jours à configurer</Label>
+                            <Label className="text-sm font-medium text-slate-900">1. Sélectionnez les jours à configurer</Label>
                             <ToggleGroup
                                 type="multiple"
                                 value={selectedDays}
@@ -189,11 +189,11 @@ export const WeeklyPlanner = () => {
 
                         {activeDay ? (
                             // AMÉLIORATION: Grille principale adaptative
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start w-full">
-                                <Card className="bg-slate-50 dark:bg-slate-800/50">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start w-full">
+                                <Card className="bg-slate-50 border border-slate-200">
                                     <CardHeader>
-                                        <CardTitle>
-                                            Édition pour : <span className="text-blue-600 dark:text-blue-400">{activeDay}</span>
+                                        <CardTitle className="text-sm font-semibold text-slate-900">
+                                            Édition pour : <span className="text-blue-600">{activeDay}</span>
                                             {selectedDays.length > 1 && ` (+${selectedDays.length - 1} autres)`}
                                         </CardTitle>
                                         <div className="flex items-center space-x-2 pt-2">
@@ -205,17 +205,17 @@ export const WeeklyPlanner = () => {
                                         <CardContent className="space-y-4">
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label className="flex items-center gap-2 text-muted-foreground"><Sun className="h-4 w-4" /> Matin</Label>
+                                                    <Label className="flex items-center gap-2 text-slate-700"><Sun className="h-4 w-4" /> Matin</Label>
                                                     <div className="flex gap-2">
-                                                        <Input type="time" value={activeSchedule.heureDebutMatin} onChange={e => handleTimeChange('heureDebutMatin', e.target.value)} />
-                                                        <Input type="time" value={activeSchedule.heureFinMatin} onChange={e => handleTimeChange('heureFinMatin', e.target.value)} />
+                                                        <Input type="time" value={activeSchedule.heureDebutMatin} onChange={e => handleTimeChange('heureDebutMatin', e.target.value)} className="border-slate-300 focus:border-blue-500 rounded-lg" />
+                                                        <Input type="time" value={activeSchedule.heureFinMatin} onChange={e => handleTimeChange('heureFinMatin', e.target.value)} className="border-slate-300 focus:border-blue-500 rounded-lg" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="flex items-center gap-2 text-muted-foreground"><Sunset className="h-4 w-4" /> Après-midi</Label>
+                                                    <Label className="flex items-center gap-2 text-slate-700"><Sunset className="h-4 w-4" /> Après-midi</Label>
                                                     <div className="flex gap-2">
-                                                        <Input type="time" value={activeSchedule.heureDebutApresMidi} onChange={e => handleTimeChange('heureDebutApresMidi', e.target.value)} />
-                                                        <Input type="time" value={activeSchedule.heureFinApresMidi} onChange={e => handleTimeChange('heureFinApresMidi', e.target.value)} />
+                                                        <Input type="time" value={activeSchedule.heureDebutApresMidi} onChange={e => handleTimeChange('heureDebutApresMidi', e.target.value)} className="border-slate-300 focus:border-blue-500 rounded-lg" />
+                                                        <Input type="time" value={activeSchedule.heureFinApresMidi} onChange={e => handleTimeChange('heureFinApresMidi', e.target.value)} className="border-slate-300 focus:border-blue-500 rounded-lg" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -223,14 +223,14 @@ export const WeeklyPlanner = () => {
                                     )}
                                 </Card>
 
-                                <div className="space-y-4">
-                                    <Card>
-                                        <CardHeader><CardTitle>Actions de groupe</CardTitle></CardHeader>
+                                <div className="space-y-3 lg:space-y-4">
+                                    <Card className="border border-slate-200">
+                                        <CardHeader><CardTitle className="text-sm font-semibold text-slate-900">Actions de groupe</CardTitle></CardHeader>
                                         <CardContent>
                                             {/* AMÉLIORATION: Texte du bouton adaptatif */}
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button onClick={handleApplyTemplate} disabled={selectedDays.length <= 1} className="w-full">
+                                                    <Button onClick={handleApplyTemplate} disabled={selectedDays.length <= 1} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                                                         <Copy className="mr-2 h-4 w-4" />
                                                         {/* Texte court sur mobile, texte long sur les écrans plus larges */}
                                                         <span className="sm:hidden">Copier sur la sélection</span>
@@ -241,25 +241,25 @@ export const WeeklyPlanner = () => {
                                             </Tooltip>
                                         </CardContent>
                                     </Card>
-                                    <Alert>
+                                    <Alert className="border border-slate-200 bg-slate-50">
                                         <Briefcase className="h-4 w-4" />
-                                        <AlertTitle>Comment ça marche ?</AlertTitle>
-                                        <AlertDescription>Modifiez les horaires pour {activeDay}, puis cliquez sur "Appliquer" pour copier ces réglages sur tous les jours surlignés.</AlertDescription>
+                                        <AlertTitle className="text-slate-900">Comment ça marche ?</AlertTitle>
+                                        <AlertDescription className="text-slate-600">Modifiez les horaires pour {activeDay}, puis cliquez sur "Appliquer" pour copier ces réglages sur tous les jours surlignés.</AlertDescription>
                                     </Alert>
                                 </div>
                             </div>
                         ) : (
-                            <Alert variant="destructive" className="text-center">
+                            <Alert variant="destructive" className="text-center border border-red-200 bg-red-50">
                                 <XCircle className="h-4 w-4" />
-                                <AlertTitle>Aucun jour sélectionné</AlertTitle>
-                                <AlertDescription>Veuillez sélectionner au moins un jour dans la liste ci-dessus pour commencer.</AlertDescription>
+                                <AlertTitle className="text-red-900">Aucun jour sélectionné</AlertTitle>
+                                <AlertDescription className="text-red-700">Veuillez sélectionner au moins un jour dans la liste ci-dessus pour commencer.</AlertDescription>
                             </Alert>
                         )}
                         <Separator />
                         {feedback && (
-                            <Alert variant={feedback.type === 'error' ? 'destructive' : 'default'} className="mb-4">
-                                <AlertTitle>{feedback.type === 'success' ? 'Succès' : 'Erreur'}</AlertTitle>
-                                <AlertDescription>{feedback.message}</AlertDescription>
+                            <Alert variant={feedback.type === 'error' ? 'destructive' : 'default'} className={`mb-4 ${feedback.type === 'error' ? 'border-red-200 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
+                                <AlertTitle className={feedback.type === 'error' ? 'text-red-900' : 'text-blue-900'}>{feedback.type === 'success' ? 'Succès' : 'Erreur'}</AlertTitle>
+                                <AlertDescription className={feedback.type === 'error' ? 'text-red-700' : 'text-blue-700'}>{feedback.message}</AlertDescription>
                             </Alert>
                         )}
                         <div className="flex justify-end">
@@ -267,6 +267,7 @@ export const WeeklyPlanner = () => {
                                 onClick={handleSubmit}
                                 size="lg"
                                 disabled={isLoading || !Object.values(schedule).some(day => day !== null)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                             >
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                                 Enregistrer le planning

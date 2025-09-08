@@ -1,3 +1,4 @@
+import React from "react"
 import {
   ArrowUpRight,
   Link,
@@ -30,60 +31,74 @@ export function NavFavorites({
     name: string
     url: string
     emoji: string
+    hasNotifications?: boolean
   }[]
 }) {
   const { isMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Favorites</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarGroupLabel className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+        Accès rapide
+      </SidebarGroupLabel>
+      <SidebarMenu className="space-y-1">
         {favorites.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url} title={item.name}>
-                <span>{item.emoji}</span>
-                <span>{item.name}</span>
+            <SidebarMenuButton
+              asChild
+              className="h-8 px-2 py-1 rounded hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 ease-in-out"
+            >
+              <a href={item.url} title={item.name} className="flex items-center gap-2 relative">
+                <span className="text-sm relative">
+                  {item.emoji}
+                  {item.hasNotifications && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  )}
+                </span>
+                <span className="text-sm font-medium text-slate-700 truncate">{item.name}</span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
+                <SidebarMenuAction
+                  showOnHover
+                  className="w-5 h-5 rounded hover:bg-slate-200 hover:text-slate-700 transition-colors duration-200"
+                >
+                  <MoreHorizontal className="w-3 h-3" />
+                  <span className="sr-only">Plus d'options</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56 rounded-lg"
+                className="w-48 rounded-lg bg-white border border-slate-200 shadow-sm"
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem>
-                  <StarOff className="text-muted-foreground" />
-                  <span>Remove from Favorites</span>
+                <DropdownMenuItem className="text-sm hover:bg-slate-50">
+                  <StarOff className="text-slate-500 w-4 h-4" />
+                  <span>Retirer des favoris</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link className="text-muted-foreground" />
-                  <span>Copy Link</span>
+                <DropdownMenuSeparator className="bg-slate-200" />
+                <DropdownMenuItem className="text-sm hover:bg-slate-50">
+                  <Link className="text-slate-500 w-4 h-4" />
+                  <span>Copier le lien</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ArrowUpRight className="text-muted-foreground" />
-                  <span>Open in New Tab</span>
+                <DropdownMenuItem className="text-sm hover:bg-slate-50">
+                  <ArrowUpRight className="text-slate-500 w-4 h-4" />
+                  <span>Ouvrir dans un nouvel onglet</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete</span>
+                <DropdownMenuSeparator className="bg-slate-200" />
+                <DropdownMenuItem className="text-sm hover:bg-red-50 text-red-600">
+                  <Trash2 className="text-red-500 w-4 h-4" />
+                  <span>Supprimer</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal />
-            <span>More</span>
+          <SidebarMenuButton className="h-8 px-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors duration-200">
+            <MoreHorizontal className="w-4 h-4" />
+            <span className="text-sm">Plus</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

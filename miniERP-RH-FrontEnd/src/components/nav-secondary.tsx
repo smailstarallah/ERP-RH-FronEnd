@@ -24,16 +24,25 @@ export function NavSecondary({
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="space-y-1">
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
+              <SidebarMenuButton
+                asChild
+                className="h-8 px-2 py-1 rounded hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 ease-in-out"
+              >
+                <a href={item.url} className="flex items-center gap-2">
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">{item.title}</span>
                 </a>
               </SidebarMenuButton>
-              {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+              {item.badge && (
+                <SidebarMenuBadge className="bg-blue-100 text-blue-800 text-xs font-medium px-1 py-0.5 rounded">
+                  {item.badge}
+                </SidebarMenuBadge>
+              )}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

@@ -62,7 +62,7 @@ const UserAvatar: React.FC<{ nom: string; prenom: string; size?: 'xs' | 'sm' | '
     };
 
     return (
-        <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-semibold flex-shrink-0`}>
+        <div className={`${sizeClasses[size]} rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold flex-shrink-0`}>
             {nom.charAt(0).toUpperCase()}{prenom.charAt(0).toUpperCase()}
         </div>
     );
@@ -92,23 +92,23 @@ const MetricsSection: React.FC<{ users: User[] }> = ({ users }) => {
 
     const metricCards = [
         { icon: Users, label: "Total", value: metrics.total, color: "blue" },
-        { icon: UserCheck, label: "Actifs", value: metrics.active, color: "green" },
-        { icon: Building2, label: "Services", value: metrics.departments, color: "purple" },
-        { icon: Clock, label: "7 jours", value: metrics.recent, color: "orange" }
+        { icon: UserCheck, label: "Actifs", value: metrics.active, color: "blue" },
+        { icon: Building2, label: "Services", value: metrics.departments, color: "blue" },
+        { icon: Clock, label: "7 jours", value: metrics.recent, color: "blue" }
     ];
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 lg:mb-4">
             {metricCards.map(({ icon: Icon, label, value, color }, index) => (
-                <Card key={index} className={`border-0 bg-${color}-50`}>
+                <Card key={index} className="border border-slate-200 bg-slate-50">
                     <CardContent className="p-2 sm:p-3">
                         <div className="text-center">
                             <div className="flex items-center justify-center mb-1">
-                                <Icon className={`w-3 h-3 sm:w-4 sm:h-4 text-${color}-600 mr-1`} />
-                                <span className="text-xs text-gray-600 hidden sm:inline">{label}</span>
-                                <span className="text-xs text-gray-600 sm:hidden">{label.slice(0, 3)}</span>
+                                <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 mr-1" />
+                                <span className="text-xs text-slate-600 hidden sm:inline">{label}</span>
+                                <span className="text-xs text-slate-600 sm:hidden">{label.slice(0, 3)}</span>
                             </div>
-                            <p className={`text-base sm:text-lg font-bold text-${color}-700`}>{value}</p>
+                            <p className="text-base sm:text-lg font-bold text-blue-700">{value}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -128,7 +128,7 @@ const SearchAndFilters: React.FC<{
     const [showFilters, setShowFilters] = useState(false);
 
     return (
-        <Card className="mb-4 border-0 shadow-sm">
+        <Card className="mb-4 border border-slate-200 shadow-sm">
             <CardContent className="p-3 sm:p-4">
                 <div className="space-y-3">
                     {/* Barre de recherche principale */}
@@ -139,14 +139,14 @@ const SearchAndFilters: React.FC<{
                                 placeholder="Rechercher..."
                                 value={filters.search}
                                 onChange={(e) => onChange({ ...filters, search: e.target.value })}
-                                className="pl-9 h-9 text-sm"
+                                className="pl-9 h-9 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                             />
                         </div>
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(!showFilters)}
-                            className="h-9 px-2 sm:px-3"
+                            className="h-9 px-2 sm:px-3 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg"
                         >
                             <Filter className="w-4 h-4 sm:mr-1" />
                             <span className="hidden sm:inline">Filtres</span>
@@ -154,7 +154,7 @@ const SearchAndFilters: React.FC<{
                         <Button
                             size="sm"
                             onClick={onAddUser}
-                            className="h-9 px-2 sm:px-3"
+                            className="h-9 px-2 sm:px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                         >
                             <UserPlus className="w-4 h-4 sm:mr-1" />
                             <span className="hidden sm:inline">Ajouter</span>
@@ -169,7 +169,7 @@ const SearchAndFilters: React.FC<{
                                     value={filters.status}
                                     onValueChange={(value) => onChange({ ...filters, status: value })}
                                 >
-                                    <SelectTrigger className="h-8 text-sm">
+                                    <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg">
                                         <SelectValue placeholder="Statut" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -183,7 +183,7 @@ const SearchAndFilters: React.FC<{
                                     value={filters.department}
                                     onValueChange={(value) => onChange({ ...filters, department: value })}
                                 >
-                                    <SelectTrigger className="h-8 text-sm">
+                                    <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg">
                                         <SelectValue placeholder="Service" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -195,7 +195,7 @@ const SearchAndFilters: React.FC<{
                                 </Select>
                             </div>
 
-                            <Button variant="outline" size="sm" onClick={onRefresh} className="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" onClick={onRefresh} className="w-full sm:w-auto border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg">
                                 <RefreshCw className="w-3 h-3 mr-1" />
                                 Actualiser
                             </Button>
@@ -316,12 +316,12 @@ const UserDetailsModal: React.FC<{
                     <span className="text-xs hidden sm:inline">Détails</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-full max-w-sm sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
-                <DialogHeader>
+            <DialogContent className="w-full max-w-sm sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-4 border border-slate-200">
+                <DialogHeader className="bg-slate-50 border-b border-slate-200">
                     <div className="flex items-center gap-3">
                         <UserAvatar nom={user.nom} prenom={user.preNom} size="lg" />
                         <div className="min-w-0 flex-1">
-                            <DialogTitle className="text-base sm:text-lg truncate">
+                            <DialogTitle className="text-base sm:text-lg truncate text-slate-900">
                                 {user.nom} {user.preNom}
                             </DialogTitle>
                             <DialogDescription className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
@@ -330,7 +330,7 @@ const UserDetailsModal: React.FC<{
                                 <span className="truncate">{user.departement}</span>
                                 <BadgeComponent
                                     variant={user.active ? "default" : "secondary"}
-                                    className={`ml-0 sm:ml-2 w-fit ${user.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                                    className={`ml-0 sm:ml-2 w-fit px-2 py-1 text-xs font-medium rounded ${user.active ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-600"}`}
                                 >
                                     {user.active ? "Actif" : "Inactif"}
                                 </BadgeComponent>
@@ -346,7 +346,7 @@ const UserDetailsModal: React.FC<{
                             variant={isEditing ? "default" : "outline"}
                             size="sm"
                             onClick={() => setIsEditing(!isEditing)}
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                         >
                             <Edit2 className="w-3 h-3 mr-1" />
                             <span className="text-xs">{isEditing ? "Annuler" : "Modifier"}</span>
@@ -355,7 +355,7 @@ const UserDetailsModal: React.FC<{
                             variant={user.active ? "destructive" : "default"}
                             size="sm"
                             onClick={() => setShowConfirm(true)}
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                         >
                             <Power className="w-3 h-3 mr-1" />
                             <span className="text-xs">{user.active ? "Désactiver" : "Activer"}</span>
@@ -370,10 +370,10 @@ const UserDetailsModal: React.FC<{
                                     Confirmer {user.active ? "la désactivation" : "l'activation"} du compte ?
                                 </p>
                                 <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" onClick={() => setShowConfirm(false)} className="flex-1">
+                                    <Button size="sm" variant="outline" onClick={() => setShowConfirm(false)} className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg">
                                         Annuler
                                     </Button>
-                                    <Button size="sm" onClick={handleToggleStatus} className="flex-1">
+                                    <Button size="sm" onClick={handleToggleStatus} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                                         Confirmer
                                     </Button>
                                 </div>
@@ -383,9 +383,9 @@ const UserDetailsModal: React.FC<{
 
                     {/* Informations de base */}
                     <div className="space-y-4">
-                        <Card className="border-0 bg-gray-50">
+                        <Card className="border border-slate-200 bg-slate-50">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Informations personnelles</CardTitle>
+                                <CardTitle className="text-sm font-semibold text-slate-900">Informations personnelles</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div>
@@ -395,13 +395,13 @@ const UserDetailsModal: React.FC<{
                                             <Input
                                                 value={editData.nom}
                                                 onChange={(e) => setEditData({ ...editData, nom: e.target.value })}
-                                                className="h-8 text-sm"
+                                                className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                                 placeholder="Nom"
                                             />
                                             <Input
                                                 value={editData.preNom}
                                                 onChange={(e) => setEditData({ ...editData, preNom: e.target.value })}
-                                                className="h-8 text-sm"
+                                                className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                                 placeholder="Prénom"
                                             />
                                         </div>
@@ -416,7 +416,7 @@ const UserDetailsModal: React.FC<{
                                             type="email"
                                             value={editData.email}
                                             onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                                            className="mt-1 h-8 text-sm"
+                                            className="mt-1 h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                         />
                                     ) : (
                                         <div className="mt-1 flex items-center gap-2">
@@ -433,7 +433,7 @@ const UserDetailsModal: React.FC<{
                                         <Input
                                             value={editData.telephone}
                                             onChange={(e) => setEditData({ ...editData, telephone: e.target.value })}
-                                            className="mt-1 h-8 text-sm"
+                                            className="mt-1 h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                         />
                                     ) : (
                                         <div className="mt-1 flex items-center gap-2">
@@ -445,9 +445,9 @@ const UserDetailsModal: React.FC<{
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 bg-gray-50">
+                        <Card className="border border-slate-200 bg-slate-50">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Informations professionnelles</CardTitle>
+                                <CardTitle className="text-sm font-semibold text-slate-900">Informations professionnelles</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div>
@@ -460,7 +460,7 @@ const UserDetailsModal: React.FC<{
                                         <Input
                                             value={editData.poste}
                                             onChange={(e) => setEditData({ ...editData, poste: e.target.value })}
-                                            className="mt-1 h-8 text-sm"
+                                            className="mt-1 h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                         />
                                     ) : (
                                         <p className="mt-1 text-sm font-medium">{user.poste}</p>
@@ -472,7 +472,7 @@ const UserDetailsModal: React.FC<{
                                         <Input
                                             value={editData.departement}
                                             onChange={(e) => setEditData({ ...editData, departement: e.target.value })}
-                                            className="mt-1 h-8 text-sm"
+                                            className="mt-1 h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                                         />
                                     ) : (
                                         <div className="mt-1 flex items-center gap-2">
@@ -485,9 +485,9 @@ const UserDetailsModal: React.FC<{
                         </Card>
 
                         {/* Historique */}
-                        <Card className="border-0 bg-gray-50">
+                        <Card className="border border-slate-200 bg-slate-50">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Historique du compte</CardTitle>
+                                <CardTitle className="text-sm font-semibold text-slate-900">Historique du compte</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2 text-sm">
@@ -508,10 +508,10 @@ const UserDetailsModal: React.FC<{
 
                     {isEditing && (
                         <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t">
-                            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="flex-1">
+                            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg">
                                 Annuler
                             </Button>
-                            <Button size="sm" onClick={handleSave} className="flex-1">
+                            <Button size="sm" onClick={handleSave} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                                 <Check className="w-3 h-3 mr-1" />
                                 Enregistrer
                             </Button>
@@ -669,17 +669,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-full max-w-5xl h-[95vh] p-0 gap-0 overflow-hidden bg-blue-50 border border-gray-200 rounded-2xl shadow-2xl">
+            <DialogContent className="w-full max-w-5xl h-[95vh] p-0 gap-0 overflow-hidden bg-slate-50 border border-slate-200 rounded-lg shadow-lg">
                 {/* Header institutionnel */}
-                <div className="px-8 py-3 bg-white border-b border-gray-100 flex items-center gap-4 rounded-t-2xl">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 border border-blue-100">
-                        <UserPlus className="w-7 h-7 text-blue-800" />
+                <div className="px-8 py-3 bg-white border-b border-slate-200 flex items-center gap-4 rounded-t-lg">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <UserPlus className="w-4 h-4 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-blue-900 tracking-tight uppercase">Nouvel Employé</h2>
+                    <h2 className="text-lg font-semibold text-slate-900">Nouvel Employé</h2>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-blue-50 px-8 py-4">
+                <div className="flex-1 overflow-y-auto bg-slate-50 px-8 py-4">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" id="add-user-form">
                             {/* Error Message */}
@@ -691,10 +691,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                             )}
 
                             {/* Informations personnelles */}
-                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
-                                    <User className="w-5 h-5 text-blue-700" />
-                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Informations personnelles</h3>
+                            <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <User className="w-4 h-4 text-white" />
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900">Informations personnelles</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -792,10 +794,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                             </section>
 
                             {/* Contact */}
-                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
-                                    <Mail className="w-5 h-5 text-blue-700" />
-                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Contact</h3>
+                            <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <Mail className="w-4 h-4 text-white" />
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900">Contact</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -877,10 +881,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                             </section>
 
                             {/* Professionnel */}
-                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
-                                    <IdCard className="w-5 h-5 text-blue-700" />
-                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Informations professionnelles</h3>
+                            <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <IdCard className="w-4 h-4 text-white" />
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900">Informations professionnelles</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -992,10 +998,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                             </section>
 
                             {/* Rémunération */}
-                            <section className="bg-white rounded-xl shadow p-6 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-blue-50">
-                                    <DollarSign className="w-5 h-5 text-blue-700" />
-                                    <h3 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Rémunération (optionnel)</h3>
+                            <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <DollarSign className="w-4 h-4 text-white" />
+                                    </div>
+                                    <h3 className="font-semibold text-slate-900">Rémunération (optionnel)</h3>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
@@ -1047,10 +1055,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
                             {/* Récapitulatif */}
                             {(form.getValues('nom') || form.getValues('email') || form.getValues('poste')) && (
-                                <section className="bg-blue-100 rounded-xl p-5 shadow">
+                                <section className="bg-blue-100 rounded-lg border border-blue-200 p-5">
                                     <div className="flex items-center gap-2 mb-3">
-                                        <CheckCircle2 className="w-5 h-5 text-blue-700" />
-                                        <h4 className="font-semibold text-blue-900 tracking-wide uppercase text-base">Récapitulatif</h4>
+                                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                            <CheckCircle2 className="w-4 h-4 text-white" />
+                                        </div>
+                                        <h4 className="font-semibold text-slate-900">Récapitulatif</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                                         {form.getValues('nom') && form.getValues('preNom') && (
@@ -1087,13 +1097,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-8 py-3 border-t border-gray-100 bg-white flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:justify-end rounded-b-2xl">
+                <div className="px-8 py-3 border-t border-slate-200 bg-white flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:justify-end rounded-b-lg">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="h-11 border border-blue-200 text-blue-800 bg-white hover:bg-blue-50 rounded-lg font-semibold shadow-sm"
+                        className="h-11 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 rounded-lg font-semibold"
                     >
                         Annuler
                     </Button>
@@ -1101,7 +1111,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                         type="submit"
                         form="add-user-form"
                         disabled={isLoading}
-                        className="h-11 bg-blue-800 hover:bg-blue-900 text-white min-w-[140px] rounded-lg font-semibold shadow-md"
+                        className="h-11 bg-blue-600 hover:bg-blue-700 text-white min-w-[140px] rounded-lg font-semibold"
                     >
                         {isLoading ? (
                             <>
@@ -1129,7 +1139,7 @@ const UserList: React.FC<{
 }> = ({ users, onUpdate, onToggleStatus }) => (
     <div className="space-y-2">
         {users.map(user => (
-            <Card key={user.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            <Card key={user.id} className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-3">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -1141,7 +1151,7 @@ const UserList: React.FC<{
                                     </h4>
                                     <BadgeComponent
                                         variant={user.active ? "default" : "secondary"}
-                                        className={`text-xs w-fit ${user.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                                        className={`text-xs w-fit px-2 py-1 font-medium rounded ${user.active ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-600"}`}
                                     >
                                         {user.active ? "Actif" : "Inactif"}
                                     </BadgeComponent>
@@ -1289,12 +1299,12 @@ const UserManagement: React.FC = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="min-h-screen bg-slate-50 p-3 sm:p-4 lg:p-6">
+            <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
-                        <p className="text-gray-600 mt-2">Gérez les comptes et permissions des utilisateurs</p>
+                        <h1 className="text-2xl font-semibold text-slate-900">Gestion des Utilisateurs</h1>
+                        <p className="text-slate-600 mt-2">Gérez les comptes et permissions des utilisateurs</p>
                     </div>
                 </div>
 
@@ -1308,23 +1318,23 @@ const UserManagement: React.FC = () => {
                     onAddUser={() => setShowAddModal(true)}
                 />
 
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">
+                        <h2 className="text-lg lg:text-xl font-semibold text-slate-900">
                             {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''}
                         </h2>
                     </div>
 
                     {filteredUsers.length === 0 ? (
-                        <Card>
+                        <Card className="border border-slate-200">
                             <CardContent className="p-12 text-center">
-                                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <p className="text-xl text-gray-500">Aucun utilisateur trouvé</p>
-                                <p className="text-gray-400">Modifiez vos critères de recherche</p>
+                                <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                                <p className="text-xl text-slate-500">Aucun utilisateur trouvé</p>
+                                <p className="text-slate-400">Modifiez vos critères de recherche</p>
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3 lg:space-y-4">
                             {filteredUsers.map(user => (
                                 <UserList
                                     key={user.id}

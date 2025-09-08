@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts';
-import { CalendarDays, Users, AlertTriangle, TrendingUp, ChartLine, Clock, Target, Activity, Heart, ShieldAlert } from 'lucide-react';
+import { CalendarDays, Users, AlertTriangle, TrendingUp, ChartLine, Clock, Target, Activity, Heart, ShieldAlert, CheckCircle } from 'lucide-react';
 import { useDashboardData } from './useDashboardData';
 
 // Schéma colorimétrique institutionnel identique à TimeModule
@@ -192,14 +192,14 @@ const LeavesModule: React.FC = () => {
                     <div className="animate-pulse">
                         <div className="h-4 bg-slate-200 rounded w-1/4 mb-2"></div>
                         <div className="h-3 bg-slate-200 rounded w-1/2 mb-4"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="h-24 bg-slate-200 rounded"></div>
                             ))}
                         </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                     {[...Array(6)].map((_, i) => (
                         <div key={i} className="h-72 bg-slate-200 rounded-lg"></div>
                     ))}
@@ -209,7 +209,7 @@ const LeavesModule: React.FC = () => {
     }
 
     return (
-        <div className="space-y-4 lg:space-y-6">
+        <div className="space-y-3 lg:space-y-4">
             {/* Header Section avec métriques institutionnelles */}
             <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
@@ -217,17 +217,19 @@ const LeavesModule: React.FC = () => {
                         <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Analyse Gestion des Congés</h2>
                         <p className="text-sm text-slate-600 mt-1">Tableau de bord institutionnel de suivi des absences et congés</p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-wrap gap-2">
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                            <CalendarDays className="w-3 h-3 mr-1" />
                             Juin 2025
                         </Badge>
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                            <CheckCircle className="w-3 h-3 mr-1" />
                             Conformité RH
                         </Badge>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {kpiList.slice(0, 4).map((item, i) => {
                         const rawValue = item.value;
                         const formattedValue =
@@ -253,8 +255,8 @@ const LeavesModule: React.FC = () => {
             </div>
 
             {/* Analytics Grid principal avec design institutionnel */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">{/* Consommation par Département avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">{/* Consommation par Département avec style institutionnel */}
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -301,7 +303,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Répartition par Type avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -342,7 +344,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Tendances Mensuelles avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -396,7 +398,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Alertes & Conformité avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -410,7 +412,7 @@ const LeavesModule: React.FC = () => {
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Budget congés IT</span>
-                                <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">Critique</Badge>
+                                <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Critique</Badge>
                             </div>
                             <Progress
                                 value={85}
@@ -421,14 +423,14 @@ const LeavesModule: React.FC = () => {
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Absences répétées</span>
-                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">À surveiller</Badge>
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">À surveiller</Badge>
                             </div>
                             <p className="text-xs text-slate-500">3 employés avec + de 4 arrêts courts ce trimestre</p>
                         </div>
                         <div className="border border-slate-200 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-medium text-slate-700">Planification équipes</span>
-                                <Badge className="bg-green-50 text-green-700 border-green-200">Optimal</Badge>
+                                <Badge className="bg-green-100 text-green-800 border-green-200">Optimal</Badge>
                             </div>
                             <p className="text-xs text-slate-500">Couverture maintenue sur tous les services</p>
                         </div>
@@ -436,7 +438,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Congés pris vs alloués avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -449,7 +451,7 @@ const LeavesModule: React.FC = () => {
                                 <label className="text-sm font-medium">Département:</label>
                                 <select
                                     aria-label="Département"
-                                    className="px-3 py-1 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                                     value={selectedDept}
                                     onChange={(e) => setSelectedDept(e.target.value)}
                                 >
@@ -499,7 +501,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Solde de congés restants avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -529,10 +531,10 @@ const LeavesModule: React.FC = () => {
                                                     <Badge
                                                         variant="outline"
                                                         className={`${Number(e.solde) > 10
-                                                                ? 'bg-green-50 text-green-700 border-green-200'
-                                                                : Number(e.solde) > 5
-                                                                    ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                                                    : 'bg-red-50 text-red-700 border-red-200'
+                                                            ? 'bg-green-50 text-green-700 border-green-200'
+                                                            : Number(e.solde) > 5
+                                                                ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                                                : 'bg-red-50 text-red-700 border-red-200'
                                                             }`}
                                                     >
                                                         {e.solde}j
@@ -552,7 +554,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Absences par jour de la semaine avec style institutionnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -595,9 +597,9 @@ const LeavesModule: React.FC = () => {
             </div>
 
             {/* Section Analytique Avancée Gestion des Congés - NOUVEAUTÉ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Module Prédiction des Congés */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -669,7 +671,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Module Impact Opérationnel */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -717,7 +719,7 @@ const LeavesModule: React.FC = () => {
                 </Card>
 
                 {/* Module Bien-être et Équilibre */}
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -768,8 +770,8 @@ const LeavesModule: React.FC = () => {
             </div>
 
             {/* Section Analyse des Équipes et Conformité */}
-            <div className="grid grid-cols-1 gap-4">
-                <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-3">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -780,7 +782,7 @@ const LeavesModule: React.FC = () => {
                         <CardDescription className="text-slate-600">Performance et respect des réglementations par équipe</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                             {[
                                 { equipe: 'Développement', planification: 92, urgence: 8, conformite: 95, satisfaction: 88 },
                                 { equipe: 'Design', planification: 85, urgence: 15, conformite: 90, satisfaction: 82 },
@@ -833,8 +835,8 @@ const LeavesModule: React.FC = () => {
             </div>
 
             {/* Section Innovation: Radar des Risques et Opportunités */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -874,7 +876,7 @@ const LeavesModule: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-slate-200 shadow-sm">
+                <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
