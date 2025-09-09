@@ -16,11 +16,11 @@ import { ParametrePage } from './modules/parametre/ParametrePage';
 import { TimeTrackingPage } from './modules/time-tracking/TimeTrackingPage';
 import FichePaiePage from './modules/fiche-de-paie/FichePaiePage';
 import DashboardPage from './modules/dashboard/DashboardPage';
-import { AlertesPage } from './modules/Alertes';
 import { AlertesProvider } from './modules/Alertes/contexts/AlertesContext';
 import { GlobalNotifications } from './modules/Alertes/components/GlobalNotifications';
 import { ToastManager } from './modules/Alertes/components/ToastManager';
 import { getCurrentEmployeId } from './services/authService';
+import DocumentsHRManager from './modules/gestionFichiersRH/DocumentsHRManager';
 
 // Bouton flottant simple avec couleur bleue
 function FloatingMenuButton() {
@@ -111,11 +111,11 @@ function App() {
                 <div className="flex-1 p-4 pt-0 md:pt-4">
                   <Routes>
                     <Route path="/" element={<DashboardPage />} />
-                    <Route path="/alertes" element={<AlertesPage />} />
                     <Route path="/gestion-conges" element={<GestionConges />} />
                     <Route path="/parametres" element={<ParametrePage />} />
                     <Route path="/time-tracking" element={<TimeTrackingPage />} />
                     <Route path="/fiche-paie" element={<FichePaiePage />} />
+                    <Route path="/gestion-fichiers" element={<DocumentsHRManager />} />
                     <Route path="/logout" element={<Logout />} />
                     <Route path="*" element={<Navigate to="/" />} />
                     <Route path="/dashboard" element={<DashboardPage />} />

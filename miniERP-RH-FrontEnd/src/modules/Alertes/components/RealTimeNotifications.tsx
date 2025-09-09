@@ -12,10 +12,10 @@ interface RealTimeNotificationsProps {
   className?: string;
 }
 
-export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({ 
-  userId, 
+export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
+  userId,
   userRole = 'EMPLOYEE',
-  className = '' 
+  className = ''
 }) => {
   const {
     isConnected,
@@ -32,13 +32,13 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
   useEffect(() => {
     if (newAlert && showToast) {
       setShowNotifications(true);
-      
+
       // Auto-masquer après 10 secondes
       const timer = setTimeout(() => {
         setShowNotifications(false);
         hideToast();
       }, 10000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [newAlert, showToast, hideToast]);
@@ -63,12 +63,10 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
 
   // 🔔 Composant d'indicateur de connexion
   const ConnectionIndicator = () => (
-    <div className={`flex items-center gap-2 text-xs ${
-      isConnected ? 'text-green-600' : 'text-red-600'
-    }`}>
-      <div className={`w-2 h-2 rounded-full ${
-        isConnected ? 'bg-green-600 animate-pulse' : 'bg-red-600'
-      }`} />
+    <div className={`flex items-center gap-2 text-xs ${isConnected ? 'text-green-600' : 'text-red-600'
+      }`}>
+      <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-600 animate-pulse' : 'bg-red-600'
+        }`} />
       <span className="font-medium">
         {connectionStatus === 'connected' && '🔗 Temps réel'}
         {connectionStatus === 'connecting' && '🔄 Connexion...'}
@@ -84,10 +82,10 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className="relative p-2"
+        className="relative p-2 hover:bg-slate-100 rounded-lg"
         onClick={() => setShowNotifications(!showNotifications)}
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5 text-slate-700" />
         {newAlert && showToast && (
           <Badge
             variant="destructive"
@@ -101,21 +99,22 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
       {/* Panel de notifications temps réel */}
       {showNotifications && newAlert && (
         <div className="absolute top-full right-0 mt-2 w-80 max-h-96 overflow-y-auto z-50 shadow-lg">
-          <Card>
+          <Card className="border border-slate-200 rounded-lg bg-white shadow-sm">
             <CardContent className="p-0">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between p-3 border-b border-slate-200 bg-white">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Nouvelle Alerte</h3>
+                  <h3 className="font-semibold text-slate-900 text-sm">Nouvelle Alerte</h3>
                   <ConnectionIndicator />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                     Nouvelle
                   </Badge>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-7 w-7 p-0 hover:bg-slate-100"
                     onClick={() => setShowNotifications(false)}
                   >
                     <X className="w-4 h-4" />
@@ -124,11 +123,11 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
               </div>
 
               {/* Actions rapides */}
-              <div className="p-3 border-b border-gray-100 bg-gray-50">
+              <div className="p-3 border-b border-slate-200 bg-slate-50">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full text-xs"
+                  className="w-full text-xs border-slate-300 hover:bg-slate-100"
                   onClick={() => {
                     hideToast();
                     setShowNotifications(false);
@@ -141,17 +140,17 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
               {/* Alerte actuelle */}
               <div className="max-h-64 overflow-y-auto">
                 {newAlert ? (
-                  <div className="p-3 border-b border-gray-100 last:border-b-0">
+                  <div className="p-3 border-b border-slate-100 last:border-b-0">
                     <div className={`p-3 rounded-lg border ${getAlertStyles(newAlert.niveau || 'info')}`}>
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-0.5">
                           {getAlertIcon(newAlert.niveau || 'info')}
                         </div>
                         <div className="flex-grow">
-                          <h4 className="font-medium text-sm mb-1">
+                          <h4 className="font-medium text-sm mb-1 text-slate-900">
                             {newAlert.titre || 'Nouvelle Alerte'}
                           </h4>
-                          <p className="text-sm opacity-90 mb-2">
+                          <p className="text-sm text-slate-700 mb-2">
                             {newAlert.message || newAlert.contenu || 'Message d\'alerte'}
                           </p>
                           <div className="flex items-center justify-between text-xs opacity-70">
@@ -172,4 +171,3 @@ export const RealTimeNotifications: React.FC<RealTimeNotificationsProps> = ({
     </div>
   );
 };
-                            

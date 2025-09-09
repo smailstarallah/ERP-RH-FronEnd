@@ -91,87 +91,33 @@ export const GlobalNotifications: React.FC = () => {
                         <Button
                             variant="outline"
                             size="lg"
-                            className={`
-    relative group h-12 w-12 rounded-xl transition-all duration-500 ease-out 
-    transform hover:scale-110 active:scale-95 hover:rotate-3
-    ${!isConnected
-                                    ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 hover:from-red-100 hover:to-red-200 hover:border-red-400 hover:shadow-2xl hover:shadow-red-200'
-                                    : stats.nonLues > 0
-                                        ? 'bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 border-2 border-blue-300 hover:from-blue-100 hover:via-blue-200 hover:to-indigo-200 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-300'
-                                        : 'bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 hover:from-gray-50 hover:to-gray-100 hover:border-gray-300 hover:shadow-xl'
-                                }
-    shadow-lg before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br 
-    ${stats.nonLues > 0 ? 'before:from-blue-400/20 before:to-purple-400/20' : 'before:from-transparent before:to-transparent'}
-    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
-  `}
+                            className="relative h-12 w-12 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-600 transition-colors duration-200"
                         >
-                            {/* Cercle de background animé */}
-                            <div className="absolute inset-2 rounded-lg bg-white/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300" />
-
-                            {/* Icône avec animation complexe */}
-                            <Bell className={`
-    w-6 h-6 transition-all duration-500 z-10 relative
-    group-hover:scale-125 group-hover:rotate-12 group-active:scale-90
-    ${stats.nonLues > 0
-                                    ? 'text-blue-600 drop-shadow-sm'
-                                    : !isConnected
-                                        ? 'text-red-500 drop-shadow-sm'
-                                        : 'text-gray-600'
-                                }
-    ${stats.nonLues > 0 ? 'animate-pulse' : ''}
-  `} />
-
-                            {/* Badge des notifications XXL */}
+                            <Bell className={`w-6 h-6 ${stats.nonLues > 0 ? 'text-blue-600' : !isConnected ? 'text-red-600' : 'text-slate-700'}`} />
                             {stats.nonLues > 0 && (
                                 <Badge
                                     variant="destructive"
-                                    className="absolute -top-3 -right-3 px-2 py-1 text-sm min-w-[24px] h-6 flex items-center justify-center font-bold animate-bounce shadow-xl border-2 border-white"
+                                    className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs min-w-[20px] h-5 flex items-center justify-center font-semibold shadow-sm border border-white"
                                 >
                                     {stats.nonLues > 99 ? '99+' : stats.nonLues}
                                 </Badge>
                             )}
-
-                            {/* Indicateur de connexion XXL avec triple animation */}
                             {!isConnected && (
-                                <div className="absolute -top-2 -right-2 flex items-center justify-center">
-                                    <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg border-2 border-white" />
-                                    <div className="absolute w-4 h-4 bg-red-400 rounded-full animate-ping opacity-75" />
-                                    <div className="absolute w-6 h-6 bg-red-300 rounded-full animate-ping opacity-50 animation-delay-150" />
-                                </div>
-                            )}
-
-                            {/* Effet de particules pour les notifications */}
-                            {stats.nonLues > 0 && (
-                                <>
-                                    <div className="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-60" />
-                                    <div className="absolute top-1 right-1 w-1 h-1 bg-purple-400 rounded-full animate-pulse animation-delay-300" />
-                                    <div className="absolute bottom-1 left-1 w-1 h-1 bg-indigo-400 rounded-full animate-pulse animation-delay-500" />
-                                </>
-                            )}
-
-                            {/* Barre de statut élargie */}
-                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-
-                            </div>
-
-                            {/* Cercles concentriques pour l'effet "wow" */}
-                            {stats.nonLues > 0 && (
-                                <div className="absolute inset-0 pointer-events-none">
-                                    <div className="absolute inset-0 rounded-xl border-2 border-blue-300 animate-ping opacity-20" />
-                                    <div className="absolute inset-1 rounded-lg border border-purple-300 animate-pulse opacity-30 animation-delay-200" />
-                                </div>
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
                             )}
                         </Button>
                     </SheetTrigger>
 
                     <SheetContent side="right" className="w-96 p-0">
-                        <SheetHeader className="p-6 pb-2 border-b">
+                        <SheetHeader className="p-4 border-b bg-white">
                             <div className="flex items-center justify-between">
-                                <SheetTitle className="flex items-center gap-2">
-                                    <Bell className="w-5 h-5" />
+                                <SheetTitle className="flex items-center gap-3 text-lg font-semibold text-slate-900">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <Bell className="w-4 h-4 text-white" />
+                                    </div>
                                     Notifications
                                     {stats.nonLues > 0 && (
-                                        <Badge variant="secondary" className="ml-2">
+                                        <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">
                                             {stats.nonLues} nouvelles
                                         </Badge>
                                     )}
@@ -179,23 +125,23 @@ export const GlobalNotifications: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                     {isConnected ? (
                                         <div className="flex items-center gap-1">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                            <span className="text-xs text-green-600">En ligne</span>
+                                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                                            <span className="text-xs text-slate-600">En ligne</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-1">
                                             <div className="w-2 h-2 bg-red-500 rounded-full" />
-                                            <span className="text-xs text-red-600">Hors ligne</span>
+                                            <span className="text-xs text-slate-600">Hors ligne</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </SheetHeader>
 
-                        <div className="flex-1 h-[calc(100vh-120px)] overflow-y-auto">
+                        <div className="flex-1 h-[calc(100vh-120px)] overflow-y-auto bg-slate-50">
                             <div className="p-4 space-y-3">
                                 {alertes.length === 0 ? (
-                                    <div className="text-center py-12 text-slate-500">
+                                    <div className="text-center py-12 text-slate-600">
                                         <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
                                         <p className="text-sm">Aucune notification</p>
                                         <p className="text-xs mt-1">
@@ -206,16 +152,16 @@ export const GlobalNotifications: React.FC = () => {
                                     alertes.map((alert) => (
                                         <Card
                                             key={alert.id}
-                                            className={`border-l-4 transition-all duration-200 ${alert.status === 'UNREAD'
-                                                ? 'border-l-blue-500 bg-blue-50'
-                                                : 'border-l-slate-300 bg-slate-50 opacity-75'
+                                            className={`border border-slate-200 rounded-lg shadow-sm transition-colors duration-200 ${alert.status === 'UNREAD'
+                                                ? 'bg-blue-50'
+                                                : 'bg-white'
                                                 }`}
                                         >
                                             <CardContent className="p-4">
                                                 <div className="flex items-start gap-3">
-                                                    <span className="text-lg flex-shrink-0 mt-0.5">
+                                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-sm">
                                                         {getAlertIcon(alert.type)}
-                                                    </span>
+                                                    </div>
 
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-2">
@@ -225,13 +171,13 @@ export const GlobalNotifications: React.FC = () => {
                                                                         alert.type === 'WARNING' ? 'secondary' :
                                                                             'default'
                                                                 }
-                                                                className="text-xs"
+                                                                className="text-xs bg-blue-100 text-blue-800"
                                                             >
                                                                 {alert.type}
                                                             </Badge>
 
                                                             {alert.status === 'UNREAD' && (
-                                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                                                <div className="w-2 h-2 bg-blue-600 rounded-full" />
                                                             )}
                                                         </div>
 
@@ -250,9 +196,9 @@ export const GlobalNotifications: React.FC = () => {
                                                                         size="sm"
                                                                         variant="ghost"
                                                                         onClick={() => handleMarkAsRead(alert.id)}
-                                                                        className="h-6 w-6 p-0 hover:bg-green-100"
+                                                                        className="h-6 w-6 p-0 hover:bg-slate-100"
                                                                     >
-                                                                        <Check className="w-3 h-3 text-green-600" />
+                                                                        <Check className="w-3 h-3 text-slate-900" />
                                                                     </Button>
                                                                 )}
 
@@ -260,9 +206,9 @@ export const GlobalNotifications: React.FC = () => {
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => handleDelete(alert.id)}
-                                                                    className="h-6 w-6 p-0 hover:bg-red-100"
+                                                                    className="h-6 w-6 p-0 hover:bg-slate-100"
                                                                 >
-                                                                    <Trash2 className="w-3 h-3 text-red-600" />
+                                                                    <Trash2 className="w-3 h-3 text-slate-900" />
                                                                 </Button>
                                                             </div>
                                                         </div>
@@ -276,12 +222,12 @@ export const GlobalNotifications: React.FC = () => {
                         </div>
 
                         {/* Footer avec actions */}
-                        <div className="border-t p-4 bg-slate-50">
-                            <div className="flex justify-between items-center text-xs text-slate-500">
+                        <div className="border-t p-4 bg-white">
+                            <div className="flex justify-between items-center text-xs text-slate-600">
                                 <span>
                                     Connexion: {connectionStatus}
                                 </span>
-                                <Button variant="ghost" size="sm" className="h-8 px-3">
+                                <Button variant="ghost" size="sm" className="h-8 px-3 hover:bg-slate-100">
                                     <Settings className="w-3 h-3 mr-1" />
                                     Paramètres
                                 </Button>

@@ -255,7 +255,7 @@ const LeavesModule: React.FC = () => {
             </div>
 
             {/* Analytics Grid principal avec design institutionnel */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">{/* Consommation par Département avec style institutionnel */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <Card className="bg-white border border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">

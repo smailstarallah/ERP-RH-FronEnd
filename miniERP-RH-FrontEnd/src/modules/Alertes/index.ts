@@ -1,7 +1,7 @@
 // Module Alertes - Exports centralisés
 
-// Pages principales
-export { AlertesPage } from './AlertesPage';
+// Pages principales (supprimées)
+// export { AlertesPage } from './AlertesPage';
 
 // NOTIFICATIONS GLOBALES POUR TOUTES LES PAGES 🚨
 export { GlobalNotifications } from './components/GlobalNotifications';
@@ -39,8 +39,8 @@ export { WebSocketProvider, useWebSocket } from './contexts/WebSocketProvider';
 // Composants d'exemple
 export { AlertsDashboard } from './components/AlertsDashboard';
 
-// Page complète avec le nouveau système
-export { AlertesPage as AlertesPageWebSocket } from './AlertesPageWebSocket';
+// Page complète avec le nouveau système (supprimée)
+// export { AlertesPage as AlertesPageWebSocket } from './AlertesPageWebSocket';
 
 // Composants UI (ancien système)
 export { AlertCard } from './components/AlertCard';

@@ -104,39 +104,41 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
 
   return (
     <div className={`${getPositionClasses()} z-50 animate-in slide-in-from-top-2 duration-300`}>
-      <Card className={`w-80 shadow-lg backdrop-blur-sm border-l-4 ${getBorderColor()}`}>
+      <Card className={`w-80 shadow-lg border border-slate-200 rounded-lg bg-white ${getBorderColor()}`}>
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              {getIcon()}
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                {getIcon()}
+              </div>
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <h4 className="font-semibold text-sm text-gray-900 truncate">
+                <h4 className="font-semibold text-sm text-slate-900 truncate">
                   Alerte #{alert.id}
                 </h4>
                 <div className="flex items-center gap-1">
                   <Badge
                     variant={alert.type === 'ERROR' ? 'destructive' : alert.type === 'WARNING' ? 'secondary' : 'default'}
-                    className="text-xs px-1.5 py-0.5"
+                    className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800"
                   >
                     {getTypeLabel()}
                   </Badge>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+              <p className="text-sm text-slate-700 mb-3 line-clamp-2">
                 {alert.message}
               </p>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-slate-500">
                     {formatTime(alert.timestamp)}
                   </span>
                   {alert.status === 'UNREAD' && (
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-800">
                       Non lu
                     </Badge>
                   )}
@@ -147,7 +149,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-xs hover:bg-white/50"
+                      className="h-6 px-2 text-xs hover:bg-slate-100"
                       onClick={handleMarkAsRead}
                     >
                       Marquer lu
@@ -156,7 +158,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 hover:bg-white/50"
+                    className="h-6 w-6 p-0 hover:bg-slate-100"
                     onClick={handleDismiss}
                   >
                     <X className="w-3 h-3" />
@@ -169,9 +171,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
           {/* Barre de progression pour auto-hide */}
           {autoHideDuration && alert.type !== 'ERROR' && (
             <div className="mt-3 -mb-1">
-              <div className="h-0.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-0.5 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                  className={`h-full bg-gray-400 rounded-full animate-[shrink_linear] origin-right`}
+                  className={`h-full bg-slate-400 rounded-full animate-[shrink_linear] origin-right`}
                   style={{
                     animationDuration: `${autoHideDuration}ms`
                   }}

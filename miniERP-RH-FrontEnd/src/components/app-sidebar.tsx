@@ -58,6 +58,11 @@ const data = {
       url: "#",
       icon: Sparkles,
     },
+    {
+      title: "Gestion des Fichiers RH",
+      url: "/gestion-fichiers",
+      icon: Home,
+    },
   ],
   navSecondary: [
     {
@@ -91,6 +96,11 @@ const data = {
       name: "Tableau de Bord",
       url: "/dashboard",
       emoji: "📊",
+    },
+    {
+      name: "Gestion des Fichiers RH",
+      url: "/gestion-fichiers",
+      emoji: "🗂️",
     }
   ],
 }
