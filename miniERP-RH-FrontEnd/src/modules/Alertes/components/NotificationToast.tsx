@@ -4,10 +4,10 @@ import { X, Bell, CheckCircle, AlertTriangle, Info, Wifi, WifiOff } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Alerte } from '../types';
+import type { AlerteDTO } from '../types';
 
 interface NotificationToastProps {
-  alert: Alerte;
+  alert: AlerteDTO;
   onDismiss: () => void;
   onMarkAsRead: () => void;
   autoHideDuration?: number;
@@ -26,8 +26,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   // 🎨 Obtenir l'icône selon le type d'alerte
   const getIcon = () => {
     switch (alert.type) {
-      case 'urgent': return <AlertTriangle className="w-5 h-5 text-red-500" />;
-      case 'success': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'ERROR': return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      case 'WARNING': return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+      case 'INFO': return <Info className="w-5 h-5 text-blue-500" />;
       default: return <Info className="w-5 h-5 text-blue-500" />;
     }
   };
@@ -35,8 +36,9 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   // 🎨 Obtenir les styles selon le type d'alerte
   const getBorderColor = () => {
     switch (alert.type) {
-      case 'urgent': return 'border-l-red-500 bg-red-50/90';
-      case 'success': return 'border-l-green-500 bg-green-50/90';
+      case 'ERROR': return 'border-l-red-500 bg-red-50/90';
+      case 'WARNING': return 'border-l-orange-500 bg-orange-50/90';
+      case 'INFO': return 'border-l-blue-500 bg-blue-50/90';
       default: return 'border-l-blue-500 bg-blue-50/90';
     }
   };
@@ -51,9 +53,19 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
     }
   };
 
-  // ⏰ Auto-hide après la durée spécifiée
+  // 🎨 Obtenir le label français pour le type d'alerte
+  const getTypeLabel = () => {
+    switch (alert.type) {
+      case 'ERROR': return 'Erreur';
+      case 'WARNING': return 'Attention';
+      case 'INFO': return 'Info';
+      default: return 'Info';
+    }
+  };
+
+  // ⏰ Auto-hide après la durée spécifiée (sauf pour les erreurs)
   useEffect(() => {
-    if (autoHideDuration && alert.type !== 'urgent') {
+    if (autoHideDuration && alert.type !== 'ERROR') {
       const timer = setTimeout(() => {
         handleDismiss();
       }, autoHideDuration);
@@ -74,6 +86,18 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
     handleDismiss();
   };
 
+  // Formater le timestamp ISO en heure locale
+  const formatTime = (timestamp: string) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
   if (!isVisible) {
     return null;
   }
@@ -86,48 +110,40 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
             <div className="flex-shrink-0">
               {getIcon()}
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <h4 className="font-semibold text-sm text-gray-900 truncate">
-                  {alert.titre}
+                  Alerte #{alert.id}
                 </h4>
                 <div className="flex items-center gap-1">
-                  {alert.isGlobal && (
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                      Global
-                    </Badge>
-                  )}
-                  <Badge 
-                    variant={alert.type === 'urgent' ? 'destructive' : alert.type === 'success' ? 'default' : 'secondary'}
+                  <Badge
+                    variant={alert.type === 'ERROR' ? 'destructive' : alert.type === 'WARNING' ? 'secondary' : 'default'}
                     className="text-xs px-1.5 py-0.5"
                   >
-                    {alert.type}
+                    {getTypeLabel()}
                   </Badge>
                 </div>
               </div>
-              
+
               <p className="text-sm text-gray-700 mb-3 line-clamp-2">
                 {alert.message}
               </p>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">
-                    {new Date(alert.dateCreation).toLocaleTimeString('fr-FR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {formatTime(alert.timestamp)}
                   </span>
-                  {alert.moduleOrigine && (
-                    <Badge variant="outline" className="text-xs">
-                      {alert.moduleOrigine}
+                  {alert.status === 'UNREAD' && (
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                      Non lu
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="flex gap-2">
-                  {!alert.lue && (
+                  {alert.status === 'UNREAD' && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -149,13 +165,16 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
               </div>
             </div>
           </div>
-          
+
           {/* Barre de progression pour auto-hide */}
-          {autoHideDuration && alert.type !== 'urgent' && (
+          {autoHideDuration && alert.type !== 'ERROR' && (
             <div className="mt-3 -mb-1">
               <div className="h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full bg-gray-400 rounded-full animate-[shrink_linear] origin-right duration-[${autoHideDuration}ms]`}
+                <div
+                  className={`h-full bg-gray-400 rounded-full animate-[shrink_linear] origin-right`}
+                  style={{
+                    animationDuration: `${autoHideDuration}ms`
+                  }}
                 />
               </div>
             </div>

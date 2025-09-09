@@ -85,26 +85,81 @@ export const GlobalNotifications: React.FC = () => {
 
     return (
         <>
-            {/* Bouton de notification fixe en haut à droite */}
             <div className="fixed top-4 right-4 z-50">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild>
                         <Button
                             variant="outline"
-                            size="sm"
-                            className="relative bg-white shadow-lg hover:shadow-xl transition-shadow"
+                            size="lg"
+                            className={`
+    relative group h-12 w-12 rounded-xl transition-all duration-500 ease-out 
+    transform hover:scale-110 active:scale-95 hover:rotate-3
+    ${!isConnected
+                                    ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 hover:from-red-100 hover:to-red-200 hover:border-red-400 hover:shadow-2xl hover:shadow-red-200'
+                                    : stats.nonLues > 0
+                                        ? 'bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 border-2 border-blue-300 hover:from-blue-100 hover:via-blue-200 hover:to-indigo-200 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-300'
+                                        : 'bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 hover:from-gray-50 hover:to-gray-100 hover:border-gray-300 hover:shadow-xl'
+                                }
+    shadow-lg before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br 
+    ${stats.nonLues > 0 ? 'before:from-blue-400/20 before:to-purple-400/20' : 'before:from-transparent before:to-transparent'}
+    before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
+  `}
                         >
-                            <Bell className="w-4 h-4" />
+                            {/* Cercle de background animé */}
+                            <div className="absolute inset-2 rounded-lg bg-white/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300" />
+
+                            {/* Icône avec animation complexe */}
+                            <Bell className={`
+    w-6 h-6 transition-all duration-500 z-10 relative
+    group-hover:scale-125 group-hover:rotate-12 group-active:scale-90
+    ${stats.nonLues > 0
+                                    ? 'text-blue-600 drop-shadow-sm'
+                                    : !isConnected
+                                        ? 'text-red-500 drop-shadow-sm'
+                                        : 'text-gray-600'
+                                }
+    ${stats.nonLues > 0 ? 'animate-pulse' : ''}
+  `} />
+
+                            {/* Badge des notifications XXL */}
                             {stats.nonLues > 0 && (
                                 <Badge
                                     variant="destructive"
-                                    className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs min-w-[20px] h-5 flex items-center justify-center"
+                                    className="absolute -top-3 -right-3 px-2 py-1 text-sm min-w-[24px] h-6 flex items-center justify-center font-bold animate-bounce shadow-xl border-2 border-white"
                                 >
                                     {stats.nonLues > 99 ? '99+' : stats.nonLues}
                                 </Badge>
                             )}
+
+                            {/* Indicateur de connexion XXL avec triple animation */}
                             {!isConnected && (
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                                <div className="absolute -top-2 -right-2 flex items-center justify-center">
+                                    <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg border-2 border-white" />
+                                    <div className="absolute w-4 h-4 bg-red-400 rounded-full animate-ping opacity-75" />
+                                    <div className="absolute w-6 h-6 bg-red-300 rounded-full animate-ping opacity-50 animation-delay-150" />
+                                </div>
+                            )}
+
+                            {/* Effet de particules pour les notifications */}
+                            {stats.nonLues > 0 && (
+                                <>
+                                    <div className="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-60" />
+                                    <div className="absolute top-1 right-1 w-1 h-1 bg-purple-400 rounded-full animate-pulse animation-delay-300" />
+                                    <div className="absolute bottom-1 left-1 w-1 h-1 bg-indigo-400 rounded-full animate-pulse animation-delay-500" />
+                                </>
+                            )}
+
+                            {/* Barre de statut élargie */}
+                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+
+                            </div>
+
+                            {/* Cercles concentriques pour l'effet "wow" */}
+                            {stats.nonLues > 0 && (
+                                <div className="absolute inset-0 pointer-events-none">
+                                    <div className="absolute inset-0 rounded-xl border-2 border-blue-300 animate-ping opacity-20" />
+                                    <div className="absolute inset-1 rounded-lg border border-purple-300 animate-pulse opacity-30 animation-delay-200" />
+                                </div>
                             )}
                         </Button>
                     </SheetTrigger>

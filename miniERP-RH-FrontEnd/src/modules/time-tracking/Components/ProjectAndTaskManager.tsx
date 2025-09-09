@@ -1,13 +1,14 @@
-// components/ProjectManager.tsx
+// components/ProjectAndTaskManager.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Loader2, ListTodo, Building, DollarSign, Target } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { TacheStatut, Priority } from '../hooks/useTimeTrackerApi';
+import { useProjectApi, type TacheStatut, type Priority } from '../hooks/useTimeTrackerApi';
+
 // Enum de priorité (doit correspondre au backend)
 const PRIORITIES = [
     { value: 'LOW', label: 'Basse' },
@@ -15,7 +16,6 @@ const PRIORITIES = [
     { value: 'HIGH', label: 'Haute' },
     { value: 'CRITICAL', label: 'Critique' },
 ];
-import { useProjectApi } from '../hooks/useTimeTrackerApi';
 
 
 // -- COMPOSANT DE GESTION PRINCIPAL --
@@ -28,7 +28,7 @@ export const ProjectAndTaskManager: React.FC = () => {
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
     // Sélectionner automatiquement le premier projet existant au chargement
-    React.useEffect(() => {
+    useEffect(() => {
         if (projects.length > 0 && !selectedProjectId) {
             setSelectedProjectId(projects[0].id);
         }
@@ -47,7 +47,7 @@ export const ProjectAndTaskManager: React.FC = () => {
     const [newTaskDesc, setNewTaskDesc] = useState("");
     const [newTaskEstHours, setNewTaskEstHours] = useState(0);
     const [newTaskStatus, setNewTaskStatus] = useState<TacheStatut>('A_FAIRE');
-    const [newTaskPriority, setNewTaskPriority] = useState<Priority>('MOYENNE' as Priority);
+    const [newTaskPriority, setNewTaskPriority] = useState<Priority>('MEDIUM' as Priority);
 
     const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
 
@@ -56,7 +56,7 @@ export const ProjectAndTaskManager: React.FC = () => {
         setNewProjectBudget(0); setNewProjectStart(undefined); setNewProjectEnd(undefined);
     };
     const resetTaskForm = () => {
-        setNewTaskName(""); setNewTaskDesc(""); setNewTaskEstHours(0); setNewTaskStatus('A_FAIRE'); setNewTaskPriority('MOYENNE' as Priority);
+        setNewTaskName(""); setNewTaskDesc(""); setNewTaskEstHours(0); setNewTaskStatus('A_FAIRE'); setNewTaskPriority('MEDIUM' as Priority);
     };
 
     const handleCreateProject = async (e: React.FormEvent) => {
@@ -88,7 +88,7 @@ export const ProjectAndTaskManager: React.FC = () => {
     };
 
     return (
-        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+        <div className="bg-slate-50 pb-2 rounded-lg">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* === COLONNE DE GAUCHE : LISTE ET CRÉATION DE PROJETS === */}
                 <div className="lg:col-span-1 space-y-3 sm:space-y-4">
@@ -218,8 +218,11 @@ export const ProjectAndTaskManager: React.FC = () => {
                         <div className="space-y-4">
                             <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
                                 <div className="p-4 border-b border-slate-200">
-                                    <h3 className="text-lg font-semibold text-slate-900">{selectedProject.nom}</h3>
-                                    <p className="text-sm text-slate-600 mt-1">{selectedProject.description}</p>
+                                    <h3 className="text-lg font-semibold text-slate-900">
+                                        {selectedProject.nom}
+                                        <span className="text-sm text-slate-600 mt-1"> {selectedProject.description}</span>
+                                    </h3>
+
                                 </div>
                                 <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div className="flex items-center gap-2">
@@ -327,7 +330,7 @@ export const ProjectAndTaskManager: React.FC = () => {
                                             <p className="text-sm text-slate-500 mt-2">Aucune tâche pour ce projet.</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-3">
+                                        <div className="space-y-3 scrollbar max-h-32 overflow-y-auto">
                                             {selectedProject.taches.map(t => (
                                                 <div key={t.id} className="p-3 border border-slate-200 rounded-lg bg-slate-50 flex justify-between items-start">
                                                     <div className="flex-1">

@@ -30,20 +30,28 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-// Types
+// Types - Interface utilisateur unifiée
 interface User {
     id: number;
     nom: string;
     preNom: string;
     email: string;
-    telephone: string;
-    dateCreation: string;
-    dernierConnexion: string;
-    active: boolean;
-    numeroEmploye: string;
-    poste: string;
+    telephone?: string;
+    dateNaissance?: string;
+    poste?: string;
     departement: string;
     adresse?: string;
+    cin?: string;
+    dateEmbauche?: string;
+    salaireBase?: number;
+    tauxHoraire?: number;
+    numeroEmploye?: string;
+    userType: string;
+    active?: boolean;
+    dateCreation?: string;
+    dernierConnexion?: string;
+    // Support pour les deux formats d'API
+    department?: string;
 }
 
 interface Filters {
@@ -86,7 +94,7 @@ const MetricsSection: React.FC<{ users: User[] }> = ({ users }) => {
         recent: users.filter(u => {
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
-            return new Date(u.dernierConnexion) > weekAgo;
+            return u.dernierConnexion && new Date(u.dernierConnexion) > weekAgo;
         }).length
     }), [users]);
 
@@ -99,7 +107,7 @@ const MetricsSection: React.FC<{ users: User[] }> = ({ users }) => {
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 lg:mb-4">
-            {metricCards.map(({ icon: Icon, label, value, color }, index) => (
+            {metricCards.map(({ icon: Icon, label, value }, index) => (
                 <Card key={index} className="border border-slate-200 bg-slate-50">
                     <CardContent className="p-2 sm:p-3">
                         <div className="text-center">
@@ -494,12 +502,12 @@ const UserDetailsModal: React.FC<{
                                     <div className="flex items-center gap-2">
                                         <CalendarIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
                                         <span className="text-gray-600">Créé le:</span>
-                                        <span className="font-medium">{formatDate(user.dateCreation)}</span>
+                                        <span className="font-medium">{user.dateCreation ? formatDate(user.dateCreation) : 'Non renseigné'}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
                                         <span className="text-gray-600">Dernière connexion:</span>
-                                        <span className="font-medium">{formatDate(user.dernierConnexion)}</span>
+                                        <span className="font-medium">{user.dernierConnexion ? formatDate(user.dernierConnexion) : 'Jamais'}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -523,56 +531,68 @@ const UserDetailsModal: React.FC<{
     );
 };
 
-// Schema avec valeurs par défaut définies explicitement
-const formSchema = z.object({
-    nom: z.string().min(1, 'Nom requis'),
-    preNom: z.string().min(1, 'Prénom requis'),
-    email: z.string().email('Email invalide').min(1, 'Email requis'),
-    telephone: z.string().min(1, 'Téléphone requis'),
-    password: z.string().min(6, 'Mot de passe requis (6 caractères minimum)'),
-    dateNaissance: z.date('Date de naissance requise'),
-    poste: z.string().min(1, 'Poste requis'),
-    departement: z.string().min(1, 'Département requis'),
-    adresse: z.string().default(''),
-    cin: z.string().default(''),
-    dateEmbauche: z.date().optional(),
-    salaireBase: z.number().optional(),
-    tauxHoraire: z.number().optional(),
-    userType: z.string().default('employe'),
-});
+// Schema adaptatif selon le type d'utilisateur
+const createFormSchema = (userType: string) => {
+    const baseSchema = {
+        nom: z.string().min(1, 'Nom requis'),
+        preNom: z.string().min(1, 'Prénom requis'),
+        email: z.string().email('Email invalide').min(1, 'Email requis'),
+        telephone: z.string().optional(),
+        password: z.string().min(6, 'Mot de passe requis (6 caractères minimum)'),
+        confirmPassword: z.string().min(6, 'Confirmation requise'),
+        dateNaissance: z.date().optional(),
+        poste: z.string().optional(),
+        departement: z.string().min(1, 'Département requis'),
+        adresse: z.string().optional(),
+        cin: z.string().optional(),
+        dateEmbauche: z.date().optional(),
+        salaireBase: z.number().optional(),
+        tauxHoraire: z.number().optional(),
+        numeroEmploye: z.string().optional(),
+        userType: z.string().default('EMPLOYE'),
+        active: z.boolean().default(true),
+    };
+
+    // Champs requis pour les employés
+    if (userType === 'EMPLOYE') {
+        return z.object({
+            ...baseSchema,
+            telephone: z.string().min(1, 'Téléphone requis'),
+            dateNaissance: z.date('Date de naissance requise'),
+            poste: z.string().min(1, 'Poste requis'),
+            numeroEmploye: z.string().min(1, 'N° employé requis'),
+        }).refine((data) => data.password === data.confirmPassword, {
+            message: "Les mots de passe ne correspondent pas",
+            path: ["confirmPassword"],
+        });
+    }
+
+    // Champs requis pour les managers (plus flexibles)
+    return z.object(baseSchema).refine((data) => data.password === data.confirmPassword, {
+        message: "Les mots de passe ne correspondent pas",
+        path: ["confirmPassword"],
+    });
+};
+
+
 
 
 interface RegisterRequest {
     nom: string;
     preNom: string;
     email: string;
-    telephone: string;
-    dateNaissance: string;
-    poste: string;
+    telephone?: string;
+    dateNaissance?: string;
+    poste?: string;
     departement: string;
     adresse?: string;
     cin?: string;
     dateEmbauche?: string;
     salaireBase?: number;
     tauxHoraire?: number;
+    numeroEmploye?: string;
     userType: string;
-}
-
-interface User {
-    id: number;
-    nom: string;
-    preNom: string;
-    email: string;
-    telephone: string;
-    dateNaissance: string;
-    poste: string;
-    departement: string;
-    adresse?: string;
-    cin?: string;
-    dateEmbauche?: string;
-    salaireBase?: number;
-    tauxHoraire?: number;
-    userType: string;
+    active?: boolean;
 }
 
 interface AddUserModalProps {
@@ -589,14 +609,18 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [apiError, setApiError] = useState<string>('');
 
+    const [selectedUserType, setSelectedUserType] = useState<string>('EMPLOYE');
+    const [currentSchema, setCurrentSchema] = useState(createFormSchema('EMPLOYE'));
+
     const form = useForm({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(currentSchema),
         defaultValues: {
             nom: '',
             preNom: '',
             email: '',
             telephone: '',
             password: '',
+            confirmPassword: '',
             dateNaissance: undefined as Date | undefined,
             poste: '',
             departement: '',
@@ -605,9 +629,22 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             dateEmbauche: undefined as Date | undefined,
             salaireBase: undefined as number | undefined,
             tauxHoraire: undefined as number | undefined,
-            userType: 'employe',
+            numeroEmploye: '',
+            userType: 'EMPLOYE',
+            active: true,
         },
     });
+
+    // Mettre à jour le schema quand le type d'utilisateur change
+    const handleUserTypeChange = (userType: string) => {
+        setSelectedUserType(userType);
+        const newSchema = createFormSchema(userType);
+        setCurrentSchema(newSchema);
+        form.setValue('userType', userType);
+
+        // Réinitialiser les validations
+        form.clearErrors();
+    };
 
     const departments = ['IT', 'RH', 'Finance', 'Marketing', 'Production', 'Qualité', 'Logistique', 'Commercial'];
     const userTypes = [
@@ -623,14 +660,23 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
         try {
             const requestData: RegisterRequest & { password: string } = {
-                ...data,
+                nom: data.nom,
+                preNom: data.preNom,
+                email: data.email,
+                departement: data.departement,
+                userType: data.userType,
+                password: data.password,
+                // Champs conditionnels selon le type d'utilisateur
+                telephone: data.telephone || undefined,
+                dateNaissance: data.dateNaissance ? data.dateNaissance.toISOString() : undefined,
+                poste: data.poste || undefined,
                 adresse: data.adresse || undefined,
                 cin: data.cin || undefined,
-                dateNaissance: data.dateNaissance.toISOString(),
                 dateEmbauche: data.dateEmbauche ? data.dateEmbauche.toISOString() : undefined,
                 salaireBase: data.salaireBase || undefined,
                 tauxHoraire: data.tauxHoraire || undefined,
-                password: data.password,
+                numeroEmploye: data.numeroEmploye || undefined,
+                active: data.active,
             };
 
             const response = await fetch('http://localhost:8080/api/auth/register', {
@@ -669,7 +715,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-full max-w-5xl h-[95vh] p-0 gap-0 overflow-hidden bg-slate-50 border border-slate-200 rounded-lg shadow-lg">
+            <DialogContent className="w-full max-w-5xl mx-4 h-[90vh] p-0 gap-0 overflow-hidden bg-slate-50 border border-slate-200 rounded-lg shadow-lg">
                 {/* Header institutionnel */}
                 <div className="px-8 py-3 bg-white border-b border-slate-200 flex items-center gap-4 rounded-t-lg">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -776,7 +822,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         name="cin"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">CIN (optionnel)</FormLabel>
+                                                <FormLabel className="text-sm text-slate-700 font-medium">
+                                                    CIN {selectedUserType === 'EMPLOYE' ? '(recommandé)' : '(optionnel)'}
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         {...field}
@@ -790,6 +838,29 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Numéro d'employé - affiché seulement pour les employés */}
+                                    {selectedUserType === 'EMPLOYE' && (
+                                        <FormField
+                                            control={form.control}
+                                            name="numeroEmploye"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm text-slate-700 font-medium">N° Employé *</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            {...field}
+                                                            className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                            placeholder="EMP001"
+                                                            aria-required="true"
+                                                        />
+                                                    </FormControl>
+                                                    <span className="text-xs text-slate-500">Identifiant unique de l'employé</span>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
                                 </div>
                             </section>
 
@@ -825,7 +896,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                         control={form.control}
                                         name="password"
                                         render={({ field }) => (
-                                            <FormItem className="md:col-span-2">
+                                            <FormItem>
                                                 <FormLabel className="text-sm text-slate-700 font-medium">Mot de passe *</FormLabel>
                                                 <FormControl>
                                                     <Input
@@ -842,16 +913,37 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                     />
                                     <FormField
                                         control={form.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-sm text-slate-700 font-medium">Confirmer le mot de passe *</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        {...field}
+                                                        type="password"
+                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                        placeholder="Répéter le mot de passe"
+                                                        aria-required="true"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
                                         name="telephone"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">Téléphone *</FormLabel>
+                                                <FormLabel className="text-sm text-slate-700 font-medium">
+                                                    Téléphone {selectedUserType === 'EMPLOYE' ? '*' : '(optionnel)'}
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         {...field}
                                                         className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                                                         placeholder="+212 6XX XXX XXX"
-                                                        aria-required="true"
+                                                        aria-required={selectedUserType === 'EMPLOYE'}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -918,32 +1010,20 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                     />
                                     <FormField
                                         control={form.control}
-                                        name="poste"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">Poste *</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        {...field}
-                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
-                                                        placeholder="Intitulé du poste"
-                                                        aria-required="true"
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
                                         name="userType"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">Type d'utilisateur</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormLabel className="text-sm text-slate-700 font-medium">Type d'utilisateur *</FormLabel>
+                                                <Select
+                                                    onValueChange={(value) => {
+                                                        field.onChange(value);
+                                                        handleUserTypeChange(value);
+                                                    }}
+                                                    value={field.value}
+                                                >
                                                     <FormControl>
                                                         <SelectTrigger className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200">
-                                                            <SelectValue />
+                                                            <SelectValue placeholder="Sélectionner le type" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
@@ -954,6 +1034,27 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="poste"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-sm text-slate-700 font-medium">
+                                                    Poste {selectedUserType === 'EMPLOYE' ? '*' : '(optionnel)'}
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        {...field}
+                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                        placeholder="Intitulé du poste"
+                                                        aria-required={selectedUserType === 'EMPLOYE'}
+                                                    />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -994,64 +1095,95 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Statut actif/inactif */}
+                                    <FormField
+                                        control={form.control}
+                                        name="active"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel className="text-sm text-slate-700 font-medium">Statut du compte</FormLabel>
+                                                <Select
+                                                    onValueChange={(value) => field.onChange(value === 'true')}
+                                                    value={String(field.value)}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="true">🟢 Actif</SelectItem>
+                                                        <SelectItem value="false">🔴 Inactif</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <span className="text-xs text-slate-500">
+                                                    {field.value ? "L'utilisateur peut se connecter" : "L'utilisateur ne peut pas se connecter"}
+                                                </span>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                             </section>
 
-                            {/* Rémunération */}
-                            <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                        <DollarSign className="w-4 h-4 text-white" />
+                            {/* Rémunération - Affiché seulement pour les employés */}
+                            {selectedUserType === 'EMPLOYE' && (
+                                <section className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+                                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                            <DollarSign className="w-4 h-4 text-white" />
+                                        </div>
+                                        <h3 className="font-semibold text-slate-900">Rémunération (optionnel)</h3>
                                     </div>
-                                    <h3 className="font-semibold text-slate-900">Rémunération (optionnel)</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="salaireBase"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">Salaire de base (MAD)</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="0.01"
-                                                        value={field.value ?? ''}
-                                                        onChange={(e) => handleNumberChange(e.target.value, field.onChange)}
-                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
-                                                        placeholder="0.00"
-                                                        aria-describedby="salaire-optional"
-                                                    />
-                                                </FormControl>
-                                                <span id="salaire-optional" className="text-xs text-slate-500">Salaire mensuel en dirhams</span>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="tauxHoraire"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm text-slate-700 font-medium">Taux horaire (MAD/h)</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="0.01"
-                                                        value={field.value ?? ''}
-                                                        onChange={(e) => handleNumberChange(e.target.value, field.onChange)}
-                                                        className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
-                                                        placeholder="0.00"
-                                                        aria-describedby="taux-optional"
-                                                    />
-                                                </FormControl>
-                                                <span id="taux-optional" className="text-xs text-slate-500">Taux horaire en dirhams</span>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </section>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="salaireBase"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm text-slate-700 font-medium">Salaire de base (MAD)</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={field.value ?? ''}
+                                                            onChange={(e) => handleNumberChange(e.target.value, field.onChange)}
+                                                            className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                            placeholder="0.00"
+                                                            aria-describedby="salaire-optional"
+                                                        />
+                                                    </FormControl>
+                                                    <span id="salaire-optional" className="text-xs text-slate-500">Salaire mensuel en dirhams</span>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="tauxHoraire"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm text-slate-700 font-medium">Taux horaire (MAD/h)</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={field.value ?? ''}
+                                                            onChange={(e) => handleNumberChange(e.target.value, field.onChange)}
+                                                            className="h-10 border-slate-300 focus:border-blue-500 focus:ring-blue-200"
+                                                            placeholder="0.00"
+                                                            aria-describedby="taux-optional"
+                                                        />
+                                                    </FormControl>
+                                                    <span id="taux-optional" className="text-xs text-slate-500">Taux horaire en dirhams</span>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </section>
+                            )}
 
                             {/* Récapitulatif */}
                             {(form.getValues('nom') || form.getValues('email') || form.getValues('poste')) && (
@@ -1087,6 +1219,20 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                             <div>
                                                 <span className="text-blue-900 font-medium">Département:</span>{' '}
                                                 <span className="text-slate-700">{form.getValues('departement')}</span>
+                                            </div>
+                                        )}
+                                        {form.getValues('userType') && (
+                                            <div>
+                                                <span className="text-blue-900 font-medium">Type:</span>{' '}
+                                                <span className="text-slate-700">
+                                                    {userTypes.find(t => t.value === form.getValues('userType'))?.label}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {form.getValues('numeroEmploye') && selectedUserType === 'EMPLOYE' && (
+                                            <div>
+                                                <span className="text-blue-900 font-medium">N° Employé:</span>{' '}
+                                                <span className="text-slate-700">{form.getValues('numeroEmploye')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1282,7 +1428,8 @@ const UserManagement: React.FC = () => {
                 user.nom.toLowerCase().includes(filters.search.toLowerCase()) ||
                 user.preNom.toLowerCase().includes(filters.search.toLowerCase()) ||
                 user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-                user.poste.toLowerCase().includes(filters.search.toLowerCase());
+                (user.poste?.toLowerCase() || '').includes(filters.search.toLowerCase()) ||
+                (user.numeroEmploye?.toLowerCase() || '').includes(filters.search.toLowerCase());
 
             const matchesStatus =
                 filters.status === 'all' ||

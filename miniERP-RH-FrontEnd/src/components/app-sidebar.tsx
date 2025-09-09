@@ -19,14 +19,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-import logo from "@/assets/images/digitalia-logo.jpeg"
+import logo from "@/assets/images/digitalia-logo.png"
 
 // Logo compact institutionnel
 function CompanyLogo() {
   return (
     <div className="flex flex-col items-center p-2 mb-3">
       {/* Logo institutionnel compact */}
-      <div className="w-32 mt-4 h-auto rounded-lg flex items-center justify-center mb-1">
+      <div className="w-40 mt-4 h-auto rounded-lg flex items-center justify-center mb-1">
         <img src={logo} alt="Logo ERP RH" className="object-contain" />
       </div>
       {/* Titre institutionnel réduit */}
@@ -48,12 +48,6 @@ const data = {
     }
   ],
   navMain: [
-    {
-      title: "Tableau de bord",
-      url: "/dashboard",
-      icon: Home,
-      isActive: true,
-    },
     {
       title: "Recherche",
       url: "#",
@@ -78,12 +72,6 @@ const data = {
     },
   ],
   favorites: [
-    {
-      name: "Alertes & Notifications",
-      url: "/alertes",
-      emoji: "🔔",
-      hasNotifications: true,
-    },
     {
       name: "Congés & Absences",
       url: "/gestion-conges",

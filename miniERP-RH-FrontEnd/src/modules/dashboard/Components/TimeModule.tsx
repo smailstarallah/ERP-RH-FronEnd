@@ -3,9 +3,9 @@ import KPICard from './KPICard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, LineChart, Line, PieChart, Pie, Cell, ZAxis, Label, LabelList } from 'recharts';
 import { Clock, TrendingUp, CheckCircle, AlertTriangle, Users, Target, Calendar, Timer, Activity, Zap } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 // Schéma colorimétrique institutionnel identique à PayrollModule
 const INSTITUTIONAL_COLORS = {
@@ -117,6 +117,23 @@ const TimeModule: React.FC = () => {
         );
     }
 
+    const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+                <div className="p-3 bg-white border border-gray-300 rounded-lg shadow-xl">
+                    <p className="text-base font-bold text-gray-900">{data.employee}</p>
+                    <p className="text-sm text-gray-700">
+                        Heures supp.: <span className="font-medium">{data.heuresSupp}h</span>
+                    </p>
+                    <p className="text-sm text-gray-700">
+                        Productivité: <span className="font-medium">{data.productivite}</span>
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
     // Fonction pour filtrer les employés par département
     const getFilteredEmployees = () => {
         if (!timeData?.originalWorkloadData || !selectedDepartment) return [];
@@ -125,7 +142,7 @@ const TimeModule: React.FC = () => {
             .filter((emp: any) => (emp.departement || 'Non assigné') === selectedDepartment)
             .slice(0, 15);
     };
-
+    console.log('Employés filtrés pour le département sélectionné:', timeData.productivityData);
     return (
         <div className="space-y-3 lg:space-y-4">
             {/* Header Section avec métriques institutionnelles */}
@@ -310,31 +327,47 @@ const TimeModule: React.FC = () => {
                         <CardDescription className="text-slate-600">Corrélation heures supplémentaires et performance</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <ResponsiveContainer width="100%" height={280}>
-                            <ScatterChart data={timeData.productivityData}>
-                                <CartesianGrid stroke="#e2e8f0" />
+                        <ResponsiveContainer width="100%" height={300}>
+                            <ScatterChart
+                                margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+
                                 <XAxis
+                                    type="number"
                                     dataKey="heuresSupp"
                                     name="Heures supp."
                                     tick={{ fontSize: 12, fill: '#64748b' }}
                                     axisLine={{ stroke: '#e2e8f0' }}
-                                />
+                                    domain={['dataMin - 2', 'dataMax + 2']}
+                                >
+                                    <Label value="Heures supplémentaires" offset={-15} position="insideBottom" fill="#64748b" fontSize={14} />
+                                </XAxis>
+
                                 <YAxis
+                                    type="number"
                                     dataKey="productivite"
                                     name="Productivité"
                                     tick={{ fontSize: 12, fill: '#64748b' }}
                                     axisLine={{ stroke: '#e2e8f0' }}
-                                />
+                                    domain={['dataMin - 5', 'dataMax + 5']}
+                                >
+                                    <Label value="Indice de productivité" angle={-90} position="insideLeft" style={{ textAnchor: 'middle' }} fill="#64748b" fontSize={14} />
+                                </YAxis>
+
+                                {/* ZAxis contrôle la taille des points. Utile pour une autre métrique plus tard. */}
+                                <ZAxis type="number" range={[80, 80]} />
+
+                                {/* 2. UTILISER LE TOOLTIP PERSONNALISÉ */}
                                 <Tooltip
-                                    cursor={{ strokeDasharray: '3 3', stroke: INSTITUTIONAL_COLORS.secondary }}
-                                    contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                                    }}
+                                    cursor={{ strokeDasharray: '3 3' }}
+                                    content={<CustomTooltip />}
                                 />
-                                <Scatter fill={INSTITUTIONAL_COLORS.primary} />
+
+                                {/* 3. LE COMPOSANT SCATTER SANS LABELLIST */}
+                                {/* Les étiquettes ont été retirées pour éviter le désordre visuel. */}
+                                <Scatter data={timeData.productivityData} fill="#4f46e5" />
+
                             </ScatterChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -499,7 +532,10 @@ const TimeModule: React.FC = () => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    formatter={(value: number) => [`${value}h`, 'Heures']}
+                                    formatter={(value: number, _name: string, props: any) => [
+                                        `${value}h (${props.payload.pourcentage}%)`,
+                                        props.payload.TypeActivite || 'Activité'
+                                    ]}
                                     contentStyle={{
                                         backgroundColor: 'white',
                                         border: '1px solid #e2e8f0',
@@ -510,6 +546,45 @@ const TimeModule: React.FC = () => {
                                 />
                             </PieChart>
                         </ResponsiveContainer>
+
+                        {/* Légende explicative */}
+                        <div className="mt-4 space-y-2">
+                            <h4 className="text-sm font-semibold text-slate-900">Répartition du temps :</h4>
+                            <div className="grid grid-cols-1 gap-2">
+                                {
+                                    timeData.timeDistribution.map((item: any, index: number) => (
+                                        <div key={index} className="flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-blue-600' :
+                                                        index === 1 ? 'bg-green-500' :
+                                                            index === 2 ? 'bg-yellow-500' :
+                                                                index === 3 ? 'bg-red-500' :
+                                                                    'bg-slate-600'
+                                                        }`}
+                                                ></div>
+                                                <span className="text-slate-700 font-medium">{item.TypeActivite || `Activité ${index + 1}`}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-slate-600">{item.heures}h</span>
+                                                <Badge variant="outline" className="text-xs">
+                                                    {item.pourcentage}%
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+
+                            {/* Total */}
+                            <div className="border-t border-slate-200 pt-2 mt-3">
+                                <div className="flex items-center justify-between text-xs font-semibold">
+                                    <span className="text-slate-900">Total</span>
+                                    <span className="text-slate-900">
+                                        {timeData.timeDistribution.reduce((acc: number, item: any) => acc + (item.heures || 0), 0)}h
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 

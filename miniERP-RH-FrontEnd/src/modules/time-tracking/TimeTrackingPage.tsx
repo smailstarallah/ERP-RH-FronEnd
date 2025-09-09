@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useTimeTracking } from "./hooks/useTimeTracking";
+import { useTimeTrackingRolePermissions } from "./hooks/useTimeTrackingRolePermissions";
 import { TimeHeader } from "./Components/TimeHeader";
 import { MessageAlert } from "./Components/MessageAlert";
-import { CurrentStatus } from "./Components/CurrentStatus";
 import { TimeActions } from "./Components/TimeActions";
-import { TodayHistory } from "./Components/TodayHistory";
 import { DaySummary } from "./Components/DaySummary";
 import { WeekStatsCard } from "./Components/WeekStatsCard";
 import { QuickActions } from "./Components/QuickActions";
-import ManagerDashboard from "./ManagerDashboard";
 import EffectivenessChart from "./Components/EffectivenessChart";
 import { Switch } from "@/components/ui/switch";
 import { TeamPresence } from "./Components/TeamPresence";
 import { HoursChart } from "./Components/HoursChart";
 import { ProfessionalTimeSheetCalendar } from "./Components/PresenceCalendar";
 import { ProjectAndTaskManager } from "./Components/ProjectAndTaskManager";
+import { User } from "lucide-react";
 
 interface TeamStatus {
     employeeId: string;
@@ -26,27 +25,19 @@ interface TeamStatus {
 }
 
 export const TimeTrackingPage: React.FC = () => {
+    const { userRole, permissions, hasAnyPermission } = useTimeTrackingRolePermissions();
+
     const {
         currentTime,
-        isWorking,
-        isOnBreak,
-        loading,
         message,
         location,
-        todayEntries,
         weekStats,
         weekRows,
-        currentSession,
         totalWorkedTime,
         totalBreakTime,
         effectiveWorkTime,
-        formatTime,
         formatTimeShort,
-        getCurrentTimeString,
-        handleCheckIn,
-        handleCheckOut,
-        handleBreakStart,
-        handleBreakEnd
+        getCurrentTimeString
     } = useTimeTracking();
 
     const [teamStatus, setTeamStatus] = useState<TeamStatus[]>([]);
@@ -55,13 +46,6 @@ export const TimeTrackingPage: React.FC = () => {
         teamStatus: true,
         anomalies: true
     });
-    const [error, setError] = useState<string | null>(null);
-
-    // Temporary mock data for projects, isLoading, and api
-    // Replace with real data and logic as needed
-    const [projects, setProjects] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const api = {};
 
     // Fonction pour récupérer le statut de l'équipe
     const fetchTeamStatus = async () => {
@@ -84,10 +68,8 @@ export const TimeTrackingPage: React.FC = () => {
 
             const data: TeamStatus[] = await response.json();
             setTeamStatus(data);
-            setError(null);
         } catch (err) {
             console.error('Erreur team status:', err);
-            setError('Impossible de charger le statut de l\'équipe');
         } finally {
             setLoadingStatus(prev => ({ ...prev, teamStatus: false }));
         }
@@ -110,54 +92,125 @@ export const TimeTrackingPage: React.FC = () => {
     }, [realTime]);
 
     const liveToggle = (
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2">
             <Switch
                 checked={realTime}
                 onCheckedChange={setRealTime}
+                className="data-[state=checked]:bg-blue-600"
             />
-            <span>Temps réel</span>
+            <span className="text-sm font-medium text-slate-700">Temps réel</span>
         </div>
     );
 
-
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="max-w-6xl mx-auto p-4 space-y-4">
+            <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-5">
                 {/* En-tête institutionnel */}
-                <TimeHeader
-                    currentTime={currentTime}
-                    location={location}
-                    getCurrentTimeString={getCurrentTimeString}
-                />
+                <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 mb-4">
+                    <TimeHeader
+                        currentTime={currentTime}
+                        location={location}
+                        getCurrentTimeString={getCurrentTimeString}
+                    />
+                </div>
+
+                {/* Message si aucun accès */}
+                {!hasAnyPermission() && (
+                    <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 mb-4">
+                        <div className="text-center">
+                            <p className="text-sm text-slate-600">
+                                Votre rôle ({userRole}) ne dispose pas d'autorisations pour le module de pointage.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 <MessageAlert message={message} />
-                <ProjectAndTaskManager />
+
+                {/* Gestion des projets - Visible pour MANAGER et RH */}
+                {permissions.canManageProjects && (
+                    <ProjectAndTaskManager />
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* Section principale - Actions de pointage */}
+
+                    <div className="space-y-4">
+                        {permissions.canViewTeamStats && (
+                            <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                                <HoursChart
+                                    teamStatus={teamStatus}
+                                    isLoading={loadingStatus.teamStatus}
+                                />
+                            </div>
+                        )}
+                    </div>
                     <div className="lg:col-span-2 space-y-4">
-                        <TimeActions />
-                        <ProfessionalTimeSheetCalendar />
-                        <WeekStatsCard weekStats={weekStats} weekRows={weekRows} />
-                        <TeamPresence
-                            teamStatus={teamStatus}
-                            isLoading={loadingStatus.teamStatus}
-                            liveToggle={liveToggle}
-                        />
+                        {permissions.canViewTeamPresence && (
+                            <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h2 className="text-lg font-semibold text-slate-900">
+                                        Présence de l'équipe
+                                    </h2>
+                                    {liveToggle}
+                                </div>
+                                <TeamPresence
+                                    teamStatus={teamStatus}
+                                    isLoading={loadingStatus.teamStatus}
+                                    liveToggle={null}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="lg:col-span-2 space-y-4">
+                        {permissions.canTrackOwnTime && (
+                            <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                                <TimeActions />
+                            </div>
+                        )}
+
+
+                        {permissions.canViewOwnStats && (
+                            <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                                <h2 className="text-lg font-semibold text-slate-900 mb-3">
+                                    Statistiques hebdomadaires
+                                </h2>
+                                <WeekStatsCard weekStats={weekStats} weekRows={weekRows} />
+                            </div>
+                        )}
+
                     </div>
 
-                    {/* Sidebar - Statistiques */}
+
+
                     <div className="space-y-4">
-                        <DaySummary
-                            totalWorkedTime={totalWorkedTime}
-                            totalBreakTime={totalBreakTime}
-                            effectiveWorkTime={effectiveWorkTime}
-                            formatTimeShort={formatTimeShort}
-                        />
-                        <EffectivenessChart />
-                        <HoursChart teamStatus={teamStatus} isLoading={loadingStatus.teamStatus} />
-                        <QuickActions />
+                        {permissions.canViewOwnStats && (
+                            <DaySummary
+                                totalWorkedTime={totalWorkedTime}
+                                totalBreakTime={totalBreakTime}
+                                effectiveWorkTime={effectiveWorkTime}
+                                formatTimeShort={formatTimeShort}
+                            />
+                        )}
+
+                        {(permissions.canViewOwnStats || permissions.canViewAnalytics) && (
+                            <EffectivenessChart />
+                        )}
+
+                        {permissions.canTrackOwnTime && (
+                            <QuickActions />
+                        )}
                     </div>
+                    {permissions.canViewOwnStats && (
+                        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                            <h2 className="text-lg font-semibold text-slate-900 mb-3">
+                                Calendrier de présence
+                            </h2>
+                            <ProfessionalTimeSheetCalendar />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCard } from './AlertCard';
 import { ChevronLeft, ChevronRight, Bell, BellOff, RefreshCw } from 'lucide-react';
-import type { Alerte } from '../types';
+import type { AlerteDTO } from '../types';
 
 interface AlertListProps {
-  alertes: Alerte[];
+  alertes: AlerteDTO[];
   loading: boolean;
   error: string | null;
   totalPages: number;
@@ -38,7 +38,7 @@ export const AlertList: React.FC<AlertListProps> = ({
             <p className="text-sm font-medium">Erreur lors du chargement</p>
           </div>
           <p className="text-xs text-slate-600 mb-4">{error}</p>
-          <Button 
+          <Button
             onClick={onRafraichir}
             size="sm"
             className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -147,7 +147,7 @@ export const AlertList: React.FC<AlertListProps> = ({
               <div className="text-xs text-slate-600">
                 Page {currentPage + 1} sur {totalPages}
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   onClick={() => onChangerPage(currentPage - 1)}
@@ -158,7 +158,7 @@ export const AlertList: React.FC<AlertListProps> = ({
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                
+
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
@@ -181,8 +181,8 @@ export const AlertList: React.FC<AlertListProps> = ({
                         variant={pageNum === currentPage ? "default" : "outline"}
                         className={`
                           h-8 w-8 p-0 text-xs
-                          ${pageNum === currentPage 
-                            ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          ${pageNum === currentPage
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
                             : ''
                           }
                         `}
@@ -192,7 +192,7 @@ export const AlertList: React.FC<AlertListProps> = ({
                     );
                   })}
                 </div>
-                
+
                 <Button
                   onClick={() => onChangerPage(currentPage + 1)}
                   disabled={currentPage >= totalPages - 1 || loading}

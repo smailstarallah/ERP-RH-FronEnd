@@ -574,17 +574,12 @@ export const ProfessionalTimeSheetCalendar = () => {
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
-                            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-white/80 ml-2" />}
                         </div>
                     </div>
                 </CardHeader>
 
                 <CardContent className="p-0 flex-1 overflow-hidden">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center h-96">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : isMobile ? (
+                    {isMobile ? (
                         // === LAYOUT MOBILE (optimisé pour les petits écrans) ===
                         <div className="p-2">
                             <ToggleGroup type="single" value={format(selectedMobileDay, 'yyyy-MM-dd')} onValueChange={val => val && setSelectedMobileDay(new Date(val))} className="grid grid-cols-7 gap-1 mb-2">

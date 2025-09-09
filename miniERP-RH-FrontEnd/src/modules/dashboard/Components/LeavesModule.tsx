@@ -595,10 +595,10 @@ const LeavesModule: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Section Analytique Avancée Gestion des Congés - NOUVEAUTÉ */}
+            <div className="mt-6 mb-0">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full font-medium">(avec données statiques provisoires, à améliorer ultérieurement à titre d’exemple)</span>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Module Prédiction des Congés */}
                 <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
@@ -718,7 +718,6 @@ const LeavesModule: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                {/* Module Bien-être et Équilibre */}
                 <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
@@ -769,7 +768,6 @@ const LeavesModule: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Section Analyse des Équipes et Conformité */}
             <div className="grid grid-cols-1 gap-3">
                 <Card className="bg-white border border-slate-200 shadow-sm">
                     <CardHeader className="pb-3">
@@ -777,7 +775,7 @@ const LeavesModule: React.FC = () => {
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                                 <Users className="w-4 h-4 text-white" />
                             </div>
-                            Analyse des Équipes & Conformité
+                            Analyse des Équipes & Conformité <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full font-medium">(avec données statiques provisoires, à améliorer ultérieurement à titre d’exemple)</span>
                         </CardTitle>
                         <CardDescription className="text-slate-600">Performance et respect des réglementations par équipe</CardDescription>
                     </CardHeader>
@@ -829,99 +827,6 @@ const LeavesModule: React.FC = () => {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Section Innovation: Radar des Risques et Opportunités */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Card className="bg-white border border-slate-200 shadow-sm">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <Target className="w-4 h-4 text-white" />
-                            </div>
-                            Radar des Risques RH
-                        </CardTitle>
-                        <CardDescription className="text-slate-600">Évaluation multidimensionnelle des risques</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <ResponsiveContainer width="100%" height={280}>
-                            <RadarChart data={[
-                                { subject: 'Sous-effectif', A: 65, fullMark: 100 },
-                                { subject: 'Planification', A: 80, fullMark: 100 },
-                                { subject: 'Conformité', A: 90, fullMark: 100 },
-                                { subject: 'Budget', A: 75, fullMark: 100 },
-                                { subject: 'Satisfaction', A: 85, fullMark: 100 },
-                                { subject: 'Burnout', A: 25, fullMark: 100 }
-                            ]}>
-                                <PolarGrid stroke="#e2e8f0" />
-                                <PolarAngleAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                                <PolarRadiusAxis
-                                    tick={{ fontSize: 10, fill: '#64748b' }}
-                                    tickCount={5}
-                                    angle={90}
-                                />
-                                <Radar
-                                    name="Risque"
-                                    dataKey="A"
-                                    stroke={INSTITUTIONAL_COLORS.primary}
-                                    fill={INSTITUTIONAL_COLORS.primary}
-                                    fillOpacity={0.1}
-                                    strokeWidth={2}
-                                />
-                            </RadarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-white border border-slate-200 shadow-sm">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-slate-900 font-semibold flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <ShieldAlert className="w-4 h-4 text-white" />
-                            </div>
-                            Actions Recommandées
-                        </CardTitle>
-                        <CardDescription className="text-slate-600">Recommandations intelligentes basées sur l'IA</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-4">
-                        <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="text-sm font-semibold text-red-800">Urgence - Service IT</span>
-                                <Badge variant="destructive" className="text-xs">Critique</Badge>
-                            </div>
-                            <p className="text-sm text-red-700 mb-2">Risque de sous-effectif critique en juillet-août</p>
-                            <div className="text-xs text-red-600 space-y-1">
-                                <div>• Recruter 2 développeurs temporaires</div>
-                                <div>• Reporter 30% des congés non critiques</div>
-                                <div>• Activer le plan de continuité</div>
-                            </div>
-                        </div>
-
-                        <div className="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded-r-lg">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="text-sm font-semibold text-yellow-800">Attention - Budget</span>
-                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Modéré</Badge>
-                            </div>
-                            <p className="text-sm text-yellow-700 mb-2">85% du budget congés consommé</p>
-                            <div className="text-xs text-yellow-600 space-y-1">
-                                <div>• Négocier report de 20% des CP</div>
-                                <div>• Optimiser les remplacements</div>
-                            </div>
-                        </div>
-
-                        <div className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="text-sm font-semibold text-green-800">Opportunité</span>
-                                <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">Optimal</Badge>
-                            </div>
-                            <p className="text-sm text-green-700 mb-2">Septembre: période idéale pour congés équipe Marketing</p>
-                            <div className="text-xs text-green-600 space-y-1">
-                                <div>• Encourager les départs en septembre</div>
-                                <div>• Planifier les formations d'équipe</div>
-                            </div>
                         </div>
                     </CardContent>
                 </Card>

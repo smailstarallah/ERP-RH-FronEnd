@@ -1,5 +1,5 @@
-// Export principal du module de configuration des éléments de paie
-export { default } from './Components/AjouterElementPaieRefactored';
+// Export principal du module de fiche de paie
+export { default as FichePaiePage } from './FichePaiePage';
 
 // Exports des types
 export * from './types/ElementPaieTypes';
@@ -11,6 +11,13 @@ export * from './config/ElementPaieConfig';
 export { useElementPaieForm } from './hooks/useElementPaieForm';
 
 // Exports des composants principaux
+export { default as EmployeesParDepartement } from './Components/EmployeesParDepartement';
+export { default as EmployeePayslipsList } from './Components/EmployeePayslipsList';
+
+// Exports des hooks
+export { useFichePaieRolePermissions } from './hooks/useFichePaieRolePermissions';
+
+// Exports des composants de configuration (legacy)
 export { FormHeader } from './Components/FormHeader';
 export { ProgressIndicator } from './Components/ProgressIndicator';
 export { ValidationErrors } from './Components/ValidationErrors';

@@ -30,7 +30,7 @@ function FloatingMenuButton() {
     <div className={`
       fixed z-50 transition-all duration-300
       ${isMobile
-        ? 'top-4 left-4'
+        ? 'top-6 -left-2'
         : open
           ? 'top-12 left-[13.5rem]'
           : 'top-12 left-[-1.75rem]'
@@ -123,7 +123,6 @@ function App() {
                 </div>
               </div>
 
-              {/* 🔔 Gestionnaire de notifications toast temps réel */}
               <ToastManager
                 userId={getCurrentEmployeId()}
                 maxToasts={5}
@@ -132,7 +131,6 @@ function App() {
             </SidebarInset>
           </SidebarProvider>
 
-          {/* 🚨 Notifications globales en haut à droite */}
           <GlobalNotifications />
 
         </AlertesProvider>

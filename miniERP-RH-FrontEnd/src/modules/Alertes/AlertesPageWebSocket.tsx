@@ -157,8 +157,8 @@ const NewAlertes: React.FC = () => {
                                 <div
                                     key={alert.id}
                                     className={`p-4 border rounded-lg transition-all duration-200 ${alert.status === 'UNREAD'
-                                            ? 'bg-blue-50 border-blue-200'
-                                            : 'bg-slate-50 border-slate-200 opacity-75'
+                                        ? 'bg-blue-50 border-blue-200'
+                                        : 'bg-slate-50 border-slate-200 opacity-75'
                                         }`}
                                 >
                                     <div className="flex items-start justify-between">

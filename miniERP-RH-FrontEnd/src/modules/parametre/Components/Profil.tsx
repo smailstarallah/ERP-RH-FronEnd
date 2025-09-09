@@ -52,20 +52,22 @@ interface Employe {
     nom: string;
     preNom: string;
     email: string;
-    telephone: string;
-    dateNaissance: string;
+    telephone?: string;
+    dateNaissance?: string;
     dateCreation: string;
     dernierConnexion: string;
     active: boolean;
     userType: string;
-    numeroEmploye: string;
-    cin: string | null;
-    dateEmbauche: string | null;
-    salairBase: number | null;
-    poste: string;
-    tauxHoraire: number | null;
-    adresse: string | null;
-    departement: string;
+    numeroEmploye?: string;
+    cin?: string | null;
+    dateEmbauche?: string | null;
+    salairBase?: number | null;
+    poste?: string;
+    tauxHoraire?: number | null;
+    adresse?: string | null;
+    departement?: string;
+    // Nouveau champ pour différencier
+    department?: string; // API renvoie "department" au lieu de "departement"
 }
 
 // Interface pour les congés
@@ -77,7 +79,7 @@ interface CongeStats {
 }
 
 // Utilitaires
-const formatDate = (dateString: string): string => {
+const formatDate = (dateString?: string | null): string => {
     if (!dateString) return 'Non renseigné';
     try {
         return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -90,13 +92,23 @@ const formatDate = (dateString: string): string => {
     }
 };
 
-const formatDateForInput = (dateString: string): string => {
+const formatDateForInput = (dateString?: string | null): string => {
     if (!dateString) return '';
     try {
         return new Date(dateString).toISOString().split('T')[0];
     } catch {
         return '';
     }
+};
+
+// Fonction pour gérer les départements avec les deux formats possibles
+const getDepartment = (employe: Employe): string => {
+    return employe.departement || employe.department || 'Non renseigné';
+};
+
+// Fonction pour vérifier si les champs professionnels avancés doivent être affichés
+const shouldShowAdvancedFields = (employe: Employe): boolean => {
+    return !!(employe.numeroEmploye || employe.dateEmbauche || employe.salairBase || employe.tauxHoraire);
 };
 
 const formatDateTime = (dateString: string): string => {
@@ -120,6 +132,7 @@ const getInitials = (nom: string, prenom: string): string => {
 
 // Options pour les sélecteurs
 const departements = [
+    "IT",
     "Développement",
     "Marketing",
     "Ressources Humaines",
@@ -200,7 +213,27 @@ const useEmployeeProfile = () => {
 
             try {
                 const body = JSON.parse(text);
-                setEmploye(body as Employe);
+
+                // Normaliser les données pour gérer les différents formats d'API
+                const normalizedData: Employe = {
+                    ...body,
+                    // Gérer les champs qui peuvent être manquants
+                    departement: body.departement || body.department,
+                    poste: body.poste || 'Non renseigné',
+                    telephone: body.telephone || '',
+                    dateNaissance: body.dateNaissance || '',
+                    numeroEmploye: body.numeroEmploye || '',
+                    cin: body.cin || null,
+                    dateEmbauche: body.dateEmbauche || null,
+                    salairBase: body.salairBase || null,
+                    tauxHoraire: body.tauxHoraire || null,
+                    adresse: body.adresse || null
+                };
+
+                console.log('Données reçues de l\'API:', body);
+                console.log('Données normalisées:', normalizedData);
+
+                setEmploye(normalizedData);
             } catch {
                 // réponse texte non JSON
                 setError(text || 'Réponse inattendue du serveur');
@@ -429,7 +462,7 @@ export const Profil: React.FC = () => {
     if (loading) return <LoadingState />;
     if (error) return <ErrorState error={error} onRetry={refetch} />;
     if (!employe) return <ErrorState error="Employé non trouvé" onRetry={refetch} />;
-
+    console.log('Employé chargé:', employe);
     return (
         <div className="w-full h-full bg-white overflow-hidden">
             <div className="p-3 space-y-3 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
@@ -450,11 +483,11 @@ export const Profil: React.FC = () => {
                                 <div className="text-xs text-slate-600 space-y-0.5">
                                     <div className="flex items-center gap-1">
                                         <Briefcase className="w-3 h-3 flex-shrink-0" />
-                                        <span className="truncate">{employe.poste}</span>
+                                        <span className="truncate">{employe.poste || 'Non renseigné'}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <Building2 className="w-3 h-3 flex-shrink-0" />
-                                        <span className="truncate">{employe.departement}</span>
+                                        <span className="truncate">{getDepartment(employe)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -572,7 +605,7 @@ export const Profil: React.FC = () => {
                                     ) : (
                                         <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
                                             <Phone className="w-3 h-3 mr-2 text-slate-400 flex-shrink-0" />
-                                            {employe.telephone}
+                                            {employe.telephone || 'Non renseigné'}
                                         </div>
                                     )}
                                 </div>
@@ -620,22 +653,7 @@ export const Profil: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <div>
-                                    <Label className="text-xs text-slate-600 uppercase tracking-wide">N° Employé</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            value={editData?.numeroEmploye || ''}
-                                            onChange={(e) => setEditData(editData ? { ...editData, numeroEmploye: e.target.value } : null)}
-                                            className="mt-1 h-8"
-                                        />
-                                    ) : (
-                                        <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
-                                            <BadgeIcon className="w-3 h-3 mr-2 text-slate-400" />
-                                            {employe.numeroEmploye}
-                                        </div>
-                                    )}
-                                </div>
-
+                                {/* Champs de base - toujours affichés */}
                                 <div>
                                     <Label className="text-xs text-slate-600 uppercase tracking-wide">Poste</Label>
                                     {isEditing ? (
@@ -647,7 +665,7 @@ export const Profil: React.FC = () => {
                                     ) : (
                                         <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
                                             <Briefcase className="w-3 h-3 mr-2 text-slate-400" />
-                                            {employe.poste}
+                                            {employe.poste || 'Non renseigné'}
                                         </div>
                                     )}
                                 </div>
@@ -656,7 +674,7 @@ export const Profil: React.FC = () => {
                                     <Label className="text-xs text-slate-600 uppercase tracking-wide">Département</Label>
                                     {isEditing ? (
                                         <Select
-                                            value={editData?.departement || ''}
+                                            value={editData?.departement || getDepartment(employe)}
                                             onValueChange={(value) => setEditData(editData ? { ...editData, departement: value } : null)}
                                         >
                                             <SelectTrigger className="h-8">
@@ -673,24 +691,7 @@ export const Profil: React.FC = () => {
                                     ) : (
                                         <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
                                             <Building2 className="w-3 h-3 mr-2 text-slate-400" />
-                                            {employe.departement}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <Label className="text-xs text-slate-600 uppercase tracking-wide">Date d'embauche</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="date"
-                                            value={formatDateForInput(editData?.dateEmbauche || '')}
-                                            onChange={(e) => setEditData(editData ? { ...editData, dateEmbauche: e.target.value } : null)}
-                                            className="mt-1 h-8"
-                                        />
-                                    ) : (
-                                        <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
-                                            <Calendar className="w-3 h-3 mr-2 text-slate-400" />
-                                            {formatDate(employe.dateEmbauche || '')}
+                                            {getDepartment(employe)}
                                         </div>
                                     )}
                                 </div>
@@ -744,43 +745,95 @@ export const Profil: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div>
-                                    <Label className="text-xs text-slate-600 uppercase tracking-wide">Salaire de base (MAD)</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            value={editData?.salairBase || ''}
-                                            onChange={(e) => setEditData(editData ? { ...editData, salairBase: Number(e.target.value) } : null)}
-                                            className="mt-1 h-8"
-                                            min="0"
-                                        />
-                                    ) : (
-                                        <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
-                                            <CreditCard className="w-3 h-3 mr-2 text-slate-400" />
-                                            {employe.salairBase ? `${employe.salairBase.toLocaleString()} MAD` : 'Non renseigné'}
-                                        </div>
-                                    )}
-                                </div>
+                                {/* Champs détaillés - affichés conditionnellement */}
+                                {(employe.numeroEmploye || isEditing) && (
+                                    <div>
+                                        <Label className="text-xs text-slate-600 uppercase tracking-wide">N° Employé</Label>
+                                        {isEditing ? (
+                                            <Input
+                                                value={editData?.numeroEmploye || ''}
+                                                onChange={(e) => setEditData(editData ? { ...editData, numeroEmploye: e.target.value } : null)}
+                                                className="mt-1 h-8"
+                                            />
+                                        ) : (
+                                            <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
+                                                <BadgeIcon className="w-3 h-3 mr-2 text-slate-400" />
+                                                {employe.numeroEmploye || 'Non renseigné'}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                                <div>
-                                    <Label className="text-xs text-slate-600 uppercase tracking-wide">Taux horaire (MAD)</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            value={editData?.tauxHoraire || ''}
-                                            onChange={(e) => setEditData(editData ? { ...editData, tauxHoraire: Number(e.target.value) } : null)}
-                                            className="mt-1 h-8"
-                                            min="0"
-                                            step="0.01"
-                                        />
-                                    ) : (
-                                        <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
-                                            <Clock className="w-3 h-3 mr-2 text-slate-400" />
-                                            {employe.tauxHoraire ? `${employe.tauxHoraire} MAD/h` : 'Non renseigné'}
-                                        </div>
-                                    )}
-                                </div>
+                                {(employe.dateEmbauche || isEditing || shouldShowAdvancedFields(employe)) && (
+                                    <div>
+                                        <Label className="text-xs text-slate-600 uppercase tracking-wide">Date d'embauche</Label>
+                                        {isEditing ? (
+                                            <Input
+                                                type="date"
+                                                value={formatDateForInput(editData?.dateEmbauche || '')}
+                                                onChange={(e) => setEditData(editData ? { ...editData, dateEmbauche: e.target.value } : null)}
+                                                className="mt-1 h-8"
+                                            />
+                                        ) : (
+                                            <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
+                                                <Calendar className="w-3 h-3 mr-2 text-slate-400" />
+                                                {formatDate(employe.dateEmbauche || '')}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {(employe.salairBase || isEditing || shouldShowAdvancedFields(employe)) && (
+                                    <div>
+                                        <Label className="text-xs text-slate-600 uppercase tracking-wide">Salaire de base (MAD)</Label>
+                                        {isEditing ? (
+                                            <Input
+                                                type="number"
+                                                value={editData?.salairBase || ''}
+                                                onChange={(e) => setEditData(editData ? { ...editData, salairBase: Number(e.target.value) } : null)}
+                                                className="mt-1 h-8"
+                                                min="0"
+                                            />
+                                        ) : (
+                                            <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
+                                                <CreditCard className="w-3 h-3 mr-2 text-slate-400" />
+                                                {employe.salairBase ? `${employe.salairBase.toLocaleString()} MAD` : 'Non renseigné'}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {(employe.tauxHoraire || isEditing || shouldShowAdvancedFields(employe)) && (
+                                    <div>
+                                        <Label className="text-xs text-slate-600 uppercase tracking-wide">Taux horaire (MAD)</Label>
+                                        {isEditing ? (
+                                            <Input
+                                                type="number"
+                                                value={editData?.tauxHoraire || ''}
+                                                onChange={(e) => setEditData(editData ? { ...editData, tauxHoraire: Number(e.target.value) } : null)}
+                                                className="mt-1 h-8"
+                                                min="0"
+                                                step="0.01"
+                                            />
+                                        ) : (
+                                            <div className="mt-1 px-3 py-2 bg-slate-50 rounded text-sm border h-8 flex items-center">
+                                                <Clock className="w-3 h-3 mr-2 text-slate-400" />
+                                                {employe.tauxHoraire ? `${employe.tauxHoraire} MAD/h` : 'Non renseigné'}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Message informatif pour les managers sans champs détaillés */}
+                            {!shouldShowAdvancedFields(employe) && !isEditing && employe.userType === 'MANAGER' && (
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+                                    <div className="flex items-center gap-2">
+                                        <Shield className="w-4 h-4" />
+                                        <span>Profil manager - Informations de base affichées</span>
+                                    </div>
+                                </div>
+                            )}
 
                             <PasswordChangeSection />
                         </div>
@@ -859,25 +912,6 @@ export const Profil: React.FC = () => {
                                     <FileText className="w-3 h-3 mr-2" />
                                     Fiches de paie
                                 </Button>
-                            </div>
-                        </div>
-
-                        {/* Notifications */}
-                        <div className="bg-white border border-slate-200 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Bell className="w-4 h-4 text-slate-600" />
-                                <h2 className="font-medium text-slate-900">Notifications</h2>
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="p-2 bg-blue-50 rounded border border-blue-200">
-                                    <div className="text-xs font-medium text-blue-800">Congé approuvé</div>
-                                    <p className="text-xs text-blue-600">15-20 août validé</p>
-                                </div>
-                                <div className="p-2 bg-green-50 rounded border border-green-200">
-                                    <div className="text-xs font-medium text-green-800">Fiche de paie</div>
-                                    <p className="text-xs text-green-600">Juillet disponible</p>
-                                </div>
                             </div>
                         </div>
                     </div>
